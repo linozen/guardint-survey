@@ -7,8 +7,11 @@ name = "pypi"
 streamlit = "*"
 matplotlib = "*"
 plotly = "*"
+limepy = "*"
+bs4 = "*"
 
 [dev-packages]
+pyflakes = "*"
 
 [requires]
 python_version = "3.9"

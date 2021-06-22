@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-import streamlit as st
+import configparser
+
 import pandas as pd
-import numpy as np
 import plotly.express as px
+import streamlit as st
+from bs4 import BeautifulSoup
+from limepy import download
 
 st.set_page_config(
     page_title="GUARDINT Civil Society Scrutiny Survey Data Explorer",
@@ -16,6 +19,21 @@ st.title("GUARDINT Civil Society Scrutiny Survey Data Explorer")
 
 @st.cache
 def get_data():
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    url = config["limesurvey"]["url"]
+    username = config["limesurvey"]["username"]
+    uid = config["limesurvey"]["uid"]
+    password = config["limesurvey"]["password"]
+    # cs_uk = download.get_responses(url, username, password, uid, "274185")
+    cs_de = download.get_responses(url, username, password, uid, "629424")
+    # cs_fr = download.get_responses(url, username, password, uid, "151418")
+    # ms_de = download.get_responses(url, username, password, uid, "694698")
+
+    # for c in cs_de:
+    #     print(c)
+    # result_df['text'] = [BeautifulSoup(text).get_text() for text in result_df['text'] ]
+
     df = pd.read_csv("../data/civsoc.csv", sep=",")
     df = df.fillna("No answer")
     unwanted = ["Consentform.", "seed.", "submitdate.", "id."]
@@ -29,27 +47,24 @@ def get_data():
 df = get_data()
 st.dataframe(df, height=1000)
 
-# Factors to filter by (CS only)
-# ------------------------------
-# CShr1-2
-# CSattitude1-6
-# CSgender
+# Factors to filter by (CS & MS)
+# --------------------------------------------
+# Country
+# ----------------------+---------------------
+# CShr1-2               | MShr1-2
+# CSattitude1-6         | MSattitude1-6
+# CSgender              | MSgender
 
-# Factors to compare (CS only)
-# ------------------------------
-# CSfinance2-4
-# CSpreselection
-# CScampact1-2
-# CScamptrans1-2
-# CScampimpact1-2
-# CSadvocact1-2
-# CSadvoctrans1-2
-# CSadvocimpact1-2
-# CSlitigateact1-2
-# CSlitigatecost1-3
-# CSlitigatetrans1-2
-# CSlitigateimpact1-2
-# CScontraintself1
+# Factors to compare (CS & MS)
+# ----------------------+---------------------
+# CShr1-2               | MShr1-2
+# CSexpertise1-4        | MSexpertise1-4
+# CSfinance1            | MSfinance1
+# CSfoi1-4              | MSfoi1-4
+# CSprotectops1-4       | MSprotectops1-4
+# CSprotectleg1-3       | MSprotectleg1-3
+# CSconstraintinter1-6  | MSconstraintinter1-6
+
 
 # Filter logic
 gender = st.sidebar.selectbox("Self-identified Gender", ["All", "Woman", "Man"])
