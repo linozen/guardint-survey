@@ -7,6 +7,7 @@ import plotly.express as px
 import streamlit as st
 from bs4 import BeautifulSoup
 from limepy import download
+from pathlib import Path
 
 st.set_page_config(
     page_title="GUARDINT Civil Society Scrutiny Survey Data Explorer",
@@ -26,13 +27,15 @@ def get_data():
     uid = config["limesurvey"]["uid"]
     password = config["limesurvey"]["password"]
     # cs_uk = download.get_responses(url, username, password, uid, "274185")
-    cs_de = download.get_responses(url, username, password, uid, "629424")
+    cs_de_csv = download.get_responses(
+        url, username, password, uid, "629424", response_type="long"
+    )
+    cs_de_path = Path("../data/cs_de.csv")
+    cs_de_path.write_text(cs_de_csv)
     # cs_fr = download.get_responses(url, username, password, uid, "151418")
     # ms_de = download.get_responses(url, username, password, uid, "694698")
 
-    # for c in cs_de:
-    #     print(c)
-    # result_df['text'] = [BeautifulSoup(text).get_text() for text in result_df['text'] ]
+    # result_df["text"] = [BeautifulSoup(text).get_text() for text in result_df["text"]]
 
     df = pd.read_csv("../data/civsoc.csv", sep=",")
     df = df.fillna("No answer")
