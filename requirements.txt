@@ -1,3 +1,2 @@
-limepy==0.1.8
 jupyter-tabnine==1.2.2
 python-language-server[all]==0.36.2

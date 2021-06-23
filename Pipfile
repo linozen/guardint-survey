@@ -12,6 +12,7 @@ bs4 = "*"
 
 [dev-packages]
 pyflakes = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"
