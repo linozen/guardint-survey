@@ -1,11 +1,15 @@
-# Start from the latest jupyter build
-FROM jupyter/datascience-notebook:latest
+FROM python:3.9-slim-buster
 
-# Install from requirements.txt
-COPY --chown=${NB_UID}:${NB_GID} requirements.txt /tmp/
-RUN pip install --requirement /tmp/requirements.txt && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
-RUN jupyter nbextension install --py jupyter_tabnine --user && \
-    jupyter nbextension enable --py jupyter_tabnine --user && \
-    jupyter serverextension enable --py jupyter_tabnine --user
+RUN apt-get update && apt-get upgrade -y
+
+RUN useradd --create-home --uid 9000 nonroot
+USER nonroot
+
+WORKDIR /home/nonroot/app
+COPY --chown=nonroot:nonroot . .
+ENV PATH="/home/nonroot/.local/bin:${PATH}"
+RUN python3 -m pip install --user pipenv
+RUN pipenv install
+
+EXPOSE 8501
+CMD pipenv run streamlit run explorer/all.py

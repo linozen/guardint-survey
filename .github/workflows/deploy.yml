@@ -21,7 +21,7 @@ jobs:
           registry: docker.pkg.github.com
           repository: snv-berlin/streamlit-publications/app
           tag_with_ref: true
-          context: explorer
+          context: ./explorer
 
       - name: Deploy Docker image to server using SSH
         uses: appleboy/ssh-action@master
