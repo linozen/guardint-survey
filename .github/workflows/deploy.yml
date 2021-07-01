@@ -19,7 +19,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          repository: snv-berlin/ioi/app
+          repository: snv-berlin/ioi/survey-explorer
           tag_with_ref: true
           context: explorer
 
@@ -30,7 +30,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            docker pull docker.pkg.github.com/snv-berlin/ioi/app:main
-            docker stop streamlit-publications
-            docker rm streamlit-publications
-            docker run -d -p 8501:8501 --name streamlit-publications docker.pkg.github.com/snv-berlin/ioi/app:main
+            docker pull docker.pkg.github.com/snv-berlin/ioi/survey-explorer:main
+            # docker stop survey-explorer
+            # docker rm survey-explorer
+            docker run -d -p 8501:8501 --name survey-explorer docker.pkg.github.com/snv-berlin/ioi/survey-explorer:main
