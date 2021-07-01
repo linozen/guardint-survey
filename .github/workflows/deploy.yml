@@ -1,0 +1,36 @@
+name: deploy streamlit app
+
+on: [push]
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: snv-berlin/streamlit-publications/app
+          tag_with_ref: true
+          context: explorer
+
+      - name: Deploy Docker image to server using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker pull docker.pkg.github.com/snv-berlin/ioi/app:main
+            docker stop streamlit-publications
+            docker rm streamlit-publications
+            docker run -d -p 8501:8501 --name streamlit-publications docker.pkg.github.com/snv-berlin/ioi/app:main
