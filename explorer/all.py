@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 import plotly.express as px
 import glob
 
@@ -18,7 +19,7 @@ import glob
 # CSexpertise1-4        | MSexpertise1-4
 # CSfinance1            | MSfinance1
 # CSfoi1-4              | MSfoi1-4
-# CSprotectops1-4       | MSprotectops1-4
+# CSprotectops2-4       | MSprotectops2-4
 # CSprotectleg1-3       | MSprotectleg1-3
 # CSconstraintinter1-6  | MSconstraintinter1-6
 
@@ -51,8 +52,15 @@ def get_merged_cs_df():
         df_list.append(pd.read_csv(csv, sep=";"))
     df = pd.concat(df_list)
 
-    # Use startlanguage as country column
-    df = df.rename(columns={"startlanguage": "XXcountry", "lastpage": "XXlastpage"})
+    # Rename columns
+    df = df.rename(
+        columns={
+            "startlanguage": "XXcountry",
+            "lastpage": "XXlastpage",
+            "CSprotectops1[SQ01]": "CSprotectops1[sectraining]",
+            "CSprotectops1[SQ02]": "CSprotectops1[e2e]",
+        }
+    )
     df = df.replace(to_replace=r"en", value="United Kingdom")
     df = df.replace(to_replace=r"de", value="Germany")
     df = df.replace(to_replace=r"fr", value="France")
@@ -77,6 +85,8 @@ def get_merged_cs_df():
             "CSfoi2",
             "CSfoi3",
             "CSfoi4",
+            "CSprotectops1[sectraining]",
+            "CSprotectops1[e2e]",
             "CSprotectops2",
             "CSprotectops4",
             "CSprotectleg1",
@@ -110,7 +120,7 @@ def get_merged_ms_df():
         df_list.append(pd.read_csv(csv, sep=";"))
     df = pd.concat(df_list)
 
-    # Use startlanguage as country column and correct column names
+    # Rename columns
     df = df.rename(
         columns={
             "startlanguage": "XXcountry",
@@ -118,6 +128,8 @@ def get_merged_ms_df():
             "MFfoi2": "MSfoi2",
             "MScontstraintinter1": "MSconstraintinter1",
             "MSprotectleg2A": "MSprotectleg2",
+            "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
+            "MSprotectops1[SQ03]": "MSprotectops1[e2e]",
         }
     )
     df = df.replace(to_replace=r"en", value="United Kingdom")
@@ -144,6 +156,8 @@ def get_merged_ms_df():
             "MSfoi2",
             "MSfoi3",
             "MSfoi4",
+            "MSprotectops1[sectraining]",
+            "MSprotectops1[e2e]",
             "MSprotectops2",
             "MSprotectops4",
             "MSprotectleg1",
@@ -174,6 +188,8 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 ###################################################################################
 # Make answers human-readable
 ###################################################################################
+is_civsoc = df.surveytype == "Civil Society Scrutiny"
+is_not_civsoc = df.surveytype == "Media Scrutiny"
 df["hr1"] = df["hr1"].replace(
     {
         "AO01": "Full-time",
@@ -263,7 +279,6 @@ df["foi3"] = df["foi3"].replace(
     }
 )
 
-is_civsoc = df.surveytype == "Civil Society Scrutiny"
 df.loc[is_civsoc, "foi4"] = df["foi4"].replace(
     {
         "AO01": "Very helpful",
@@ -273,7 +288,7 @@ df.loc[is_civsoc, "foi4"] = df["foi4"].replace(
         "AO07": "I prefer not to say",
     }
 )
-is_not_civsoc = df.surveytype == "Media Scrutiny"
+
 df.loc[is_not_civsoc, "foi4"] = df["foi4"].replace(
     {
         "AO01": "Very helpful",
@@ -284,6 +299,23 @@ df.loc[is_not_civsoc, "foi4"] = df["foi4"].replace(
     }
 )
 
+df["protectops1[sectraining]"] = df["protectops1[sectraining]"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
+
+df["protectops1[e2e]"] = df["protectops1[e2e]"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
 
 ###################################################################################
 # Make answers analysable
@@ -474,3 +506,63 @@ foi4_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Dark2,
 )
 st.plotly_chart(foi4_fig)
+
+# Stacked Bar Chart (msprotectops1)
+protectops1_options = [
+    "Participation in digital security training",
+    "Use of E2E encrypted communication channels",
+]
+
+protectops1_yes = [
+    df[filter]["protectops1[sectraining]"].value_counts()["Yes"],
+    df[filter]["protectops1[e2e]"].value_counts()["Yes"],
+]
+
+protectops1_no = [
+    df[filter]["protectops1[sectraining]"].value_counts()["No"],
+    df[filter]["protectops1[e2e]"].value_counts()["No"],
+]
+
+protectops1_dont_know = [
+    df[filter]["protectops1[sectraining]"].value_counts()["I prefer not to say"],
+    df[filter]["protectops1[e2e]"].value_counts()["I prefer not to say"],
+]
+
+try:
+    protectops1_prefer_not_to_say = [
+        df[filter]["protectops1[sectraining]"].value_counts()["I don't know"],
+        df[filter]["protectops1[e2e]"].value_counts()["I don't know"],
+    ]
+except KeyError:
+    try:
+        protectops1_prefer_not_to_say = [
+            0,
+            df[filter]["protectops1[e2e]"].value_counts()["I don't know"],
+        ]
+    except KeyError:
+        protectops1_prefer_not_to_say = [
+            df[filter]["protectops1[sectraining]"].value_counts()["I don't know"],
+            0,
+        ]
+
+
+protectops1_fig = go.Figure(
+    data=[
+        go.Bar(name="Yes", x=protectops1_options, y=protectops1_yes),
+        go.Bar(name="No", x=protectops1_options, y=protectops1_no),
+        go.Bar(name="I don't know", x=protectops1_options, y=protectops1_dont_know),
+        go.Bar(
+            name="I prefer not to say",
+            x=protectops1_options,
+            y=protectops1_prefer_not_to_say,
+        ),
+    ],
+)
+
+protectops1_fig.update_layout(
+    width=800,
+    height=800,
+    barmode="stack",
+)
+
+st.plotly_chart(protectops1_fig)
