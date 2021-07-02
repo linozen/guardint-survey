@@ -59,6 +59,12 @@ def get_merged_cs_df():
             "lastpage": "XXlastpage",
             "CSprotectops1[SQ01]": "CSprotectops1[sectraining]",
             "CSprotectops1[SQ02]": "CSprotectops1[e2e]",
+            "CSprotectops3[SQ01]": "CSprotectops3[encrypted_email]",
+            "CSprotectops3[SQ02]": "CSprotectops3[vpn]",
+            "CSprotectops3[SQ03]": "CSprotectops3[tor]",
+            "CSprotectops3[SQ04]": "CSprotectops3[e2e_chat]",
+            "CSprotectops3[SQ05]": "CSprotectops3[encrypted_hardware]",
+            "CSprotectops3[SQ06]": "CSprotectops3[2fa]",
         }
     )
     df = df.replace(to_replace=r"en", value="United Kingdom")
@@ -88,6 +94,12 @@ def get_merged_cs_df():
             "CSprotectops1[sectraining]",
             "CSprotectops1[e2e]",
             "CSprotectops2",
+            "CSprotectops3[encrypted_email]",
+            "CSprotectops3[vpn]",
+            "CSprotectops3[tor]",
+            "CSprotectops3[e2e_chat]",
+            "CSprotectops3[encrypted_hardware]",
+            "CSprotectops3[2fa]",
             "CSprotectops4",
             "CSprotectleg1",
             "CSprotectleg2",
@@ -130,6 +142,12 @@ def get_merged_ms_df():
             "MSprotectleg2A": "MSprotectleg2",
             "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
             "MSprotectops1[SQ03]": "MSprotectops1[e2e]",
+            "MSprotectops3[SQ01]": "MSprotectops3[encrypted_email]",
+            "MSprotectops3[SQ02]": "MSprotectops3[vpn]",
+            "MSprotectops3[SQ03]": "MSprotectops3[tor]",
+            "MSprotectops3[SQ04]": "MSprotectops3[e2e_chat]",
+            "MSprotectops3[SQ05]": "MSprotectops3[encrypted_hardware]",
+            "MSprotectops3[SQ06]": "MSprotectops3[2fa]",
         }
     )
     df = df.replace(to_replace=r"en", value="United Kingdom")
@@ -159,6 +177,12 @@ def get_merged_ms_df():
             "MSprotectops1[sectraining]",
             "MSprotectops1[e2e]",
             "MSprotectops2",
+            "MSprotectops3[encrypted_email]",
+            "MSprotectops3[vpn]",
+            "MSprotectops3[tor]",
+            "MSprotectops3[e2e_chat]",
+            "MSprotectops3[encrypted_hardware]",
+            "MSprotectops3[2fa]",
             "MSprotectops4",
             "MSprotectleg1",
             "MSprotectleg2",
@@ -188,8 +212,11 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 ###################################################################################
 # Make answers human-readable
 ###################################################################################
+# Helper variables needed when answers are coded differently in the respective
+# survey types
 is_civsoc = df.surveytype == "Civil Society Scrutiny"
 is_not_civsoc = df.surveytype == "Media Scrutiny"
+
 df["hr1"] = df["hr1"].replace(
     {
         "AO01": "Full-time",
@@ -317,6 +344,70 @@ df["protectops1[e2e]"] = df["protectops1[e2e]"].replace(
     }
 )
 
+df["protectops2"] = df["protectops2"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
+
+for label in ["encrypted_email", "vpn", "tor", "e2e_chat", "2fa"]:
+    df[f"protectops3[{label}]"] = df[f"protectops3[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+df["protectops4"] = df["protectops4"].replace(
+    {
+        "AO01": "I have full confidence that the right tools will protect my communication from surveillance",
+        "AO02": "Technological tools help to protect my identity to some extent, but an attacker with sufficient power may eventually be able to bypass my technological safeguards",
+        "AO03": "Under the current conditions of communications surveillance, technological solutions cannot offer sufficient protection for the data I handle",
+        "AO04": "I have no confidence in the protection offered by technological tools",
+        "AO05": "I try to avoid technology-based communication whenever possible when I work on intelligence-related issues",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
+    }
+)
+
+df["protectleg1"] = df["protectleg1"].replace(
+    {
+        "AO01": "Always",
+        "AO02": "Often",
+        "AO03": "Sometimes",
+        "AO04": "Rarely",
+        "AO05": "Never",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
+    }
+)
+
+df["protectleg2"] = df["protectleg2"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
+
+df["constraintinter1"] = df["constraintinter1"].replace(
+    {
+        "AO01": "Yes, I have evidence",
+        "AO02": "Yes, I suspect",
+        "AO03": "No",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
 ###################################################################################
 # Make answers analysable
 ###################################################################################
@@ -403,12 +494,11 @@ st.write(
     "How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? For example, knowledge of intelligence law, case law. `[expertise2]`"
 )
 expertise2_counts = df[filter]["expertise2"].value_counts()
-expertise2_labels = df[filter]["expertise2"].dropna().unique().tolist()
 expertise2_fig = px.pie(
     df[filter],
     values=expertise2_counts,
-    names=expertise2_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=expertise2_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(expertise2_fig)
 
@@ -417,12 +507,11 @@ st.write(
     "How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?` [expertise3]`"
 )
 expertise3_counts = df[filter]["expertise3"].value_counts()
-expertise3_labels = df[filter]["expertise3"].dropna().unique().tolist()
 expertise3_fig = px.pie(
     df[filter],
     values=expertise3_counts,
-    names=expertise3_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=expertise3_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(expertise3_fig)
 
@@ -431,12 +520,11 @@ st.write(
     "How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?` [expertise4]`"
 )
 expertise4_counts = df[filter]["expertise4"].value_counts()
-expertise4_labels = df[filter]["expertise4"].dropna().unique().tolist()
 expertise4_fig = px.pie(
     df[filter],
     values=expertise4_counts,
-    names=expertise4_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=expertise4_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(expertise4_fig)
 
@@ -445,12 +533,11 @@ st.write(
     "How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
 )
 finance1_counts = df[filter]["finance1"].value_counts()
-finance1_labels = df[filter]["finance1"].dropna().unique().tolist()
 finance1_fig = px.pie(
     df[filter],
     values=finance1_counts,
-    names=finance1_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=finance1_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(finance1_fig)
 
@@ -459,12 +546,11 @@ st.write(
     "Have you requested information under the national Freedom of Information Law  when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
 )
 foi1_counts = df[filter]["foi1"].value_counts()
-foi1_labels = df[filter]["foi1"].dropna().unique().tolist()
 foi1_fig = px.pie(
     df[filter],
     values=foi1_counts,
-    names=foi1_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=foi1_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(foi1_fig)
 
@@ -484,12 +570,11 @@ st.write(
     "Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[foi3]`"
 )
 foi3_counts = df[filter]["foi3"].value_counts()
-foi3_labels = df[filter]["foi3"].dropna().unique().tolist()
 foi3_fig = px.pie(
     df[filter],
     values=foi3_counts,
-    names=foi3_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    names=foi3_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(foi3_fig)
 
@@ -497,54 +582,49 @@ st.plotly_chart(foi3_fig)
 st.write(
     "How helpful have Freedom of Information requests been for your work on intelligence-related issues? `[foi4]`"
 )
-foi4_counts = df[filter]["foi4"].value_counts()
-foi4_labels = df[filter]["foi4"].dropna().unique().tolist()
-foi4_fig = px.pie(
+protectops2_counts = df[filter]["foi4"].value_counts()
+protectops2_fig = px.pie(
     df[filter],
-    values=foi4_counts,
-    names=foi4_labels,
-    color_discrete_sequence=px.colors.qualitative.Dark2,
+    values=protectops2_counts,
+    names=protectops2_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
 )
-st.plotly_chart(foi4_fig)
+st.plotly_chart(protectops2_fig)
 
 # Stacked Bar Chart (msprotectops1)
+st.write(
+    "Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
+)
 protectops1_options = [
     "Participation in digital security training",
     "Use of E2E encrypted communication channels",
 ]
 
-protectops1_yes = [
-    df[filter]["protectops1[sectraining]"].value_counts()["Yes"],
-    df[filter]["protectops1[e2e]"].value_counts()["Yes"],
-]
-
-protectops1_no = [
-    df[filter]["protectops1[sectraining]"].value_counts()["No"],
-    df[filter]["protectops1[e2e]"].value_counts()["No"],
-]
-
-protectops1_dont_know = [
-    df[filter]["protectops1[sectraining]"].value_counts()["I prefer not to say"],
-    df[filter]["protectops1[e2e]"].value_counts()["I prefer not to say"],
-]
-
-try:
-    protectops1_prefer_not_to_say = [
-        df[filter]["protectops1[sectraining]"].value_counts()["I don't know"],
-        df[filter]["protectops1[e2e]"].value_counts()["I don't know"],
-    ]
-except KeyError:
-    try:
-        protectops1_prefer_not_to_say = [
-            0,
-            df[filter]["protectops1[e2e]"].value_counts()["I don't know"],
-        ]
-    except KeyError:
-        protectops1_prefer_not_to_say = [
-            df[filter]["protectops1[sectraining]"].value_counts()["I don't know"],
-            0,
-        ]
-
+protectops1_yes = []
+protectops1_no = []
+protectops1_dont_know = []
+protectops1_prefer_not_to_say = []
+for answer in [
+    "Yes",
+    "No",
+    "I don't know",
+    "I prefer not to say",
+]:
+    for label in ["sectraining", "e2e"]:
+        try:
+            count = df[filter][f"protectops1[{label}]"].value_counts()[answer]
+        except KeyError:
+            count = 0
+        if answer == "Yes":
+            protectops1_yes.append(count)
+        elif answer == "No":
+            protectops1_no.append(count)
+        elif answer == "I don't know":
+            protectops1_dont_know.append(count)
+        elif answer == "I prefer not to say":
+            protectops1_prefer_not_to_say.append(count)
+        else:
+            continue
 
 protectops1_fig = go.Figure(
     data=[
@@ -566,3 +646,160 @@ protectops1_fig.update_layout(
 )
 
 st.plotly_chart(protectops1_fig)
+
+# Pie chart (protectops2)
+st.write("Were any of these measures provided by your employer? `[protectops2]`")
+protectops2_counts = df[filter]["protectops2"].value_counts()
+protectops2_fig = px.pie(
+    df[filter],
+    values=protectops2_counts,
+    names=protectops2_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+st.plotly_chart(protectops2_fig)
+
+# Stacked bar chart (protectops3)
+st.write(
+    "How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[protectops3]`"
+)
+protectops3_options = [
+    "Encrypted Email",
+    "VPN",
+    "Tor",
+    "E2E Messengers",
+    "Encrpyted hardware",
+    "Two-Factor authentication",
+]
+
+protectops3_very_important = []
+protectops3_somewhat_important = []
+protectops3_important = []
+protectops3_slightly_important = []
+protectops3_not_important = []
+for importance in [
+    "Very important",
+    "Somewhat important",
+    "Important",
+    "Slightly important",
+    "Not important at all",
+]:
+    for label in ["encrypted_email", "vpn", "tor", "e2e_chat", "2fa"]:
+        try:
+            count = df[filter][f"protectops3[{label}]"].value_counts()[importance]
+        except KeyError:
+            count = 0
+        if importance == "Very important":
+            protectops3_very_important.append(count)
+        elif importance == "Somewhat important":
+            protectops3_somewhat_important.append(count)
+        elif importance == "Important":
+            protectops3_important.append(count)
+        elif importance == "Slightly important":
+            protectops3_slightly_important.append(count)
+        elif importance == "Not important at all":
+            protectops3_not_important.append(count)
+        else:
+            continue
+
+protectops3_fig = go.Figure(
+    data=[
+        go.Bar(
+            name="Very important",
+            x=protectops3_options,
+            y=protectops3_very_important,
+            marker_color="#581845",
+        ),
+        go.Bar(
+            name="Somewhat important",
+            x=protectops3_options,
+            y=protectops3_somewhat_important,
+            marker_color="#900C3F",
+        ),
+        go.Bar(
+            name="Important",
+            x=protectops3_options,
+            y=protectops3_important,
+            marker_color="#C70039",
+        ),
+        go.Bar(
+            name="Slightly important",
+            x=protectops3_options,
+            y=protectops3_slightly_important,
+            marker_color="#FF5733",
+        ),
+        go.Bar(
+            name="Not important at all",
+            x=protectops3_options,
+            y=protectops3_not_important,
+            marker_color="#FFC300",
+        ),
+    ],
+)
+
+protectops3_fig.update_layout(width=800, height=800, barmode="stack")
+
+st.plotly_chart(protectops3_fig)
+
+# Pie chart (protectops4)
+st.write(
+    "Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
+)
+protectops4_counts = df[filter]["protectops4"].value_counts()
+protectops4_fig = px.pie(
+    df[filter],
+    values=protectops4_counts,
+    names=protectops4_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+
+st.plotly_chart(protectops4_fig, use_container_width=True)
+
+# Pie chart (protectleg1)
+st.write(
+    "When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[protectleg1]`"
+)
+
+protectleg1_counts = df[filter]["protectleg1"].value_counts()
+protectleg1_fig = px.pie(
+    df[filter],
+    values=protectleg1_counts,
+    names=protectleg1_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+
+protectleg1_fig.update_layout(width=800, height=800)
+st.plotly_chart(protectleg1_fig)
+
+# Pie chart (protectleg2)
+st.write(
+    "Do you regard the existing legal protections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[protectleg2]`"
+)
+
+protectleg2_counts = df[filter]["protectleg2"].value_counts()
+protectleg2_fig = px.pie(
+    df[filter],
+    values=protectleg2_counts,
+    names=protectleg2_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+
+protectleg2_fig.update_layout(width=800, height=800)
+st.plotly_chart(protectleg2_fig)
+
+# TODO Stacked bar chart (protectleg3)
+
+# Pie chart (constraintinter1)
+st.write(
+    "Has your institution or have you yourself been subjected to surveillance by intelligence agencies in the past five years? `[constraintinter1]`"
+)
+
+constraintinter1_counts = df[filter]["constraintinter1"].value_counts()
+constraintinter1_fig = px.pie(
+    df[filter],
+    values=constraintinter1_counts,
+    names=constraintinter1_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+
+constraintinter1_fig.update_layout(width=800, height=800)
+st.plotly_chart(constraintinter1_fig)
