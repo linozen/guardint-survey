@@ -208,6 +208,7 @@ def get_merged_ms_df():
 df_cs = get_merged_cs_df()
 df_ms = get_merged_ms_df()
 df = pd.concat([df_cs, df_ms], ignore_index=True)
+df.to_pickle("./data/all.pkl")
 
 ###################################################################################
 # Make answers human-readable
