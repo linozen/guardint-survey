@@ -9,6 +9,7 @@ matplotlib = "*"
 plotly = "*"
 limepy = "*"
 bs4 = "*"
+openpyxl = "*"
 
 [dev-packages]
 pyflakes = "*"
