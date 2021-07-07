@@ -114,6 +114,7 @@ def get_merged_cs_df():
             "CSfoi2",
             "CSfoi3",
             "CSfoi4",
+            "CSfoi5[SQ01]",
             "CSprotectops1[sectraining]",
             "CSprotectops1[e2e]",
             "CSprotectops2",
@@ -245,6 +246,8 @@ def get_merged_ms_df():
             "MSfoi2",
             "MSfoi3",
             "MSfoi4",
+            # TODO Analyse MSfoi
+            "MSfoi5[SQ01]",
             "MSprotectops1[sectraining]",
             "MSprotectops1[e2e]",
             "MSprotectops2",
