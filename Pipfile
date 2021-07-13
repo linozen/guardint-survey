@@ -10,10 +10,12 @@ plotly = "*"
 limepy = "*"
 bs4 = "*"
 openpyxl = "*"
+xlsxwriter = "*"
 
 [dev-packages]
 pyflakes = "*"
 isort = "*"
+python-lsp-server = "*"
 
 [requires]
 python_version = "3.9"

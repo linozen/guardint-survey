@@ -4,6 +4,8 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 import glob
+import base64
+from io import BytesIO
 
 # Factors to filter by (CS & MS)
 # --------------------------------------------
@@ -56,6 +58,15 @@ def get_merged_cs_df():
         columns={
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
+            "CSfoi5[SQ01]": "CSfoi5[not_aware]",
+            "CSfoi5[SQ02]": "CSfoi5[not_covered]",
+            "CSfoi5[SQ03]": "CSfoi5[too_expensive]",
+            "CSfoi5[SQ04]": "CSfoi5[too_time_consuming]",
+            "CSfoi5[SQ05]": "CSfoi5[afraid_of_data_destruction]",
+            "CSfoi5[SQ06]": "CSfoi5[afraid_of_discrimination]",
+            "CSfoi5[SQ07]": "CSfoi5[other]",
+            "CSfoi5[SQ08]": "CSfoi5[dont_know]",
+            "CSfoi5[SQ09]": "CSfoi5[prefer_not_to_say]",
             "CSprotectops1[SQ01]": "CSprotectops1[sectraining]",
             "CSprotectops1[SQ02]": "CSprotectops1[e2e]",
             "CSprotectops3[SQ01]": "CSprotectops3[encrypted_email]",
@@ -114,7 +125,15 @@ def get_merged_cs_df():
             "CSfoi2",
             "CSfoi3",
             "CSfoi4",
-            "CSfoi5[SQ01]",
+            "CSfoi5[not_aware]",
+            "CSfoi5[not_covered]",
+            "CSfoi5[too_expensive]",
+            "CSfoi5[too_time_consuming]",
+            "CSfoi5[afraid_of_data_destruction]",
+            "CSfoi5[afraid_of_discrimination]",
+            "CSfoi5[other]",
+            "CSfoi5[dont_know]",
+            "CSfoi5[prefer_not_to_say]",
             "CSprotectops1[sectraining]",
             "CSprotectops1[e2e]",
             "CSprotectops2",
@@ -186,6 +205,15 @@ def get_merged_ms_df():
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
             "MFfoi2": "MSfoi2",
+            "MSfoi5[SQ01]": "MSfoi5[not_aware]",
+            "MSfoi5[SQ02]": "MSfoi5[not_covered]",
+            "MSfoi5[SQ03]": "MSfoi5[too_expensive]",
+            "MSfoi5[SQ04]": "MSfoi5[too_time_consuming]",
+            "MSfoi5[SQ05]": "MSfoi5[afraid_of_data_destruction]",
+            "MSfoi5[SQ06]": "MSfoi5[afraid_of_discrimination]",
+            "MSfoi5[SQ07]": "MSfoi5[other]",
+            "MSfoi5[SQ08]": "MSfoi5[dont_know]",
+            "MSfoi5[SQ09]": "MSfoi5[prefer_not_to_say]",
             "MScontstraintinter1": "MSconstraintinter1",
             "MSprotectleg2A": "MSprotectleg2",
             "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
@@ -246,8 +274,12 @@ def get_merged_ms_df():
             "MSfoi2",
             "MSfoi3",
             "MSfoi4",
-            # TODO Analyse MSfoi
-            "MSfoi5[SQ01]",
+            "MSfoi5[not_aware]",
+            "MSfoi5[not_covered]",
+            "MSfoi5[too_expensive]",
+            "MSfoi5[too_time_consuming]",
+            "MSfoi5[afraid_of_data_destruction]",
+            "MSfoi5[afraid_of_discrimination]",
             "MSprotectops1[sectraining]",
             "MSprotectops1[e2e]",
             "MSprotectops2",
@@ -474,11 +506,11 @@ for label in [
 
 df["protectops4"] = df["protectops4"].replace(
     {
-        "AO01": "I have full confidence that the right tools will protect my communication from surveillance",
-        "AO02": "Technological tools help to protect my identity to some extent, but an attacker with sufficient power may eventually be able to bypass my technological safeguards",
-        "AO03": "Under the current conditions of communications surveillance, technological solutions cannot offer sufficient protection for the data I handle",
-        "AO04": "I have no confidence in the protection offered by technological tools",
-        "AO05": "I try to avoid technology-based communication whenever possible when I work on intelligence-related issues",
+        "AO01": "I have full confidence that the right tools <br>will protect my communication from surveillance",
+        "AO02": "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards",
+        "AO03": "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle",
+        "AO04": "I have no confidence in the protection offered by <br>technological tools",
+        "AO05": "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues",
         "AO06": "I don't know",
         "AO07": "I prefer not to say",
     }
@@ -592,8 +624,8 @@ df["attitude1"] = df["attitude1"].replace(
     {
         "AO01": "Intelligence agencies are incompatible with democratic <br>values and should be abolished",
         "AO02": "Intelligence agencies contradict democratic principles,<br>and their powers should be kept at a bare minimum",
-        "AO03": "Intelligence agencies are necessary and legitimate institutions <br>of democratic states, even though they may sometimes overstep <br> their legal mandates",
-        "AO04": "Intelligence agencies are a vital component of national <br>security and should be shielded from excessive bureaucratic <br> restrictions",
+        "AO03": "Intelligence agencies are necessary and legitimate institutions <br>of democratic states, even though they may sometimes overstep <br>their legal mandates",
+        "AO04": "Intelligence agencies are a vital component of national <br>security and should be shielded from excessive bureaucratic <br>restrictions",
         "AO05": "I prefer not to say",
     }
 )
@@ -667,9 +699,48 @@ for column_name, selectbox in filters.items():
         filter = filter & (df[column_name] == selectbox)
 
 ###################################################################################
+# Provide download links
+###################################################################################
+def get_csv_download_link(df):
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(
+        csv.encode()
+    ).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}">Download as CSV file</a>'
+    return href
+
+
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine="xlsxwriter")
+    df.to_excel(writer, sheet_name="Sheet1")
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
+
+def get_excel_download_link(df):
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    val = to_excel(df)
+    b64 = base64.b64encode(val)
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi.xlsx">Download as Excel file</a>'
+
+
+st.write(get_csv_download_link(df), unsafe_allow_html=True)
+st.write(get_excel_download_link(df), unsafe_allow_html=True)
+
+###################################################################################
 # Display table
 ###################################################################################
 st.dataframe(df[filter], height=1000)
+
 
 ###################################################################################
 # Display dynamic charts
@@ -707,6 +778,7 @@ expertise2_fig = px.pie(
     names=expertise2_counts.index,
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
+
 st.plotly_chart(expertise2_fig)
 
 # Pie chart (expertise3)
@@ -797,6 +869,43 @@ protectops2_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 st.plotly_chart(protectops2_fig)
+
+# Histogram (foi5)
+st.write(
+    "Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[foi5]`"
+)
+
+# TODO add proper labels
+foi5_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in [
+    "not_aware",
+    "not_covered",
+    "too_expensive",
+    "too_time_consuming",
+    "afraid_of_data_destruction",
+    "afraid_of_discrimination",
+    "other",
+    "dont_know",
+    "prefer_not_to_say",
+]:
+    foi5_data = df[filter]["country"][df[f"foi5[{label}]"] == "Y"].tolist()
+    for i in foi5_data:
+        foi5_df = foi5_df.append(
+            {"option": label, "count": foi5_data.count(i), "country": i},
+            ignore_index=True,
+        )
+
+foi5_df = foi5_df.drop_duplicates()
+foi5_fig = px.histogram(
+    foi5_df,
+    x="option",
+    y="count",
+    color="country",
+    labels={"count": "people who answered 'Yes'"},
+)
+st.plotly_chart(foi5_fig)
+
+# st.plotly_chart(foi5_fig)
 
 # Stacked Bar Chart (msprotectops1)
 st.write(
@@ -968,7 +1077,7 @@ protectops4_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-st.plotly_chart(protectops4_fig, use_container_width=True)
+st.plotly_chart(protectops4_fig)
 
 # Pie chart (protectleg1)
 st.write(
@@ -983,7 +1092,6 @@ protectleg1_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-protectleg1_fig.update_layout(width=800, height=800)
 st.plotly_chart(protectleg1_fig)
 
 # Pie chart (protectleg2)
@@ -999,7 +1107,6 @@ protectleg2_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-protectleg2_fig.update_layout(width=800, height=800)
 st.plotly_chart(protectleg2_fig)
 
 # Stacked bar chart (protectleg3)
@@ -1075,7 +1182,6 @@ constraintinter1_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-constraintinter1_fig.update_layout(width=800, height=800)
 st.plotly_chart(constraintinter1_fig)
 
 # Pie chart (constraintinter2)
@@ -1091,7 +1197,6 @@ constraintinter2_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-constraintinter2_fig.update_layout(width=800, height=800)
 st.plotly_chart(constraintinter2_fig)
 
 # Pie chart (constraintinter3)
@@ -1105,7 +1210,6 @@ constraintinter3_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-constraintinter3_fig.update_layout(width=800, height=800)
 st.plotly_chart(constraintinter3_fig)
 
 # Stacked bar chart (constraintinter4)
@@ -1312,7 +1416,6 @@ attitude1_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-attitude1_fig.update_layout(height=800, width=800)
 st.plotly_chart(attitude1_fig)
 
 # Pie chart attitudes (attitude2)
@@ -1328,5 +1431,4 @@ attitude2_fig = px.pie(
     color_discrete_sequence=px.colors.qualitative.Vivid,
 )
 
-attitude2_fig.update_layout(height=800, width=800)
 st.plotly_chart(attitude2_fig)
