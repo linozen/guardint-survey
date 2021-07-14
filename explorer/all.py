@@ -8,22 +8,22 @@ import base64
 from io import BytesIO
 
 # Factors to filter by (CS & MS)
-# --------------------------------------------
+# ---------------------------------------------
 # country
-# ----------------------+---------------------
-# CShr1                 | MShr1               hr1
-# CSattitude1-6         | MSattitude1-6       attitude1-2
-# CSgender              | MSgender            gender
+# ----------------------+----------------------
+# CShr1                 | MShr1                hr1
+# CSgender              | MSgender             gender
+# CSattitude1-2         | MSattitude1-2        attitude1-2
 
 # Factors to compare (CS & MS)
-# ----------------------+---------------------
-# CShr2                 | MShr2
-# CSexpertise1-4        | MSexpertise1-4
-# CSfinance1            | MSfinance1
-# CSfoi1-4              | MSfoi1-4
-# CSprotectops2-4       | MSprotectops2-4
-# CSprotectleg1-3       | MSprotectleg1-3
-# CSconstraintinter1-6  | MSconstraintinter1-6
+# ----------------------+----------------------
+# CShr2                 | MShr2                hr2
+# CSexpertise1-4        | MSexpertise1-4       expertise1-4
+# CSfinance1            | MSfinance1           finance1
+# CSfoi1-4              | MSfoi1-4             foi1-4
+# CSprotectops2-4       | MSprotectops2-4      protectops2-4
+# CSprotectleg1-3       | MSprotectleg1-3      protectleg1-3
+# CSconstraintinter1-6  | MSconstraintinter1-6 constraintinter1-6
 
 ###################################################################################
 # General configuration
@@ -660,6 +660,7 @@ df.to_excel("./data/all.xlsx")
 ###################################################################################
 # Filter logic
 ###################################################################################
+# TODO filter by attitudes
 filters = {
     "surveytype": st.sidebar.selectbox(
         "Survey type", ["All", "Civil Society Scrutiny", "Media Scrutiny"]
@@ -745,6 +746,18 @@ st.dataframe(df[filter], height=1000)
 ###################################################################################
 # Display dynamic charts
 ###################################################################################
+# Pie chart (hr1)
+st.write("Employment status `[hr1]`")
+hr1_counts = df[filter]["hr1"].value_counts()
+hr1_fig = px.pie(
+    df[filter],
+    values=hr1_counts,
+    names=hr1_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Vivid,
+)
+
+st.plotly_chart(hr1_fig)
+
 # Histogram (hr2)
 st.write(
     "How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
