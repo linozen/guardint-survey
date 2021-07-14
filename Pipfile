@@ -16,6 +16,7 @@ xlsxwriter = "*"
 pyflakes = "*"
 isort = "*"
 python-lsp-server = "*"
+pyls-black = "*"
 
 [requires]
 python_version = "3.9"
