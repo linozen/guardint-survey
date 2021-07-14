@@ -640,7 +640,7 @@ df["attitude2"] = df["attitude2"].replace(
     }
 )
 ###################################################################################
-# Make answers analysable
+# Make answers analysable (change data types etc.)
 ###################################################################################
 df["hr2"] = df["hr2"].replace("?", np.nan)
 df["hr2"] = df["hr2"].replace("0,5", 0.5)
@@ -660,7 +660,7 @@ df.to_excel("./data/all.xlsx")
 ###################################################################################
 # Filter logic
 ###################################################################################
-# TODO filter by attitudes
+# TODO filter by attitudes1-2
 filters = {
     "surveytype": st.sidebar.selectbox(
         "Survey type", ["All", "Civil Society Scrutiny", "Media Scrutiny"]
@@ -711,7 +711,7 @@ def get_csv_download_link(df):
     b64 = base64.b64encode(
         csv.encode()
     ).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}">Download as CSV file</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download="ioi_all.csv">Download as CSV file</a>'
     return href
 
 
@@ -731,7 +731,7 @@ def get_excel_download_link(df):
     """
     val = to_excel(df)
     b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi.xlsx">Download as Excel file</a>'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi_all.xlsx">Download as Excel file</a>'
 
 
 st.write(get_csv_download_link(df), unsafe_allow_html=True)
@@ -917,8 +917,6 @@ foi5_fig = px.histogram(
     labels={"count": "people who answered 'Yes'"},
 )
 st.plotly_chart(foi5_fig)
-
-# st.plotly_chart(foi5_fig)
 
 # Stacked Bar Chart (msprotectops1)
 st.write(
