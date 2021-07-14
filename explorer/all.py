@@ -650,12 +650,10 @@ df["expertise1"] = df["expertise1"].replace("?", np.nan)
 df["expertise1"] = df["expertise1"].replace("<1", 0.5)
 df["expertise1"] = pd.to_numeric(df["expertise1"], errors="coerce")
 
-df["foi2"] = df["foi2"].replace({"20+": 20.0, " ca 10": 10.0, "15+": 15.0})
+df["foi2"] = df["foi2"].replace(
+    {"20+": 20.0, " ca 10": 10.0, "several": 3.0, "15+": 15.0}
+)
 df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
-
-# Save a useful snapshot of the merged data
-df.to_pickle("./data/all.pkl")
-df.to_excel("./data/all.xlsx")
 
 ###################################################################################
 # Filter logic
@@ -702,6 +700,12 @@ for column_name, selectbox in filters.items():
 ###################################################################################
 # Provide download links
 ###################################################################################
+
+# Save a useful snapshot of the merged data
+df.to_pickle("./data/all.pkl")
+df.to_excel("./data/all.xlsx")
+
+
 def get_csv_download_link(df):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
     in:  dataframe
@@ -918,7 +922,7 @@ foi5_fig = px.histogram(
 )
 st.plotly_chart(foi5_fig)
 
-# Stacked Bar Chart (msprotectops1)
+# Stacked Bar Chart (protectops1)
 st.write(
     "Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
 )
