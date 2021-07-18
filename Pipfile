@@ -11,12 +11,15 @@ limepy = "*"
 bs4 = "*"
 openpyxl = "*"
 xlsxwriter = "*"
+pandas-profiling = "*"
+phik = "*"
 
 [dev-packages]
 pyflakes = "*"
 isort = "*"
 python-lsp-server = "*"
 pyls-black = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.9"
