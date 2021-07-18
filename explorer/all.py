@@ -733,7 +733,7 @@ for column_name, selectbox in filters.items():
 # Save a useful snapshot of the merged data
 df.to_pickle("./data/all.pkl")
 df.to_excel("./data/all.xlsx")
-df.to_csv("./data/all.xlsx")
+df.to_csv("./data/all.csv")
 
 
 def get_csv_download_link(df):
@@ -786,7 +786,14 @@ st.dataframe(df[filter], height=1000)
 @st.cache
 def generate_corr_matrix(df):
     df = df.phik_matrix()
-    fig = px.imshow(df, zmin=-1, zmax=1, color_continuous_scale="viridis", height=1200)
+    fig = px.imshow(df, zmin=-1, zmax=1, color_continuous_scale="viridis", height=1300)
+    return fig
+
+
+@st.cache
+def generate_significance_matrix(df):
+    df = df.significance_matrix(significance_method="asymptotic")
+    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
     return fig
 
 
@@ -796,6 +803,17 @@ st.write(
 
 fig_corr = generate_corr_matrix(df)
 st.plotly_chart(fig_corr, use_container_width=True)
+
+st.write("# Significance Matrix")
+st.markdown(
+    body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
+)
+st.markdown(
+    body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
+)
+
+fig_sig = generate_significance_matrix(df)
+st.plotly_chart(fig_sig, use_container_width=True)
 
 # Pie chart (hr1)
 st.write("Employment status `[hr1]`")
