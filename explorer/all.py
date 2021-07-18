@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-import glob
+import phik
 import base64
 from io import BytesIO
 
@@ -343,9 +343,12 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 # Make answers human-readable
 ###################################################################################
 # Helper variables needed when answers are coded differently in the respective
-# survey types
+# survey types or languages
 is_civsoc = df.surveytype == "Civil Society Scrutiny"
 is_not_civsoc = df.surveytype == "Media Scrutiny"
+is_de = df.country == "Germany"
+is_uk = df.country == "United Kingdom"
+is_fr = df.country == "France"
 
 df["hr1"] = df["hr1"].replace(
     {
@@ -483,7 +486,7 @@ df["protectops2"] = df["protectops2"].replace(
     }
 )
 
-for label in [
+protectops3_options = [
     "encrypted_email",
     "vpn",
     "tor",
@@ -491,7 +494,8 @@ for label in [
     "encrypted_hardware",
     "2fa",
     "other",
-]:
+]
+for label in protectops3_options:
     df[f"protectops3[{label}]"] = df[f"protectops3[{label}]"].replace(
         {
             "AO01": "Very important",
@@ -501,6 +505,22 @@ for label in [
             "AO05": "Not important at all",
             "AO06": "I don't know",
             "AO07": "I prefer not to say",
+        }
+    )
+# this was hard to spot. Only the CS survey for DE was coded as below
+for label in protectops3_options:
+    df.loc[(is_civsoc) & (is_de), f"protectops3[{label}]"] = df[
+        f"protectops3[{label}]"
+    ].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            # notice the AO09 instead of AO06 as above
+            "AO09": "I don't know",
+            "AO11": "I prefer not to say",
         }
     )
 
@@ -655,6 +675,12 @@ df["foi2"] = df["foi2"].replace(
 )
 df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
 
+# Here, I change the datatype to boolean for all the multiple choice answers
+for col in df:
+    if col.startswith("foi5"):
+        df[col] = df[col].replace(np.nan, "False")
+        df[col] = df[col].replace("Y", "True")
+        df[col] = df[col].astype("bool")
 ###################################################################################
 # Filter logic
 ###################################################################################
@@ -704,6 +730,7 @@ for column_name, selectbox in filters.items():
 # Save a useful snapshot of the merged data
 df.to_pickle("./data/all.pkl")
 df.to_excel("./data/all.xlsx")
+df.to_csv("./data/all.xlsx")
 
 
 def get_csv_download_link(df):
@@ -750,6 +777,23 @@ st.dataframe(df[filter], height=1000)
 ###################################################################################
 # Display dynamic charts
 ###################################################################################
+# Correlation matrix (Phi_k)
+
+
+@st.cache
+def generate_corr_matrix(df):
+    df = df.phik_matrix()
+    fig = px.imshow(df, zmin=-1, zmax=1, color_continuous_scale="viridis", height=1200)
+    return fig
+
+
+st.write(
+    "# Correlation Matrix (Phik `φK`) \nPhik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
+)
+
+fig_corr = generate_corr_matrix(df)
+st.plotly_chart(fig_corr, use_container_width=True)
+
 # Pie chart (hr1)
 st.write("Employment status `[hr1]`")
 hr1_counts = df[filter]["hr1"].value_counts()
@@ -905,7 +949,7 @@ for label in [
     "dont_know",
     "prefer_not_to_say",
 ]:
-    foi5_data = df[filter]["country"][df[f"foi5[{label}]"] == "Y"].tolist()
+    foi5_data = df[filter]["country"][df[f"foi5[{label}]"] == 1].tolist()
     for i in foi5_data:
         foi5_df = foi5_df.append(
             {"option": label, "count": foi5_data.count(i), "country": i},
@@ -1429,6 +1473,7 @@ attitude1_fig = px.pie(
     values=attitude1_counts,
     names=attitude1_counts.index,
     color_discrete_sequence=px.colors.qualitative.Vivid,
+    width=1000,
 )
 
 st.plotly_chart(attitude1_fig)
@@ -1444,6 +1489,7 @@ attitude2_fig = px.pie(
     values=attitude2_counts,
     names=attitude2_counts.index,
     color_discrete_sequence=px.colors.qualitative.Vivid,
+    width=1000,
 )
 
 st.plotly_chart(attitude2_fig)
