@@ -18,7 +18,7 @@ USER root
 RUN apt-get remove -y --purge make gcc build-essential \
     && apt-get auto-remove -y \
     && rm -rf /var/lib/apt/lists/* \
-    && find /usr/local/lib/python3.7 -name "*.pyc" -type f -delete
+    && find /usr/local/lib/python3.9 -name "*.pyc" -type f -delete
 
 USER nonroot
 EXPOSE 8501
