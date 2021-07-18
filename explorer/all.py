@@ -680,8 +680,8 @@ df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
 # Here, I change the datatype to boolean for all the multiple choice answers
 for col in df:
     if col.startswith("foi5"):
-        df[col] = df[col].replace(np.nan, "False")
-        df[col] = df[col].replace("Y", "True")
+        df[col] = df[col].replace(np.nan, False)
+        df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
 
 ###################################################################################
