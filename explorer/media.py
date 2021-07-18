@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import phik
 import plotly.express as px
 import base64
 from io import BytesIO
@@ -26,17 +27,18 @@ from io import BytesIO
 # General configuration
 ###################################################################################
 st.set_page_config(
-    page_title="GUARDINT Media Scrutiny Survey Data Explorer",
+    page_title="IOI Survey Data Explorer (MS only)",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 st.title("IOI Survey Data Explorer (MS only)")
 
-
 ###################################################################################
 # Data acquisition
 ###################################################################################
+
+
 @st.cache(allow_output_mutation=True)
 def get_ms_df():
     # Merge CSV files into DataFrame
@@ -48,7 +50,7 @@ def get_ms_df():
     df_list = []
     for csv in ms_csv_files:
         df_list.append(pd.read_csv(csv, sep=";"))
-    df = pd.concat(df_list)
+    df = pd.concat(df_list, ignore_index=True)
 
     # Rename columns
     df = df.rename(
@@ -71,6 +73,7 @@ def get_ms_df():
             "MSfoi5[SQ05]": "MSfoi5[afraid_of_data_destruction]",
             "MSfoi5[SQ06]": "MSfoi5[afraid_of_discrimination]",
             "MSfoi5[SQ07]": "MSfoi5[other]",
+            "MSfoi5specify": "MSfoi5other",
             "MSfoi5[SQ08]": "MSfoi5[dont_know]",
             "MSfoi5[SQ09]": "MSfoi5[prefer_not_to_say]",
             "MSsoc5[SQ01]": "MSsoc5[follow_up_on_other_media]",
@@ -122,6 +125,47 @@ def get_ms_df():
             "MSprotectleg3[SQ01]": "MSprotectleg3[free_counsel]",
             "MSprotectleg3[SQ02]": "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[SQ03]": "MSprotectleg3[other]",
+            "MSprotectleg4[SQ01]": "MSprotectleg4[free_counsel]",
+            "MSprotectleg4[SQ02]": "MSprotectleg4[cost_insurance]",
+            "MSprotectleg4[SQ03]": "MSprotectleg4[other]",
+            "MScontstraintinter1": "MSconstraintinter1",
+            "MSconstraintinter4[SQ01]": "MSconstraintinter4[police_search]",
+            "MSconstraintinter4[SQ02]": "MSconstraintinter4[seizure]",
+            "MSconstraintinter4[SQ03]": "MSconstraintinter4[extortion]",
+            "MSconstraintinter4[SQ04]": "MSconstraintinter4[violent_threat]",
+            "MSconstraintinter4[SQ05]": "MSconstraintinter4[inspection_during_travel]",
+            "MSconstraintinter4[SQ06]": "MSconstraintinter4[detention]",
+            "MSconstraintinter4[SQ07]": "MSconstraintinter4[surveillance_signalling]",
+            "MSconstraintinter4[SQ08]": "MSconstraintinter4[online_harassment]",
+            "MSconstraintinter4[SQ09]": "MSconstraintinter4[entry_on_deny_lists]",
+            "MSconstraintinter4[SQ10]": "MSconstraintinter4[exclusion_from_events]",
+            "MSconstraintinter4[SQ11]": "MSconstraintinter4[public_defamation]",
+            "MSconstraintinter5[SQ01]": "MSconstraintinter5[unsolicited_information]",
+            "MSconstraintinter5[SQ02]": "MSconstraintinter5[invitations]",
+            "MSconstraintinter5[SQ03]": "MSconstraintinter5[other]",
+            "MSconstraintinter5ot": "MSconstraintinter5other",
+            "MSconstraintinter6[SQ01]": "MSconstraintinter6[gender]",
+            "MSconstraintinter6[SQ02]": "MSconstraintinter6[ethnicity]",
+            "MSconstraintinter6[SQ03]": "MSconstraintinter6[political]",
+            "MSconstraintinter6[SQ04]": "MSconstraintinter6[sexual]",
+            "MSconstraintinter6[SQ05]": "MSconstraintinter6[religious]",
+            "MSconstraintinter6[SQ06]": "MSconstraintinter6[other]",
+            "MSconstraintinter6ot": "MSconstraintinter6other",
+            "MSconstraintself1[SQ01]": "MSconstraintself1[avoid]",
+            "MSconstraintself1[SQ02]": "MSconstraintself1[change_focus]",
+            "MSconstraintself1[SQ03]": "MSconstraintself1[change_timeline]",
+            "MSconstraintself1[SQ04]": "MSconstraintself1[abandon]",
+            "MSconstraintself1[SQ05]": "MSconstraintself1[leave_profession]",
+            "MSconstraintself1[SQ06]": "MSconstraintself1[other]",
+            "MSconstraintself1ot": "MSconstraintself1other",
+            "MSattitude3[SQ01]": "MSattitude3[rule_of_law]",
+            "MSattitude3[SQ02]": "MSattitude3[civil_liberties]",
+            "MSattitude3[SQ03]": "MSattitude3[effectiveness_of_intel]",
+            "MSattitude3[SQ04]": "MSattitude3[legitimacy_of_intel]",
+            "MSattitude3[SQ05]": "MSattitude3[trust_in_intel]",
+            "MSattitude3[SQ06]": "MSattitude3[critique_of_intel]",
+            "MSattitude3[SQ07]": "MSattitude3[prefer_not_to_say]",
+            "MSgendersd": "MSgenderother",
         }
     )
 
@@ -164,6 +208,7 @@ def get_ms_df():
             "MSfoi5[afraid_of_data_destruction]",
             "MSfoi5[afraid_of_discrimination]",
             "MSfoi5[other]",
+            "MSfoi5other",
             "MSfoi5[dont_know]",
             "MSfoi5[prefer_not_to_say]",
             "MSapp1",
@@ -179,6 +224,7 @@ def get_ms_df():
             "MSsoc5[dont_know]",
             "MSsoc5[prefer_not_to_say]",
             "MSsoc5[other]",
+            "MSsoc5other",
             "MSsoc6[national_security_risks]",
             "MSsoc6[intelligence_success]",
             "MSsoc6[intelligence_misconduct]",
@@ -186,6 +232,7 @@ def get_ms_df():
             "MSsoc6[oversight_failures]",
             "MSsoc6[policy_debates_leg_reforms]",
             "MSsoc6[other]",
+            "MSsoc6other",
             "MStrans1",
             "MStrans2",
             "MStrans3",
@@ -195,6 +242,7 @@ def get_ms_df():
             "MSimpact1[letters_to_the_editor]",
             "MSimpact1[follow_up_by_other_media]",
             "MSimpact1[other]",
+            "MSimpact1other",
             "MSimpact1[none_of_the_above]",
             "MSimpact1[dont_know]",
             "MSimpact1[prefer_not_to_say]",
@@ -207,6 +255,7 @@ def get_ms_df():
             "MSimpact2[dont_know]",
             "MSimpact2[prefer_not_to_say]",
             "MSimpact2[other]",
+            "MSimpact2other",
             "MSimpact2[none_of_the_above]",
             "MSprotectops1[sectraining]",
             "MSprotectops1[secure_drop]",
@@ -220,16 +269,91 @@ def get_ms_df():
             "MSprotectops3[2fa]",
             "MSprotectops3[secure_drop]",
             "MSprotectops3[other]",
+            "MSprotectops3other",
             "MSprotectops4",
             "MSprotectleg1",
             "MSprotectleg2",
             "MSprotectleg3[free_counsel]",
             "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[other]",
+            "MSprotectleg4[free_counsel]",
+            "MSprotectleg4[cost_insurance]",
+            "MSprotectleg4[other]",
+            "MSprotectleg4other",
+            "MSprotectleg5",
+            "MSprotectrta1",
+            "MSprotectrta2",
+            "MSprotectrta3",
+            "MSprotectrta4",
+            "MSprotectrta5",
+            "MSprotectrta6",
+            "MSconstraintcen1",
+            "MSconstraintcen2",
+            "MSconstraintcen3",
+            "MSconstraintcen4",
+            "MSconstraintcen5",
+            "MSconstraintinter1",
+            "MSconstraintinter2",
+            "MSconstraintinter3",
+            "MSconstraintinter4[police_search]",
+            "MSconstraintinter4[seizure]",
+            "MSconstraintinter4[extortion]",
+            "MSconstraintinter4[violent_threat]",
+            "MSconstraintinter4[inspection_during_travel]",
+            "MSconstraintinter4[detention]",
+            "MSconstraintinter4[surveillance_signalling]",
+            "MSconstraintinter4[online_harassment]",
+            "MSconstraintinter4[entry_on_deny_lists]",
+            "MSconstraintinter4[exclusion_from_events]",
+            "MSconstraintinter4[public_defamation]",
+            "MSconstraintinter5[unsolicited_information]",
+            "MSconstraintinter5[invitations]",
+            "MSconstraintinter5[other]",
+            "MSconstraintinter5other",
+            "MSconstraintinter6[gender]",
+            "MSconstraintinter6[ethnicity]",
+            "MSconstraintinter6[political]",
+            "MSconstraintinter6[sexual]",
+            "MSconstraintinter6[religious]",
+            "MSconstraintinter6[other]",
+            "MSconstraintinter6other",
+            "MSconstraintself1[avoid]",
+            "MSconstraintself1[change_focus]",
+            "MSconstraintself1[change_timeline]",
+            "MSconstraintself1[abandon]",
+            "MSconstraintself1[leave_profession]",
+            "MSconstraintself1[other]",
+            "MSconstraintself1other",
+            "MSattitude1",
+            "MSattitude2",
+            "MSattitude3[rule_of_law]",
+            "MSattitude3[civil_liberties]",
+            "MSattitude3[effectiveness_of_intel]",
+            "MSattitude3[legitimacy_of_intel]",
+            "MSattitude3[trust_in_intel]",
+            "MSattitude3[critique_of_intel]",
+            "MSattitude3[prefer_not_to_say]",
+            "MSattitude4[1]",
+            "MSattitude4[2]",
+            "MSattitude4[3]",
+            "MSattitude4[4]",
+            "MSattitude4[5]",
+            "MSattitude4[6]",
+            "MSattitude5[1]",
+            "MSattitude5[2]",
+            "MSattitude5[3]",
+            "MSattitude5[4]",
+            "MSattitude5[5]",
+            "MSattitude5[6]",
+            "MSattitude6[1]",
+            "MSattitude6[2]",
+            "MSattitude6[3]",
+            "MSattitude6[4]",
+            "MSattitude6[5]",
+            "MSattitude6[6]",
+            "MSgender",
         ]
     ]
-
-    # Make answers human-readable
 
     # Set surveytype
     df["surveytype"] = "Media Scrutiny"
@@ -240,6 +364,7 @@ def get_ms_df():
 # Define DataFrame
 ###################################################################################
 df = get_ms_df()
+df = df.reset_index(drop=True)
 
 ###################################################################################
 # Make answers human-readable
@@ -495,6 +620,218 @@ df["MSprotectleg2"] = df["MSprotectleg2"].replace(
         "AO04": "I prefer not to say",
     }
 )
+
+for label in ["free_counsel", "cost_insurance", "other"]:
+    df[f"MSprotectleg3[{label}]"] = df[f"MSprotectleg3[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+    df[f"MSprotectleg4[{label}]"] = df[f"MSprotectleg4[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+df["MSprotectleg5"] = df["MSprotectleg5"].replace(
+    {
+        "AO01": "Very common",
+        "AO02": "Common",
+        "AO03": "Somewhat common",
+        "AO04": "Slightly common",
+        "AO05": "Not common at all",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
+    }
+)
+
+for i in range(1, 5):
+    df[f"MSprotectrta{i}"] = df[f"MSprotectrta{i}"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+df["MSprotectrta5"] = df["MSprotectrta5"].replace(
+    {
+        "AO01": "Yes, my request(s) were responded to in a timely manner of up to 30 days",
+        "AO02": "No my request(s) were not responded to in a timely manner and often took longer than 30 days",
+        "AO03": "I never received responses to my request(s)",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+df["MSprotectrta6"] = df["MSprotectrta6"].replace(
+    {
+        "AO01": "Yes, the information provided was helpful",
+        "AO02": "Partly, the information provided was somewhat helpful but contained omissions",
+        "AO03": "No, the information provided was not at all helpful",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+for i in [1, 2, 4, 5]:
+    df[f"MSconstraintcen{i}"] = df[f"MSconstraintcen{i}"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+df["MSconstraintinter1"] = df["MSconstraintinter1"].replace(
+    {
+        "AO01": "Yes, I have evidence",
+        "AO02": "Yes, I suspect",
+        "AO03": "No",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+df["MSconstraintinter2"] = df["MSconstraintinter2"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
+
+df["MSconstraintinter3"] = df["MSconstraintinter3"].replace(
+    {
+        "AO01": "I was threatened with prosecution",
+        "AO02": "I was prosecuted but acquitted",
+        "AO03": "I was prosecuted and convicted",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+MSconstraintinter4_options = [
+    "police_search",
+    "seizure",
+    "extortion",
+    "violent_threat",
+    "inspection_during_travel",
+    "detention",
+    "surveillance_signalling",
+    "online_harassment",
+    "entry_on_deny_lists",
+    "exclusion_from_events",
+    "public_defamation",
+]
+for label in MSconstraintinter4_options:
+    df[f"MSconstraintinter4[{label}]"] = df[f"MSconstraintinter4[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+MSconstraintinter5_options = ["unsolicited_information", "invitations", "other"]
+for label in MSconstraintinter5_options:
+    df[f"MSconstraintinter5[{label}]"] = df[f"MSconstraintinter5[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+MSconstraintinter6_options = [
+    "gender",
+    "ethnicity",
+    "political",
+    "sexual",
+    "religious",
+    "other",
+]
+for label in MSconstraintinter6_options:
+    df[f"MSconstraintinter6[{label}]"] = df[f"MSconstraintinter6[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+MSconstraintself1_options = [
+    "avoid",
+    "change_focus",
+    "change_timeline",
+    "abandon",
+    "leave_profession",
+    "other",
+]
+for label in MSconstraintself1_options:
+    df[f"MSconstraintself1[{label}]"] = df[f"MSconstraintself1[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+df["MSattitude1"] = df["MSattitude1"].replace(
+    {
+        "AO01": "Intelligence agencies are incompatible with democratic <br>values and should be abolished",
+        "AO02": "Intelligence agencies contradict democratic principles,<br>and their powers should be kept at a bare minimum",
+        "AO03": "Intelligence agencies are necessary and legitimate institutions <br>of democratic states, even though they may sometimes overstep <br>their legal mandates",
+        "AO04": "Intelligence agencies are a vital component of national <br>security and should be shielded from excessive bureaucratic <br>restrictions",
+        "AO05": "I prefer not to say",
+    }
+)
+
+df["MSattitude2"] = df["MSattitude2"].replace(
+    {
+        "AO01": "Intelligence oversight generally succeeds in uncovering <br>past misconduct and preventing future misconduct",
+        "AO02": "Intelligence oversight is mostly effective, however its <br>institutional design needs reform for oversight practitioners to reliably <br>uncover past misconduct and prevent future misconduct",
+        "AO03": "Intelligence oversight lacks efficacy, hence a fundamental <br>reorganization of oversight capacity is needed for oversight practitioners <br>to reliably uncover past misconduct and prevent future misconduct",
+        "AO04": "Effective intelligence oversight is a hopeless endeavour <br>and even a systematic reorganization is unlikely to ensure <br>misconduct is uncovered and prevented.",
+        "AO05": "I prefer not to say",
+    }
+)
+
+for i in range(4, 7):
+    for j in range(1, 7):
+        df[f"MSattitude{i}[{j}]"] = df[f"MSattitude{i}[{j}]"].replace(
+            {
+                "AO01": "Parliamentary oversight bodies",
+                "AO02": "Judicial oversight bodies",
+                "AO03": "Independent expert bodies",
+                "AO04": "Data protection authorities",
+                "AO05": "Audit courts",
+                "AO06": "Civil society organisations",
+            }
+        )
+
+df["MSgender"] = df["MSgender"].replace(
+    {
+        "AO01": "Woman",
+        "AO02": "Non-binary",
+        "AO03": "Man",
+        "AO04": "I prefer not to say",
+        "AO05": "Other",
+    }
+)
 ###################################################################################
 # Make answers analysable (change data types etc.)
 ###################################################################################
@@ -515,6 +852,43 @@ df["MSsoc1"] = pd.to_numeric(df["MSsoc1"], errors="coerce")
 
 df["MSsoc2"] = pd.to_numeric(df["MSsoc2"], errors="coerce")
 
+# MSconstraintcen3 was marred by answers that didn't really answer the question.
+# Below, I try to clean the responses as best as possible
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    {
+        "10 fois.": 10.0,
+    }
+)
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^Maybe once or twice",
+    value=2.0,
+    regex=True,
+)
+# I removed this answer as it does not really answer the question
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^every time you publish a story you contact the subject",
+    value=np.nan,
+    regex=True,
+)
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^moins de 5", value=4.0, regex=True
+)
+df["MSconstraintcen3"] = pd.to_numeric(df["MSconstraintcen3"], errors="coerce")
+
+# Here, I change the datatype to boolean for all the multiple choice answers
+for col in df:
+    if (
+        col.startswith("MShr3")
+        or col.startswith("MSfoi5")
+        or col.startswith("MSsoc5")
+        or col.startswith("MSsoc6")
+        or col.startswith("MSimpact1")
+        or col.startswith("MSimpact2")
+        or col.startswith("MSattitude3")
+    ):
+        df[col] = df[col].replace(np.nan, False)
+        df[col] = df[col].replace("Y", True)
+        df[col] = df[col].astype("bool")
 ###################################################################################
 # Filter logic
 ###################################################################################
@@ -535,16 +909,6 @@ filters = {
             "Other",
         ],
     ),
-    "MSgender": st.sidebar.selectbox(
-        "Self-identified gender",
-        [
-            "All",
-            "Female",
-            "Non-binary",
-            "Male",
-            "Other",
-        ],
-    ),
 }
 
 filter = np.full(len(df.index), True)
@@ -557,12 +921,13 @@ for column_name, selectbox in filters.items():
 ###################################################################################
 # Provide download links
 ###################################################################################
-
 # Save a useful snapshot of the merged data
 df.to_pickle("./data/media.pkl")
 df.to_excel("./data/media.xlsx")
+df.to_csv("./data/media.csv")
 
 
+@st.cache
 def get_csv_download_link(df):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
     in:  dataframe
@@ -585,6 +950,7 @@ def to_excel(df):
     return processed_data
 
 
+@st.cache
 def get_excel_download_link(df):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
     in:  dataframe
@@ -606,3 +972,37 @@ st.dataframe(df[filter], height=1000)
 ###################################################################################
 # Display dynamic charts
 ###################################################################################
+# Correlation matrix
+
+
+@st.cache
+def generate_corr_matrix(df):
+    df = df.phik_matrix()
+    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
+    return fig
+
+
+@st.cache
+def generate_significance_matrix(df):
+    df = df.significance_matrix(significance_method="asymptotic")
+    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
+    return fig
+
+
+st.write(
+    "# Correlation Matrix (Phik `φK`) \nPhik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
+)
+
+fig_corr = generate_corr_matrix(df)
+st.plotly_chart(fig_corr, use_container_width=True)
+
+st.write("# Significance Matrix")
+st.markdown(
+    body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
+)
+st.markdown(
+    body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
+)
+
+fig_sig = generate_significance_matrix(df)
+st.plotly_chart(fig_sig, use_container_width=True)
