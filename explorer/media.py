@@ -6,22 +6,11 @@ import plotly.express as px
 import base64
 from io import BytesIO
 
-# Factors to filter by (MS only)
+# Factors to filter by (CS only)
 # ------------------------------
 # MShr1
 # MSgender
 # MSattitude1-2
-
-# Factors to compare (MS only)
-# ------------------------------
-# MShr3-4
-# MSapp1-2
-# MSsoc1-6
-# MStrans1-3
-# MSimpact1-2
-# MSprotectrta1-6
-# MSconstraintbylaw1-4
-# MScontraintself1
 
 ###################################################################################
 # General configuration
@@ -39,7 +28,7 @@ st.title("IOI Survey Data Explorer (MS only)")
 ###################################################################################
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache()
 def get_ms_df():
     # Merge CSV files into DataFrame
     ms_csv_files = [
