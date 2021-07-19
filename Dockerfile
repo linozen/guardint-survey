@@ -21,5 +21,5 @@ RUN apt-get remove -y --purge make gcc build-essential \
     && find /usr/local/lib/python3.9 -name "*.pyc" -type f -delete
 
 USER nonroot
-EXPOSE 8501
-CMD pipenv run streamlit run explorer/all.py
+EXPOSE 8501-8503
+ENTRYPOINT [ "pipenv", "run" ]
