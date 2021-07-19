@@ -50,6 +50,6 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             docker pull ghcr.io/snv-berlin/streamlit-ioi-base:latest
-            docker run streamlit-ioi-base:latest streamlit run --server.port 8501 explorer/all.py
-            docker run streamlit-ioi-base:latest streamlit run --server.port 8502 explorer/media.py
-            docker run streamlit-ioi-base:latest streamlit run --server.port 8503 explorer/civsoc.py
+            docker run ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8501 explorer/all.py
+            docker run ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8502 explorer/media.py
+            docker run ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8503 explorer/civsoc.py
