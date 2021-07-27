@@ -965,15 +965,15 @@ st.dataframe(df[filter], height=1000)
 
 
 @st.cache
-def generate_corr_matrix(df):
-    df = df.phik_matrix()
+def get_corr_matrix(df):
+    df = pd.read_pickle("./data/media_corr.pkl")
     fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
     return fig
 
 
 @st.cache
-def generate_significance_matrix(df):
-    df = df.significance_matrix(significance_method="asymptotic")
+def get_significance_matrix(df):
+    df = pd.read_pickle("./data/media_sig.pkl")
     fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
     return fig
 
@@ -982,7 +982,7 @@ st.write(
     "# Correlation Matrix (Phik `φK`) \nPhik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
 )
 
-fig_corr = generate_corr_matrix(df)
+fig_corr = get_corr_matrix(df)
 st.plotly_chart(fig_corr, use_container_width=True)
 
 st.write("# Significance Matrix")
@@ -993,5 +993,5 @@ st.markdown(
     body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
 )
 
-fig_sig = generate_significance_matrix(df)
+fig_sig = get_significance_matrix(df)
 st.plotly_chart(fig_sig, use_container_width=True)

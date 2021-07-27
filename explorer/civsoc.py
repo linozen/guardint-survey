@@ -510,8 +510,8 @@ df["CSfoi3"] = df["CSfoi3"].replace(
 df["CSfoi4"] = df["CSfoi4"].replace(
     {
         "AO01": "Very helpful",
-        "AO02": "Helpful in parts",
-        "AO03": "Not helpful at all",
+        "AO03": "Helpful in parts",
+        "AO05": "Not helpful at all",
         "AO06": "I don't know",
         "AO07": "I prefer not to say",
     }
@@ -612,11 +612,24 @@ for label in CSadvocact2_options:
             "AO02": "Important",
             "AO03": "Somewhat important",
             "AO04": "Slightly important",
+            "AO07": "Not important at all",
+            "AO09": "I don't know",
+            "AO11": "I prefer not to say",
+        }
+    )
+    # Coding in LimeSurvey differs for UK
+    df.loc[is_uk, f"CSadvocact2[{label}]"] = df[f"CSadvocact2[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
             "AO05": "Not important at all",
             "AO06": "I don't know",
             "AO07": "I prefer not to say",
         }
     )
+
 
 df["CSadvoctrans1"] = df["CSadvoctrans1"].replace(
     {
@@ -650,6 +663,18 @@ CSadvocimpact1_options = [
 ]
 for label in CSadvocimpact1_options:
     df[f"CSadvocimpact1[{label}]"] = df[f"CSadvocimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO42": "Agree to a great extent",
+            "AO43": "Agree somewhat",
+            "AO44": "Agree sligthly",
+            "AO45": "Not agree at all",
+            "AO46": "I don't know",
+            "AO47": "I prefer not to say",
+        }
+    )
+    # Here only DE survey is differenlty coded
+    df.loc[is_de, f"CSadvocimpact1[{label}]"] = df[f"CSadvocimpact1[{label}]"].replace(
         {
             "AO01": "Agree completely",
             "AO02": "Agree to a great extent",
@@ -713,6 +738,20 @@ CSlitigateimpact1_options = [
 ]
 for label in CSlitigateimpact1_options:
     df[f"CSlitigateimpact1[{label}]"] = df[f"CSlitigateimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO42": "Agree to a great extent",
+            "AO43": "Agree somewhat",
+            "AO44": "Agree sligthly",
+            "AO45": "Not agree at all",
+            "AO46": "I don't know",
+            "AO47": "I prefer not to say",
+        }
+    )
+
+    df.loc[is_de, f"CSlitigateimpact1[{label}]"] = df[
+        f"CSlitigateimpact1[{label}]"
+    ].replace(
         {
             "AO01": "Agree completely",
             "AO02": "Agree to a great extent",
@@ -804,6 +843,19 @@ for label in [
             "AO11": "I prefer not to say",
         }
     )
+
+
+df["CSprotectops4"] = df["CSprotectops4"].replace(
+    {
+        "AO01": "I have full confidence that the right tools <br>will protect my communication from surveillance",
+        "AO02": "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards",
+        "AO03": "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle",
+        "AO04": "I have no confidence in the protection offered by <br>technological tools",
+        "AO05": "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
+    }
+)
 
 df["CSprotectleg1"] = df["CSprotectleg1"].replace(
     {
@@ -966,6 +1018,17 @@ for i in range(4, 7):
                 "AO06": "Civil society organisations",
             }
         )
+        # Here, FR is coded differently
+        df.loc[is_fr, f"CSattitude{i}[{j}]"] = df[f"CSattitude{i}[{j}]"].replace(
+            {
+                "AO01": "Parliamentary oversight bodies",
+                "AO02": "Judicial oversight bodies",
+                "AO03": "Independent expert bodies",
+                "AO04": "Data protection authorities",
+                "AO07": "Audit courts",
+                "AO06": "Civil society organisations",
+            }
+        )
 
 df["CSgender"] = df["CSgender"].replace(
     {
@@ -1054,7 +1117,7 @@ def get_csv_download_link(df):
     b64 = base64.b64encode(
         csv.encode()
     ).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}" download="ioi_media_only.csv">Download as CSV file</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download="ioi_civsoc_only.csv">Download as CSV file</a>'
     return href
 
 
@@ -1075,7 +1138,7 @@ def get_excel_download_link(df):
     """
     val = to_excel(df)
     b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi_media_only.xlsx">Download as Excel file</a>'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi_civsoc_only.xlsx">Download as Excel file</a>'
 
 
 st.write(get_csv_download_link(df), unsafe_allow_html=True)
@@ -1093,15 +1156,15 @@ st.dataframe(df[filter], height=1000)
 
 
 @st.cache
-def generate_corr_matrix(df):
-    df = df.phik_matrix()
+def get_corr_matrix(df):
+    df = pd.read_pickle("./data/civsoc_corr.pkl")
     fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
     return fig
 
 
 @st.cache
-def generate_significance_matrix(df):
-    df = df.significance_matrix(significance_method="asymptotic")
+def get_significance_matrix(df):
+    df = pd.read_pickle("./data/civsoc_sig.pkl")
     fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
     return fig
 
@@ -1115,7 +1178,7 @@ df_without_act = df[
 ]
 
 
-fig_corr = generate_corr_matrix(df_without_act)
+fig_corr = get_corr_matrix(df_without_act)
 st.plotly_chart(fig_corr, use_container_width=True)
 
 st.write("# Significance Matrix")
@@ -1126,5 +1189,5 @@ st.markdown(
     body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
 )
 
-fig_sig = generate_significance_matrix(df_without_act)
+fig_sig = get_significance_matrix(df_without_act)
 st.plotly_chart(fig_sig, use_container_width=True)

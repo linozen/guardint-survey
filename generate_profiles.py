@@ -4,13 +4,13 @@ import pandas as pd
 from pandas_profiling import ProfileReport
 
 # Import dataframes
-df_all = pd.read_pickle("data/all.pkl")
+df_merged = pd.read_pickle("data/merged.pkl")
 df_media = pd.read_pickle("data/media.pkl")
 df_civsoc = pd.read_pickle("data/civsoc.pkl")
 
 # Generate profiles
-all_profile = ProfileReport(df_all, config_file="profiles/profile_all.yml")
-all_profile.to_file("profiles/all.html")
+merged_profile = ProfileReport(df_merged, config_file="profiles/profile_merged.yml")
+merged_profile.to_file("profiles/merged.html")
 
 media_profile = ProfileReport(df_media, config_file="profiles/profile_media.yml")
 media_profile.to_file("profiles/media.html")
