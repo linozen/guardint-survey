@@ -735,7 +735,7 @@ for i in range(4, 7):
                 "AO03": "Independent expert bodies",
                 "AO04": "Data protection authorities",
                 "AO05": "Audit courts",
-                "AO06": "Civil society organisations",
+                "AO06": "CSOs | The media",
             }
         )
         # Here, CS FR is coded differently
@@ -748,7 +748,7 @@ for i in range(4, 7):
                 "AO03": "Independent expert bodies",
                 "AO04": "Data protection authorities",
                 "AO07": "Audit courts",
-                "AO06": "Civil society organisations",
+                "AO06": "CSOs | The media",
             }
         )
 
@@ -770,7 +770,7 @@ df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
 
 # Here, I change the datatype to boolean for all the multiple choice answers
 for col in df:
-    if col.startswith("foi5"):
+    if col.startswith("foi5") or col.startswith("attitude3"):
         df[col] = df[col].replace(np.nan, False)
         df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
@@ -1574,6 +1574,8 @@ constraintinter6_fig = go.Figure(
 constraintinter6_fig.update_layout(width=800, height=800, barmode="stack")
 st.plotly_chart(constraintinter6_fig)
 
+# 6. Attitudes
+st.write("# Attitudes `[attitude1-6]`")
 # Pie chart attitudes (attitude1)
 st.write(
     "The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context. `[attitude1]`"
@@ -1605,3 +1607,104 @@ attitude2_fig = px.pie(
 )
 
 st.plotly_chart(attitude2_fig)
+
+# Histogram (attitude3)
+st.write(
+    "In your personal view, what are the goals of intelligence oversight? Please select the three goals of oversight you subscribe to the most. `[attitude3]`"
+)
+
+attitude3_options = [
+    "rule_of_law",
+    "civil_liberties",
+    "effectiveness_of_intel",
+    "legitimacy_of_intel",
+    "trust_in_intel",
+    "critique_of_intel",
+    "prefer_not_to_say",
+]
+
+attitude3_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in attitude3_options:
+    attitude3_data = df[filter]["country"][df[f"attitude3[{label}]"] == 1].tolist()
+    for i in attitude3_data:
+        attitude3_df = attitude3_df.append(
+            {"option": label, "count": attitude3_data.count(i), "country": i},
+            ignore_index=True,
+        )
+
+attitude3_df = attitude3_df.drop_duplicates()
+attitude3_fig = px.histogram(
+    attitude3_df,
+    x="option",
+    y="count",
+    color="country",
+    labels={"count": "people who answered 'Yes'"},
+)
+st.plotly_chart(attitude3_fig)
+
+# Helper vars for attitude ranking questions
+
+scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
+attitude_options = [
+    "Parliamentary oversight bodies",
+    "Judicial oversight bodies",
+    "Independent expert bodies",
+    "Data protection authorities",
+    "Audit courts",
+    "CSOs | The media",
+]
+
+
+@st.cache
+def generate_ranking_plot(input_col):
+    input_col_score = pd.Series(index=attitude_options)
+    for i in range(1, 7):
+        input_col_counts = df[filter][f"{input_col}[{i}]"].value_counts()
+        scores = input_col_counts.multiply(scoring[i])
+        input_col_score = input_col_score.add(scores, fill_value=0)
+        input_col_score = input_col_score.sort_values(ascending=False)
+        if i == 1:
+            ranked_first = df[filter][f"{input_col}[1]"].value_counts()
+            attitude4_ranked_first = pd.DataFrame(
+                {"institution": ranked_first.index, "ranked_first": ranked_first.values}
+            )
+    input_col_df = pd.DataFrame(
+        {
+            "institution": input_col_score.index,
+            "score": input_col_score.values,
+        }
+    )
+    input_col_df = input_col_df.merge(
+        attitude4_ranked_first, on="institution", how="left"
+    ).fillna(0)
+    fig = px.bar(
+        input_col_df.sort_values(by="score"),
+        y="institution",
+        x="score",
+        color="ranked_first",
+        range_color=[0, 30],
+        color_continuous_scale="viridis",
+        orientation="h",
+    )
+    return fig
+
+
+# Bar chart (attitude4)
+st.write(
+    "Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[attitude4]`"
+)
+
+st.plotly_chart(generate_ranking_plot("attitude4"))
+
+# Bar chart (attitude5)
+st.write(
+    "Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[attitude5]`"
+)
+st.plotly_chart(generate_ranking_plot("attitude5"))
+
+
+# Bar chart (attitude6)
+st.write(
+    "Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[attitude6]`"
+)
+st.plotly_chart(generate_ranking_plot("attitude6"))
