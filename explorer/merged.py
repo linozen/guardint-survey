@@ -411,12 +411,12 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 # Helper variables needed when answers are coded differently in the respective
 # survey types or languages
 is_civsoc = df.surveytype == "Civil Society Scrutiny"
-is_not_civsoc = df.surveytype == "Media Scrutiny"
+is_media = df.surveytype == "Media Scrutiny"
 is_de = df.country == "Germany"
 is_uk = df.country == "United Kingdom"
 is_fr = df.country == "France"
 
-df["hr1"] = df["hr1"].replace(
+df.loc[is_civsoc, "hr1"] = df["hr1"].replace(
     {
         "AO01": "Full-time",
         "AO02": "Part-time (>50%)",
@@ -424,7 +424,20 @@ df["hr1"] = df["hr1"].replace(
         "AO04": "Freelance",
         "AO05": "Unpaid",
         "AO06": "Other",
-        "AO07": "Other",
+        "AO07": "I don't know",
+        "AO08": "I prefer not to say",
+    }
+)
+df.loc[is_media, "hr1"] = df["hr1"].replace(
+    {
+        "AO01": "Full-time",
+        "AO02": "Part-time (>50%)",
+        "AO03": "Part-time (<50%)",
+        "AO04": "Freelance",
+        "AO05": "Unpaid",
+        "AO08": "Other",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
     }
 )
 
@@ -515,7 +528,7 @@ df.loc[is_civsoc, "foi4"] = df["foi4"].replace(
     }
 )
 
-df.loc[is_not_civsoc, "foi4"] = df["foi4"].replace(
+df.loc[is_media, "foi4"] = df["foi4"].replace(
     {
         "AO01": "Very helpful",
         "AO02": "Helpful in parts",
@@ -910,10 +923,18 @@ st.plotly_chart(fig_sig, use_container_width=True)
 st.write("Employment status `[hr1]`")
 hr1_counts = df[filter]["hr1"].value_counts()
 hr1_fig = px.pie(
-    df[filter],
+    hr1_counts,
     values=hr1_counts,
+    hover_name=hr1_counts.index,
     names=hr1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color=hr1_counts.index,
+    color_discrete_map={
+        "Full-time": px.colors.qualitative.Prism[0],
+        "Part-time (>50%)": px.colors.qualitative.Prism[1],
+        "Part-time (<50%)": px.colors.qualitative.Prism[2],
+        "Freelance": px.colors.qualitative.Prism[4],
+        "Other": px.colors.qualitative.Prism[10],
+    },
 )
 
 st.plotly_chart(hr1_fig)
@@ -923,7 +944,15 @@ st.write(
     "How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
 )
 hr2_fig = px.histogram(
-    df[filter], x="hr2", labels={"hr2": "days per month"}, color="country"
+    df[filter],
+    x="hr2",
+    labels={"hr2": "days per month"},
+    color="country",
+    color_discrete_map={
+        "Germany": px.colors.qualitative.Prism[5],
+        "France": px.colors.qualitative.Prism[1],
+        "United Kingdom": px.colors.qualitative.Prism[7],
+    },
 )
 st.plotly_chart(hr2_fig)
 
@@ -937,6 +966,11 @@ expertise1_fig = px.histogram(
     nbins=20,
     labels={"expertise1": "years"},
     color="country",
+    color_discrete_map={
+        "Germany": px.colors.qualitative.Prism[5],
+        "France": px.colors.qualitative.Prism[1],
+        "United Kingdom": px.colors.qualitative.Prism[7],
+    },
 )
 st.plotly_chart(expertise1_fig)
 
@@ -949,7 +983,7 @@ expertise2_fig = px.pie(
     df[filter],
     values=expertise2_counts,
     names=expertise2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 
 st.plotly_chart(expertise2_fig)
@@ -963,7 +997,7 @@ expertise3_fig = px.pie(
     df[filter],
     values=expertise3_counts,
     names=expertise3_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 st.plotly_chart(expertise3_fig)
 
@@ -976,7 +1010,7 @@ expertise4_fig = px.pie(
     df[filter],
     values=expertise4_counts,
     names=expertise4_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 st.plotly_chart(expertise4_fig)
 
@@ -989,7 +1023,7 @@ finance1_fig = px.pie(
     df[filter],
     values=finance1_counts,
     names=finance1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 st.plotly_chart(finance1_fig)
 
@@ -999,10 +1033,16 @@ st.write(
 )
 foi1_counts = df[filter]["foi1"].value_counts()
 foi1_fig = px.pie(
-    df[filter],
+    foi1_counts,
     values=foi1_counts,
     names=foi1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color=foi1_counts.index,
+    color_discrete_map={
+        "No": px.colors.qualitative.Prism[8],
+        "Yes": px.colors.qualitative.Prism[2],
+        "I don't know": px.colors.qualitative.Prism[10],
+        "I prefer not to say": px.colors.qualitative.Prism[10],
+    },
 )
 st.plotly_chart(foi1_fig)
 
@@ -1014,6 +1054,11 @@ foi2_fig = px.histogram(
     nbins=10,
     labels={"foi2": "Number of requests"},
     color="country",
+    color_discrete_map={
+        "Germany": px.colors.qualitative.Prism[5],
+        "France": px.colors.qualitative.Prism[1],
+        "United Kingdom": px.colors.qualitative.Prism[7],
+    },
 )
 st.plotly_chart(foi2_fig)
 
@@ -1023,10 +1068,17 @@ st.write(
 )
 foi3_counts = df[filter]["foi3"].value_counts()
 foi3_fig = px.pie(
-    df[filter],
+    foi3_counts,
     values=foi3_counts,
     names=foi3_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color=foi3_counts.index,
+    color_discrete_map={
+        "Never": px.colors.qualitative.Prism[9],
+        "No, usually longer than 30 days": px.colors.qualitative.Prism[8],
+        "Yes, within 30 days": px.colors.qualitative.Prism[2],
+        "I don't know": px.colors.qualitative.Prism[10],
+        "I prefer not to say": px.colors.qualitative.Prism[10],
+    },
 )
 st.plotly_chart(foi3_fig)
 
@@ -1039,7 +1091,7 @@ protectops2_fig = px.pie(
     df[filter],
     values=protectops2_counts,
     names=protectops2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 st.plotly_chart(protectops2_fig)
 
@@ -1074,6 +1126,11 @@ foi5_fig = px.histogram(
     x="option",
     y="count",
     color="country",
+    color_discrete_map={
+        "Germany": px.colors.qualitative.Prism[5],
+        "France": px.colors.qualitative.Prism[1],
+        "United Kingdom": px.colors.qualitative.Prism[7],
+    },
     labels={"count": "people who answered 'Yes'"},
 )
 st.plotly_chart(foi5_fig)
@@ -1115,13 +1172,29 @@ for answer in [
 
 protectops1_fig = go.Figure(
     data=[
-        go.Bar(name="Yes", x=protectops1_options, y=protectops1_yes),
-        go.Bar(name="No", x=protectops1_options, y=protectops1_no),
-        go.Bar(name="I don't know", x=protectops1_options, y=protectops1_dont_know),
+        go.Bar(
+            name="Yes",
+            x=protectops1_options,
+            y=protectops1_yes,
+            marker_color=px.colors.qualitative.Prism[2],
+        ),
+        go.Bar(
+            name="No",
+            x=protectops1_options,
+            y=protectops1_no,
+            marker_color=px.colors.qualitative.Prism[8],
+        ),
+        go.Bar(
+            name="I don't know",
+            x=protectops1_options,
+            y=protectops1_dont_know,
+            marker_color=px.colors.qualitative.Prism[10],
+        ),
         go.Bar(
             name="I prefer not to say",
             x=protectops1_options,
             y=protectops1_prefer_not_to_say,
+            marker_color=px.colors.qualitative.Prism[10],
         ),
     ],
 )
@@ -1141,7 +1214,7 @@ protectops2_fig = px.pie(
     df[filter],
     values=protectops2_counts,
     names=protectops2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 st.plotly_chart(protectops2_fig)
 
@@ -1242,10 +1315,29 @@ st.write(
 )
 protectops4_counts = df[filter]["protectops4"].value_counts()
 protectops4_fig = px.pie(
-    df[filter],
+    protectops4_counts,
     values=protectops4_counts,
     names=protectops4_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color=protectops4_counts.index,
+    color_discrete_map={
+        "I have full confidence that the right tools <br>will protect my communication from surveillance": px.colors.qualitative.Prism[
+            4
+        ],
+        "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": px.colors.qualitative.Prism[
+            5
+        ],
+        "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": px.colors.qualitative.Prism[
+            6
+        ],
+        "I have no confidence in the protection offered by <br>technological tools": px.colors.qualitative.Prism[
+            7
+        ],
+        "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": px.colors.qualitative.Prism[
+            8
+        ],
+        "I don't know": px.colors.qualitative.Prism[10],
+        "I prefer not to say": px.colors.qualitative.Prism[10],
+    },
 )
 
 st.plotly_chart(protectops4_fig)
@@ -1260,7 +1352,7 @@ protectleg1_fig = px.pie(
     df[filter],
     values=protectleg1_counts,
     names=protectleg1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 
 st.plotly_chart(protectleg1_fig)
@@ -1272,10 +1364,17 @@ st.write(
 
 protectleg2_counts = df[filter]["protectleg2"].value_counts()
 protectleg2_fig = px.pie(
-    df[filter],
+    protectleg2_counts,
     values=protectleg2_counts,
     names=protectleg2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
+    color=protectleg2_counts.index,
+    color_discrete_map={
+        "No": px.colors.qualitative.Prism[8],
+        "Yes": px.colors.qualitative.Prism[2],
+        "I don't know": px.colors.qualitative.Prism[10],
+        "I prefer not to say": px.colors.qualitative.Prism[10],
+    },
 )
 
 st.plotly_chart(protectleg2_fig)
@@ -1312,13 +1411,13 @@ protectleg3_fig = go.Figure(
             name="Yes",
             x=protectleg3_options,
             y=protectleg3_yes,
-            marker_color="#99c945",
+            marker_color=px.colors.qualitative.Prism[2],
         ),
         go.Bar(
             name="No",
             x=protectleg3_options,
             y=protectleg3_no,
-            marker_color="#C70039",
+            marker_color=px.colors.qualitative.Prism[8],
         ),
         go.Bar(
             name="I don't know",
@@ -1350,7 +1449,14 @@ constraintinter1_fig = px.pie(
     df[filter],
     values=constraintinter1_counts,
     names=constraintinter1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color=constraintinter1_counts.index,
+    color_discrete_map={
+        "No": px.colors.qualitative.Prism[8],
+        "Yes, I have evidence": px.colors.qualitative.Prism[1],
+        "Yes, I suspect": px.colors.qualitative.Prism[2],
+        "I don't know": px.colors.qualitative.Prism[10],
+        "I prefer not to say": px.colors.qualitative.Prism[10],
+    },
 )
 
 st.plotly_chart(constraintinter1_fig)
@@ -1365,7 +1471,7 @@ constraintinter2_fig = px.pie(
     df[filter],
     values=constraintinter2_counts,
     names=constraintinter2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 
 st.plotly_chart(constraintinter2_fig)
@@ -1378,7 +1484,7 @@ constraintinter3_fig = px.pie(
     df[filter],
     values=constraintinter3_counts,
     names=constraintinter3_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
 )
 
 st.plotly_chart(constraintinter3_fig)
@@ -1415,13 +1521,13 @@ constraintinter4_fig = go.Figure(
             name="Yes",
             x=constraintinter4_options,
             y=constraintinter4_yes,
-            marker_color="#99c945",
+            marker_color=px.colors.qualitative.Prism[2],
         ),
         go.Bar(
             name="No",
             x=constraintinter4_options,
             y=constraintinter4_no,
-            marker_color="#C70039",
+            marker_color=px.colors.qualitative.Prism[8],
         ),
         go.Bar(
             name="I don't know",
@@ -1479,13 +1585,13 @@ constraintinter5_fig = go.Figure(
             name="Yes",
             x=constraintinter5_options,
             y=constraintinter5_yes,
-            marker_color="#99c945",
+            marker_color=px.colors.qualitative.Prism[2],
         ),
         go.Bar(
             name="No",
             x=constraintinter5_options,
             y=constraintinter5_no,
-            marker_color="#C70039",
+            marker_color=px.colors.qualitative.Prism[8],
         ),
         go.Bar(
             name="I don't know",
@@ -1546,13 +1652,13 @@ constraintinter6_fig = go.Figure(
             name="Yes",
             x=constraintinter6_options,
             y=constraintinter6_yes,
-            marker_color="#99c945",
+            marker_color=px.colors.qualitative.Prism[2],
         ),
         go.Bar(
             name="No",
             x=constraintinter6_options,
             y=constraintinter6_no,
-            marker_color="#C70039",
+            marker_color=px.colors.qualitative.Prism[8],
         ),
         go.Bar(
             name="I don't know",
@@ -1586,7 +1692,7 @@ attitude1_fig = px.pie(
     df[filter],
     values=attitude1_counts,
     names=attitude1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
     width=1000,
 )
 
@@ -1602,7 +1708,7 @@ attitude2_fig = px.pie(
     df[filter],
     values=attitude2_counts,
     names=attitude2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Vivid,
+    color_discrete_sequence=px.colors.qualitative.Prism,
     width=1000,
 )
 
@@ -1638,6 +1744,11 @@ attitude3_fig = px.histogram(
     x="option",
     y="count",
     color="country",
+    color_discrete_map={
+        "Germany": px.colors.qualitative.Prism[5],
+        "France": px.colors.qualitative.Prism[1],
+        "United Kingdom": px.colors.qualitative.Prism[7],
+    },
     labels={"count": "people who answered 'Yes'"},
 )
 st.plotly_chart(attitude3_fig)
@@ -1682,7 +1793,7 @@ def generate_ranking_plot(input_col):
         y="institution",
         x="score",
         color="ranked_first",
-        range_color=[0, 30],
+        range_color=[0, 20],
         color_continuous_scale="viridis",
         orientation="h",
     )
