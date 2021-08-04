@@ -919,6 +919,31 @@ st.markdown(
 fig_sig = get_significance_matrix(df)
 st.plotly_chart(fig_sig, use_container_width=True)
 
+
+# Pie chart (country)
+st.write("Country `[country]`")
+country_counts = df[filter]["country"].value_counts()
+country_fig = px.pie(
+    df[filter],
+    values=country_counts,
+    names=country_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Prism,
+)
+
+st.plotly_chart(country_fig)
+
+# Pie chart (surveytype)
+st.write("Surveytype `[surveytype]`")
+surveytype_counts = df[filter]["surveytype"].value_counts()
+surveytype_fig = px.pie(
+    df[filter],
+    values=surveytype_counts,
+    names=surveytype_counts.index,
+    color_discrete_sequence=px.colors.qualitative.Prism,
+)
+
+st.plotly_chart(country_fig)
+
 # Pie chart (hr1)
 st.write("Employment status `[hr1]`")
 hr1_counts = df[filter]["hr1"].value_counts()
