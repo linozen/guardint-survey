@@ -123,7 +123,6 @@ def get_cs_df():
             "CSlitigateimpact1[SQ03]": "CSlitigateimpact1[amendments_of_the_law]",
             "CSlitigateimpact1[SQ04]": "CSlitigateimpact1[revealed_new_information]",
             "CSlitigateimpact1[SQ05]": "CSlitigateimpact1[achieved_goals]",
-            # =======
             "CSprotectops1[SQ01]": "CSprotectops1[sectraining]",
             "CSprotectops1[SQ02]": "CSprotectops1[e2e]",
             "CSprotectops3[SQ01]": "CSprotectops3[encrypted_email]",
