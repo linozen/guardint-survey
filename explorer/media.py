@@ -1,31 +1,96 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import phik
+import plotly.graph_objects as go
 import plotly.express as px
-import base64
-from io import BytesIO
+from pathlib import Path
 
-# Factors to filter by (CS only)
-# ------------------------------
-# MShr1
-# MSgender
-# MSattitude1-2
+from lib.figures import (
+    generate_pie_chart,
+    generate_histogram,
+    generate_stacked_bar_chart,
+    generate_ranking_plot,
+)
+
+from lib.download import (
+    get_csv_download_link,
+    get_excel_download_link,
+)
+
+
+###############################################################################
+# Helper functions
+###############################################################################
+
+
+@st.cache
+def render_pie_chart(
+    df,
+    values,
+    names,
+    color=None,
+    color_discrete_sequence=px.colors.qualitative.Prism,
+    color_discrete_map=None,
+    hover_name=None,
+):
+    return generate_pie_chart(
+        df,
+        values,
+        names,
+        hover_name,
+        color,
+        color_discrete_sequence,
+        color_discrete_map,
+    )
+
+
+@st.cache
+def render_histogram(df, x, y, nbins, color, color_discrete_map, labels):
+    return generate_histogram(df, x, y, nbins, color, color_discrete_map, labels)
+
+
+@st.cache
+def render_stacked_bar_chart(data):
+    return generate_stacked_bar_chart(data)
+
+
+@st.cache
+def render_ranking_plot(input_col):
+    return generate_ranking_plot(df[filter], input_col, bodies, scoring)
+
+
+@st.cache
+def read_markdown_file(file):
+    return Path(file).read_text()
+
+
+@st.cache
+def get_corr_matrix(df):
+    df = pd.read_pickle("./data/media_corr.pkl")
+    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
+    return fig
+
+
+@st.cache
+def get_significance_matrix(df):
+    df = pd.read_pickle("./data/media_sig.pkl")
+    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
+    return fig
+
 
 ###################################################################################
 # General configuration
 ###################################################################################
+
+
 st.set_page_config(
     page_title="IOI Survey Data Explorer (MS only)",
-    layout="wide",
-    initial_sidebar_state="collapsed",
 )
 
-st.title("IOI Survey Data Explorer (MS only)")
 
-###################################################################################
-# Data acquisition
-###################################################################################
+###############################################################################
+# Data wrangling
+###############################################################################
 
 
 @st.cache()
@@ -172,6 +237,7 @@ def get_ms_df():
             "lastpage",
             "MShr1",
             "MShr2",
+            "MShr3[daily_newspaper]",
             "MShr3[weekly_newspaper]",
             "MShr3[magazine]",
             "MShr3[tv]",
@@ -349,15 +415,20 @@ def get_ms_df():
     return df
 
 
-###################################################################################
-# Define DataFrame
-###################################################################################
+###############################################################################
+# Define base DataFrame
+###############################################################################
+
+
 df = get_ms_df()
 df = df.reset_index(drop=True)
 
-###################################################################################
+
+###############################################################################
 # Make answers human-readable
-###################################################################################
+###############################################################################
+
+
 df["MShr1"] = df["MShr1"].replace(
     {
         "AO01": "Full-time",
@@ -821,9 +892,11 @@ df["MSgender"] = df["MSgender"].replace(
         "AO05": "Other",
     }
 )
-###################################################################################
+
+
+###############################################################################
 # Make answers analysable (change data types etc.)
-###################################################################################
+###############################################################################
 df["MShr2"] = df["MShr2"].replace("?", np.nan)
 df["MShr2"] = df["MShr2"].replace("0,5", 0.5)
 df["MShr2"] = pd.to_numeric(df["MShr2"], errors="coerce")
@@ -878,25 +951,16 @@ for col in df:
         df[col] = df[col].replace(np.nan, False)
         df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
-###################################################################################
+
+
+###############################################################################
 # Filter logic
-###################################################################################
-# TODO filter by attitudes1-2
+###############################################################################
+
+
 filters = {
     "country": st.sidebar.selectbox(
         "Country", ["All", "United Kingdom", "Germany", "France"]
-    ),
-    "MShr1": st.sidebar.selectbox(
-        "Employment status",
-        [
-            "All",
-            "Full-time",
-            "Part-time (>50%)",
-            "Part-time (<50%)",
-            "Freelance",
-            "Unpaid",
-            "Other",
-        ],
     ),
 }
 
@@ -907,85 +971,463 @@ for column_name, selectbox in filters.items():
     else:
         filter = filter & (df[column_name] == selectbox)
 
-###################################################################################
-# Provide download links
-###################################################################################
-# Save a useful snapshot of the merged data
+
+###############################################################################
+# Save a useful snapshot of the data (comment out for production)
+###############################################################################
+
+
 df.to_pickle("./data/media.pkl")
 df.to_excel("./data/media.xlsx")
 df.to_csv("./data/media.csv")
 
 
-@st.cache
-def get_csv_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(
-        csv.encode()
-    ).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}" download="ioi_media_only.csv">Download as CSV file</a>'
-    return href
+###############################################################################
+# Custom CSS
+###############################################################################
 
 
-def to_excel(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine="xlsxwriter")
-    df.to_excel(writer, sheet_name="Sheet1")
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
-
-
-@st.cache
-def get_excel_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    val = to_excel(df)
-    b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi_media_only.xlsx">Download as Excel file</a>'
-
-
-st.write(get_csv_download_link(df), unsafe_allow_html=True)
-st.write(get_excel_download_link(df), unsafe_allow_html=True)
-
-###################################################################################
-# Display table
-###################################################################################
-st.dataframe(df[filter], height=1000)
-
-###################################################################################
-# Display dynamic charts
-###################################################################################
-# Correlation matrix
-
-
-@st.cache
-def get_corr_matrix(df):
-    df = pd.read_pickle("./data/media_corr.pkl")
-    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
-    return fig
-
-
-@st.cache
-def get_significance_matrix(df):
-    df = pd.read_pickle("./data/media_sig.pkl")
-    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
-    return fig
-
-
-st.write(
-    "# Correlation Matrix (Phik `φK`) \nPhik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
+st.markdown(
+    """ <style> h3 {line-height: 1.3} </style> """,
+    unsafe_allow_html=True,
 )
 
-fig_corr = get_corr_matrix(df)
-st.plotly_chart(fig_corr, use_container_width=True)
 
-st.write("# Significance Matrix")
+###############################################################################
+# Display dynamic charts
+###############################################################################
+
+
+st.title("IOI Survey Data Explorer (MS only)")
+
+st.write("# General")
+
+merged_markdown = read_markdown_file("explorer/markdown/media.md")
+st.markdown(merged_markdown, unsafe_allow_html=True)
+
+st.write("### Country `[country]`")
+country_counts = df[filter]["country"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=country_counts,
+        names=country_counts.index,
+    )
+)
+
+st.write("# Resources")
+
+st.write("## Human Resources")
+
+st.write("### What is your employment status `[MShr1]`")
+MShr1_counts = df[filter]["MShr1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MShr1_counts,
+        values=MShr1_counts,
+        names=MShr1_counts.index,
+        color=MShr1_counts.index,
+        color_discrete_map={
+            "Full-time": px.colors.qualitative.Prism[0],
+            "Part-time (>50%)": px.colors.qualitative.Prism[1],
+            "Part-time (<50%)": px.colors.qualitative.Prism[2],
+            "Freelance": px.colors.qualitative.Prism[4],
+            "Other": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### How many days per month do you work on surveillance by intelligence agencies? `[MShr2]`"
+)
+st.plotly_chart(
+    render_histogram(
+        df=df[filter],
+        x="MShr2",
+        y=None,
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"MShr2": "days per month"},
+    )
+)
+
+st.write("### Which type of medium do you work for? `[MShr3]`")
+MShr3_df = pd.DataFrame(columns=("option", "count", "country"))
+# TODO Map proper labels
+for label in [
+    "daily_newspaper",
+    "weekly_newspaper",
+    "magazine",
+    "tv",
+    "radio",
+    "news_agency",
+    "online_stand_alone",
+    "online_of_offline",
+]:
+    MShr3_data = df[filter]["country"][df[f"MShr3[{label}]"] == 1].tolist()
+    for i in MShr3_data:
+        MShr3_df = MShr3_df.append(
+            {"option": label, "count": MShr3_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MShr3_df = MShr3_df.drop_duplicates()
+
+st.plotly_chart(
+    render_histogram(
+        MShr3_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who work for this medium"},
+    )
+)
+
+st.write(
+    "### Within the past year, did you have enough time to cover surveillance by intelligence agencies? `[MShr4]`"
+)
+MShr4_counts = df[filter]["MShr4"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MShr4_counts,
+        values=MShr4_counts,
+        names=MShr4_counts.index,
+        color=MShr4_counts.index,
+        color_discrete_map={
+            "I had enough time": px.colors.qualitative.Prism[9],
+            "I had some time": px.colors.qualitative.Prism[8],
+            "I had very little time": px.colors.qualitative.Prism[7],
+            "I had no time": px.colors.qualitative.Prism[6],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write("## Expertise")
+
+st.write(
+    "### How many years have you spent working on surveillance by intelligence agencies? `[MSexpertise1]`"
+)
+st.plotly_chart(
+    render_histogram(
+        df[filter],
+        x="MSexpertise1",
+        y=None,
+        nbins=20,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"MSexpertise1": "years"},
+    )
+)
+
+st.write(
+    "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? For example, knowledge of intelligence law, case law. `[MSexpertise2]`"
+)
+MSexpertise2_counts = df[filter]["MSexpertise2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSexpertise2_counts,
+        names=MSexpertise2_counts.index,
+        color_discrete_sequence=None,
+        color=MSexpertise2_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?` [MSexpertise3]`"
+)
+MSexpertise3_counts = df[filter]["MSexpertise3"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSexpertise3_counts,
+        names=MSexpertise3_counts.index,
+        color_discrete_sequence=None,
+        color=MSexpertise3_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?` [MSexpertise4]`"
+)
+MSexpertise4_counts = df[filter]["MSexpertise4"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSexpertise4_counts,
+        names=MSexpertise4_counts.index,
+        color_discrete_sequence=None,
+        color=MSexpertise4_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write("## Financial Resources")
+
+st.write(
+    "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[MSfinance1]`"
+)
+MSfinance1_counts = df[filter]["MSfinance1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSfinance1_counts,
+        names=MSfinance1_counts.index,
+        color_discrete_sequence=None,
+        color=MSfinance1_counts.index,
+        color_discrete_map={
+            "A great deal of funding": px.colors.qualitative.Prism[9],
+            "Sufficient funding": px.colors.qualitative.Prism[8],
+            "Some funding": px.colors.qualitative.Prism[7],
+            "Little funding": px.colors.qualitative.Prism[6],
+            "No funding": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend) `[MSfinance2]`"
+)
+MSfinance2_counts = df[filter]["MSfinance2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSfinance2_counts,
+        values=MSfinance2_counts,
+        names=MSfinance2_counts.index,
+        color=MSfinance2_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write("## Freedom of Information")
+
+st.write(
+    "### Have you requested information under the national Freedom of Information Law  when you worked on intelligence-related issues over the past 5 years? `[MSfoi1]`"
+)
+MSfoi1_counts = df[filter]["MSfoi1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSfoi1_counts,
+        values=MSfoi1_counts,
+        names=MSfoi1_counts.index,
+        color=MSfoi1_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write("### How often did you request information? `[MSfoi2]`")
+st.plotly_chart(
+    render_histogram(
+        df[filter],
+        x="MSfoi2",
+        y=None,
+        nbins=10,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"MSfoi2": "Number of requests"},
+    )
+)
+
+st.write(
+    "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[MSfoi3]`"
+)
+MSfoi3_counts = df[filter]["MSfoi3"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSfoi3_counts,
+        values=MSfoi3_counts,
+        names=MSfoi3_counts.index,
+        color=MSfoi3_counts.index,
+        color_discrete_map={
+            "Never": px.colors.qualitative.Prism[9],
+            "No, usually longer than 30 days": px.colors.qualitative.Prism[8],
+            "Yes, within 30 days": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### How helpful have FOI requests been for your work on intelligence-related issues? `[MSfoi4]`"
+)
+protectops2_counts = df[filter]["MSfoi4"].value_counts()
+
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=protectops2_counts,
+        names=protectops2_counts.index,
+    )
+)
+
+st.write(
+    "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[MSfoi5]`"
+)
+MSfoi5_df = pd.DataFrame(columns=("option", "count", "country"))
+# TODO Map proper labels
+for label in [
+    "not_aware",
+    "not_covered",
+    "too_expensive",
+    "too_time_consuming",
+    "afraid_of_data_destruction",
+    "afraid_of_discrimination",
+    "other",
+    "dont_know",
+    "prefer_not_to_say",
+]:
+    MSfoi5_data = df[filter]["country"][df[f"MSfoi5[{label}]"] == 1].tolist()
+    for i in MSfoi5_data:
+        MSfoi5_df = MSfoi5_df.append(
+            {"option": label, "count": MSfoi5_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MSfoi5_df = MSfoi5_df.drop_duplicates()
+
+st.plotly_chart(
+    render_histogram(
+        MSfoi5_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
+st.write("## Appreciation")
+
+st.write(
+    "### In the past 5 years, have stories on surveillance by intelligence agencies been nominated for a journalistic award in the country you primarily work in? `[MSapp1]`"
+)
+MSapp1_counts = df[filter]["MSapp1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSapp1_counts,
+        values=MSapp1_counts,
+        names=MSapp1_counts.index,
+        color=MSapp1_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### Are there specific awards in the country you primarily work in for reporting on intelligence-related topics? `[MSapp2]`"
+)
+MSapp2_counts = df[filter]["MSapp2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSapp2_counts,
+        values=MSapp2_counts,
+        names=MSapp2_counts.index,
+        color=MSapp2_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+###############################################################################
+# Appendix
+###############################################################################
+
+
+st.write("# Appendix")
+
+st.write("## Raw data")
+
+st.write(get_csv_download_link(df, "media"), unsafe_allow_html=True)
+st.write(get_excel_download_link(df, "media"), unsafe_allow_html=True)
+
+table = st.checkbox("Show data as table")
+if table:
+    st.dataframe(df[filter])
+
+st.write("## Correlation Matrix (Phik `φK`)")
+
+st.write(
+    "Phik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
+)
+
+show_corr = st.checkbox("Show correlation matrix")
+if show_corr:
+    fig_corr = get_corr_matrix(df)
+    st.plotly_chart(fig_corr, use_container_width=True)
+
+st.write("## Significance Matrix")
+
 st.markdown(
     body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
 )
@@ -993,5 +1435,7 @@ st.markdown(
     body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
 )
 
-fig_sig = get_significance_matrix(df)
-st.plotly_chart(fig_sig, use_container_width=True)
+show_sig = st.checkbox("Show significance matrix")
+if show_sig:
+    fig_sig = get_significance_matrix(df)
+    st.plotly_chart(fig_sig, use_container_width=True)
