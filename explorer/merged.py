@@ -3,38 +3,90 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-import phik
-import base64
-from io import BytesIO
+from pathlib import Path
 
-# Factors to filter by (CS & MS)
-# ---------------------------------------------
-# country
-# ----------------------+----------------------
-# CShr1                 | MShr1                hr1
-# CSgender              | MSgender             gender
-# CSattitude1-6         | MSattitude1-6        attitude1-6
+from lib.figures import (
+    generate_pie_chart,
+    generate_histogram,
+    generate_stacked_bar_chart,
+    generate_ranking_plot,
+)
 
-# Factors to compare (CS & MS)
-# ----------------------+----------------------
-# CShr2                 | MShr2                hr2
-# CSexpertise1-4        | MSexpertise1-4       expertise1-4
-# CSfinance1            | MSfinance1           finance1
-# CSfoi1-4              | MSfoi1-4             foi1-4
-# CSprotectops2-4       | MSprotectops2-4      protectops2-4
-# CSprotectleg1-3       | MSprotectleg1-3      protectleg1-3
-# CSconstraintinter1-6  | MSconstraintinter1-6 constraintinter1-6
+from lib.download import (
+    get_csv_download_link,
+    get_excel_download_link,
+)
+
+
+###############################################################################
+# Helper functions
+###############################################################################
+
+
+@st.cache
+def render_pie_chart(
+    df,
+    values,
+    names,
+    color=None,
+    color_discrete_sequence=px.colors.qualitative.Prism,
+    color_discrete_map=None,
+    hover_name=None,
+):
+    return generate_pie_chart(
+        df,
+        values,
+        names,
+        hover_name,
+        color,
+        color_discrete_sequence,
+        color_discrete_map,
+    )
+
+
+@st.cache
+def render_histogram(df, x, y, nbins, color, color_discrete_map, labels):
+    return generate_histogram(df, x, y, nbins, color, color_discrete_map, labels)
+
+
+@st.cache
+def render_stacked_bar_chart(data):
+    return generate_stacked_bar_chart(data)
+
+
+@st.cache
+def render_ranking_plot(input_col):
+    return generate_ranking_plot(df[filter], input_col, bodies, scoring)
+
+
+@st.cache
+def read_markdown_file(file):
+    return Path(file).read_text()
+
+
+@st.cache
+def get_corr_matrix(df):
+    df = pd.read_pickle("./data/merged_corr.pkl")
+    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
+    return fig
+
+
+@st.cache
+def get_significance_matrix(df):
+    df = pd.read_pickle("./data/merged_sig.pkl")
+    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
+    return fig
+
 
 ###################################################################################
 # General configuration
 ###################################################################################
+
+
 st.set_page_config(
     page_title="IOI Survey Data Explorer (CS & MS)",
-    layout="wide",
-    initial_sidebar_state="expanded",
 )
 
-st.title("IOI Survey Data Explorer (CS & MS)")
 
 ###################################################################################
 # Data wrangling
@@ -398,16 +450,21 @@ def get_merged_ms_df():
     return df
 
 
-###################################################################################
-# Merge CS with MS
-###################################################################################
+###############################################################################
+# Define base DataFrame (Merge CS with MS)
+###############################################################################
+
+
 df_cs = get_merged_cs_df()
 df_ms = get_merged_ms_df()
 df = pd.concat([df_cs, df_ms], ignore_index=True)
 
-###################################################################################
+
+###############################################################################
 # Make answers human-readable
-###################################################################################
+###############################################################################
+
+
 # Helper variables needed when answers are coded differently in the respective
 # survey types or languages
 is_civsoc = df.surveytype == "Civil Society Scrutiny"
@@ -732,8 +789,8 @@ df["attitude1"] = df["attitude1"].replace(
 df["attitude2"] = df["attitude2"].replace(
     {
         "AO01": "Intelligence oversight generally succeeds in uncovering <br>past misconduct and preventing future misconduct",
-        "AO02": "Intelligence oversight is mostly effective, however its <br>institutional design needs reform for oversight practitioners to reliably <br>uncover past misconduct and prevent future misconduct",
-        "AO03": "Intelligence oversight lacks efficacy, hence a fundamental <br>reorganization of oversight capacity is needed for oversight practitioners <br>to reliably uncover past misconduct and prevent future misconduct",
+        "AO02": "Intelligence oversight is mostly effective, however its <br>institutional design needs reform for oversight practitioners <br> to reliably uncover past misconduct and prevent future <br>misconduct",
+        "AO03": "Intelligence oversight lacks efficacy, hence a fundamental <br>reorganization of oversight capacity is needed for oversight <br>practitioners to reliably uncover past misconduct and <br>prevent future misconduct",
         "AO04": "Effective intelligence oversight is a hopeless endeavour <br>and even a systematic reorganization is unlikely to ensure <br>misconduct is uncovered and prevented.",
         "AO05": "I prefer not to say",
     }
@@ -765,9 +822,11 @@ for i in range(4, 7):
             }
         )
 
-###################################################################################
+###############################################################################
 # Make answers analysable (change data types etc.)
-###################################################################################
+###############################################################################
+
+
 df["hr2"] = df["hr2"].replace("?", np.nan)
 df["hr2"] = df["hr2"].replace("0,5", 0.5)
 df["hr2"] = pd.to_numeric(df["hr2"], errors="coerce")
@@ -788,38 +847,18 @@ for col in df:
         df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
 
-###################################################################################
+
+###############################################################################
 # Filter logic
-###################################################################################
-# TODO filter by attitudes1-2
+###############################################################################
+
+
 filters = {
     "surveytype": st.sidebar.selectbox(
         "Survey type", ["All", "Civil Society Scrutiny", "Media Scrutiny"]
     ),
     "country": st.sidebar.selectbox(
         "Country", ["All", "United Kingdom", "Germany", "France"]
-    ),
-    "hr1": st.sidebar.selectbox(
-        "Employment status",
-        [
-            "All",
-            "Full-time",
-            "Part-time (>50%)",
-            "Part-time (<50%)",
-            "Freelance",
-            "Unpaid",
-            "Other",
-        ],
-    ),
-    "gender": st.sidebar.selectbox(
-        "Self-identified gender",
-        [
-            "All",
-            "Female",
-            "Non-binary",
-            "Male",
-            "Other",
-        ],
     ),
 }
 
@@ -830,303 +869,292 @@ for column_name, selectbox in filters.items():
     else:
         filter = filter & (df[column_name] == selectbox)
 
-###################################################################################
-# Provide download links
-###################################################################################
 
-# Save a useful snapshot of the merged data
-df.to_pickle("./data/merged.pkl")
-df.to_excel("./data/merged.xlsx")
-df.to_csv("./data/merged.csv")
+###############################################################################
+# Save a useful snapshot of the merged data (comment out for production)
+###############################################################################
 
 
-def get_csv_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(
-        csv.encode()
-    ).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}" download="ioi_merged.csv">Download as CSV file</a>'
-    return href
+# df.to_pickle("./data/merged.pkl")
+# df.to_excel("./data/merged.xlsx")
+# df.to_csv("./data/merged.csv")
 
 
-def to_excel(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine="xlsxwriter")
-    df.to_excel(writer, sheet_name="Sheet1")
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
+###############################################################################
+# Custom CSS
+###############################################################################
 
 
-def get_excel_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    val = to_excel(df)
-    b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="ioi_merged.xlsx">Download as Excel file</a>'
+st.markdown(
+    """ <style> h3 {line-height: 1.3} </style> """,
+    unsafe_allow_html=True,
+)
 
 
-st.write(get_csv_download_link(df), unsafe_allow_html=True)
-st.write(get_excel_download_link(df), unsafe_allow_html=True)
-
-###################################################################################
-# Display table
-###################################################################################
-st.dataframe(df[filter], height=1000)
-
-
-###################################################################################
+###############################################################################
 # Display dynamic charts
-###################################################################################
-# Correlation matrix (Phi_k)
+###############################################################################
 
 
-@st.cache
-def get_corr_matrix(df):
-    df = pd.read_pickle("./data/merged_corr.pkl")
-    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
-    return fig
+st.title("IOI Survey Data Explorer (CS & MS)")
 
+st.write("# General")
 
-@st.cache
-def get_significance_matrix(df):
-    df = pd.read_pickle("./data/merged_sig.pkl")
-    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
-    return fig
+merged_markdown = read_markdown_file("explorer/markdown/merged.md")
+st.markdown(merged_markdown, unsafe_allow_html=True)
 
-
-st.write(
-    "# Correlation Matrix (Phik `φK`) \nPhik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
-)
-
-fig_corr = get_corr_matrix(df)
-st.plotly_chart(fig_corr, use_container_width=True)
-
-st.write("# Significance Matrix")
-st.markdown(
-    body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
-)
-st.markdown(
-    body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
-)
-
-fig_sig = get_significance_matrix(df)
-st.plotly_chart(fig_sig, use_container_width=True)
-
-
-# Pie chart (country)
-st.write("Country `[country]`")
+st.write("### Country `[country]`")
 country_counts = df[filter]["country"].value_counts()
-country_fig = px.pie(
-    df[filter],
-    values=country_counts,
-    names=country_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=country_counts,
+        names=country_counts.index,
+    )
 )
 
-st.plotly_chart(country_fig)
-
-# Pie chart (surveytype)
-st.write("Surveytype `[surveytype]`")
+st.write("### Surveytype `[surveytype]`")
 surveytype_counts = df[filter]["surveytype"].value_counts()
-surveytype_fig = px.pie(
-    df[filter],
-    values=surveytype_counts,
-    names=surveytype_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=surveytype_counts,
+        names=surveytype_counts.index,
+    )
 )
 
-st.plotly_chart(country_fig)
+st.write("# Resources")
 
-# Pie chart (hr1)
-st.write("Employment status `[hr1]`")
+st.write("## Human Resources")
+
+st.write("### What is your employment status `[hr1]`")
 hr1_counts = df[filter]["hr1"].value_counts()
-hr1_fig = px.pie(
-    hr1_counts,
-    values=hr1_counts,
-    hover_name=hr1_counts.index,
-    names=hr1_counts.index,
-    color=hr1_counts.index,
-    color_discrete_map={
-        "Full-time": px.colors.qualitative.Prism[0],
-        "Part-time (>50%)": px.colors.qualitative.Prism[1],
-        "Part-time (<50%)": px.colors.qualitative.Prism[2],
-        "Freelance": px.colors.qualitative.Prism[4],
-        "Other": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        hr1_counts,
+        values=hr1_counts,
+        names=hr1_counts.index,
+        color=hr1_counts.index,
+        color_discrete_map={
+            "Full-time": px.colors.qualitative.Prism[0],
+            "Part-time (>50%)": px.colors.qualitative.Prism[1],
+            "Part-time (<50%)": px.colors.qualitative.Prism[2],
+            "Freelance": px.colors.qualitative.Prism[4],
+            "Other": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(hr1_fig)
-
-# Histogram (hr2)
 st.write(
-    "How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
+    "### How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
 )
-hr2_fig = px.histogram(
-    df[filter],
-    x="hr2",
-    labels={"hr2": "days per month"},
-    color="country",
-    color_discrete_map={
-        "Germany": px.colors.qualitative.Prism[5],
-        "France": px.colors.qualitative.Prism[1],
-        "United Kingdom": px.colors.qualitative.Prism[7],
-    },
+st.plotly_chart(
+    render_histogram(
+        df=df[filter],
+        x="hr2",
+        y=None,
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"hr2": "days per month"},
+    )
 )
-st.plotly_chart(hr2_fig)
 
-# Histogram (expertise1)
-st.write(
-    "How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
-)
-expertise1_fig = px.histogram(
-    df[filter],
-    x="expertise1",
-    nbins=20,
-    labels={"expertise1": "years"},
-    color="country",
-    color_discrete_map={
-        "Germany": px.colors.qualitative.Prism[5],
-        "France": px.colors.qualitative.Prism[1],
-        "United Kingdom": px.colors.qualitative.Prism[7],
-    },
-)
-st.plotly_chart(expertise1_fig)
+st.write("## Expertise")
 
-# Pie chart (expertise2)
 st.write(
-    "How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? For example, knowledge of intelligence law, case law. `[expertise2]`"
+    "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
+)
+st.plotly_chart(
+    render_histogram(
+        df[filter],
+        x="expertise1",
+        y=None,
+        nbins=20,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"expertise1": "years"},
+    )
+)
+
+st.write(
+    "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? For example, knowledge of intelligence law, case law. `[expertise2]`"
 )
 expertise2_counts = df[filter]["expertise2"].value_counts()
-expertise2_fig = px.pie(
-    df[filter],
-    values=expertise2_counts,
-    names=expertise2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=expertise2_counts,
+        names=expertise2_counts.index,
+        color_discrete_sequence=None,
+        color=expertise2_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(expertise2_fig)
-
-# Pie chart (expertise3)
 st.write(
-    "How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?` [expertise3]`"
+    "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?` [expertise3]`"
 )
 expertise3_counts = df[filter]["expertise3"].value_counts()
-expertise3_fig = px.pie(
-    df[filter],
-    values=expertise3_counts,
-    names=expertise3_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=expertise3_counts,
+        names=expertise3_counts.index,
+        color_discrete_sequence=None,
+        color=expertise3_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
-st.plotly_chart(expertise3_fig)
 
-# Pie chart (expertise4)
 st.write(
-    "How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?` [expertise4]`"
+    "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?` [expertise4]`"
 )
 expertise4_counts = df[filter]["expertise4"].value_counts()
-expertise4_fig = px.pie(
-    df[filter],
-    values=expertise4_counts,
-    names=expertise4_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=expertise4_counts,
+        names=expertise4_counts.index,
+        color_discrete_sequence=None,
+        color=expertise4_counts.index,
+        color_discrete_map={
+            "Expert knowledge": px.colors.qualitative.Prism[9],
+            "Advanced knowledge": px.colors.qualitative.Prism[8],
+            "Some knowledge": px.colors.qualitative.Prism[7],
+            "Basic knowledge": px.colors.qualitative.Prism[6],
+            "No knowledge": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
-st.plotly_chart(expertise4_fig)
 
-# Pie Chart (finance1)
+st.write("## Financial Resources")
+
 st.write(
-    "How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
+    "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
 )
 finance1_counts = df[filter]["finance1"].value_counts()
-finance1_fig = px.pie(
-    df[filter],
-    values=finance1_counts,
-    names=finance1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=finance1_counts,
+        names=finance1_counts.index,
+        color_discrete_sequence=None,
+        color=finance1_counts.index,
+        color_discrete_map={
+            "A great deal of funding": px.colors.qualitative.Prism[9],
+            "Sufficient funding": px.colors.qualitative.Prism[8],
+            "Some funding": px.colors.qualitative.Prism[7],
+            "Little funding": px.colors.qualitative.Prism[6],
+            "No funding": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
-st.plotly_chart(finance1_fig)
 
-# Pie Chart (foi1)
+st.write("## Freedom of Information")
+
 st.write(
-    "Have you requested information under the national Freedom of Information Law  when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
+    "### Have you requested information under the national FOI law when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
 )
 foi1_counts = df[filter]["foi1"].value_counts()
-foi1_fig = px.pie(
-    foi1_counts,
-    values=foi1_counts,
-    names=foi1_counts.index,
-    color=foi1_counts.index,
-    color_discrete_map={
-        "No": px.colors.qualitative.Prism[8],
-        "Yes": px.colors.qualitative.Prism[2],
-        "I don't know": px.colors.qualitative.Prism[10],
-        "I prefer not to say": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        foi1_counts,
+        values=foi1_counts,
+        names=foi1_counts.index,
+        color=foi1_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
-st.plotly_chart(foi1_fig)
 
-# Histogram (foi2)
-st.write("How often did you request information? `[foi2]`")
-foi2_fig = px.histogram(
-    df[filter],
-    x="foi2",
-    nbins=10,
-    labels={"foi2": "Number of requests"},
-    color="country",
-    color_discrete_map={
-        "Germany": px.colors.qualitative.Prism[5],
-        "France": px.colors.qualitative.Prism[1],
-        "United Kingdom": px.colors.qualitative.Prism[7],
-    },
+st.write("### How often did you request information? `[foi2]`")
+st.plotly_chart(
+    render_histogram(
+        df[filter],
+        x="foi2",
+        y=None,
+        nbins=10,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"foi2": "Number of requests"},
+    )
 )
-st.plotly_chart(foi2_fig)
 
-# Pie Chart (foi3)
 st.write(
-    "Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[foi3]`"
+    "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[foi3]`"
 )
 foi3_counts = df[filter]["foi3"].value_counts()
-foi3_fig = px.pie(
-    foi3_counts,
-    values=foi3_counts,
-    names=foi3_counts.index,
-    color=foi3_counts.index,
-    color_discrete_map={
-        "Never": px.colors.qualitative.Prism[9],
-        "No, usually longer than 30 days": px.colors.qualitative.Prism[8],
-        "Yes, within 30 days": px.colors.qualitative.Prism[2],
-        "I don't know": px.colors.qualitative.Prism[10],
-        "I prefer not to say": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        foi3_counts,
+        values=foi3_counts,
+        names=foi3_counts.index,
+        color=foi3_counts.index,
+        color_discrete_map={
+            "Never": px.colors.qualitative.Prism[9],
+            "No, usually longer than 30 days": px.colors.qualitative.Prism[8],
+            "Yes, within 30 days": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
-st.plotly_chart(foi3_fig)
 
-# Pie Chart (foi4)
 st.write(
-    "How helpful have Freedom of Information requests been for your work on intelligence-related issues? `[foi4]`"
+    "### How helpful have Freedom of Information requests been for your work on intelligence-related issues? `[foi4]`"
 )
 protectops2_counts = df[filter]["foi4"].value_counts()
-protectops2_fig = px.pie(
-    df[filter],
-    values=protectops2_counts,
-    names=protectops2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
-)
-st.plotly_chart(protectops2_fig)
 
-# Histogram (foi5)
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=protectops2_counts,
+        names=protectops2_counts.index,
+    )
+)
+
 st.write(
-    "Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[foi5]`"
+    "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[foi5]`"
 )
-
-# TODO add proper labels
 foi5_df = pd.DataFrame(columns=("option", "count", "country"))
+# TODO Map proper labels
 for label in [
     "not_aware",
     "not_covered",
@@ -1144,25 +1172,30 @@ for label in [
             {"option": label, "count": foi5_data.count(i), "country": i},
             ignore_index=True,
         )
-
 foi5_df = foi5_df.drop_duplicates()
-foi5_fig = px.histogram(
-    foi5_df,
-    x="option",
-    y="count",
-    color="country",
-    color_discrete_map={
-        "Germany": px.colors.qualitative.Prism[5],
-        "France": px.colors.qualitative.Prism[1],
-        "United Kingdom": px.colors.qualitative.Prism[7],
-    },
-    labels={"count": "people who answered 'Yes'"},
-)
-st.plotly_chart(foi5_fig)
 
-# Stacked Bar Chart (protectops1)
+st.plotly_chart(
+    render_histogram(
+        foi5_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
+st.write("# Protection")
+
+st.write("## Operational Protection")
+
 st.write(
-    "Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
+    "### Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
 )
 protectops1_options = [
     "Participation in digital security training",
@@ -1195,57 +1228,50 @@ for answer in [
         else:
             continue
 
-protectops1_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Yes",
-            x=protectops1_options,
-            y=protectops1_yes,
-            marker_color=px.colors.qualitative.Prism[2],
-        ),
-        go.Bar(
-            name="No",
-            x=protectops1_options,
-            y=protectops1_no,
-            marker_color=px.colors.qualitative.Prism[8],
-        ),
-        go.Bar(
-            name="I don't know",
-            x=protectops1_options,
-            y=protectops1_dont_know,
-            marker_color=px.colors.qualitative.Prism[10],
-        ),
-        go.Bar(
-            name="I prefer not to say",
-            x=protectops1_options,
-            y=protectops1_prefer_not_to_say,
-            marker_color=px.colors.qualitative.Prism[10],
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=protectops1_options,
+                y=protectops1_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=protectops1_options,
+                y=protectops1_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=protectops1_options,
+                y=protectops1_dont_know,
+                marker_color=px.colors.qualitative.Prism[10],
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=protectops1_options,
+                y=protectops1_prefer_not_to_say,
+                marker_color=px.colors.qualitative.Prism[10],
+            ),
+        ],
+    )
 )
 
-protectops1_fig.update_layout(
-    width=800,
-    height=800,
-    barmode="stack",
-)
-
-st.plotly_chart(protectops1_fig)
-
-# Pie chart (protectops2)
-st.write("Were any of these measures provided by your employer? `[protectops2]`")
+st.write("### Were any of these measures provided by your employer? `[protectops2]`")
 protectops2_counts = df[filter]["protectops2"].value_counts()
-protectops2_fig = px.pie(
-    df[filter],
-    values=protectops2_counts,
-    names=protectops2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=protectops2_counts,
+        names=protectops2_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+    )
 )
-st.plotly_chart(protectops2_fig)
 
-# Stacked bar chart (protectops3)
 st.write(
-    "How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[protectops3]`"
+    "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[protectops3]`"
 )
 protectops3_options = [
     "Encrypted Email",
@@ -1295,118 +1321,123 @@ for importance in [
         else:
             continue
 
-protectops3_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Very important",
-            x=protectops3_options,
-            y=protectops3_very_important,
-            marker_color="#581845",
-        ),
-        go.Bar(
-            name="Somewhat important",
-            x=protectops3_options,
-            y=protectops3_somewhat_important,
-            marker_color="#900C3F",
-        ),
-        go.Bar(
-            name="Important",
-            x=protectops3_options,
-            y=protectops3_important,
-            marker_color="#C70039",
-        ),
-        go.Bar(
-            name="Slightly important",
-            x=protectops3_options,
-            y=protectops3_slightly_important,
-            marker_color="#FF5733",
-        ),
-        go.Bar(
-            name="Not important at all",
-            x=protectops3_options,
-            y=protectops3_not_important,
-            marker_color="#FFC300",
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Very important",
+                x=protectops3_options,
+                y=protectops3_very_important,
+                marker_color="#581845",
+            ),
+            go.Bar(
+                name="Somewhat important",
+                x=protectops3_options,
+                y=protectops3_somewhat_important,
+                marker_color="#900C3F",
+            ),
+            go.Bar(
+                name="Important",
+                x=protectops3_options,
+                y=protectops3_important,
+                marker_color="#C70039",
+            ),
+            go.Bar(
+                name="Slightly important",
+                x=protectops3_options,
+                y=protectops3_slightly_important,
+                marker_color="#FF5733",
+            ),
+            go.Bar(
+                name="Not important at all",
+                x=protectops3_options,
+                y=protectops3_not_important,
+                marker_color="#FFC300",
+            ),
+        ],
+    )
 )
 
-protectops3_fig.update_layout(width=800, height=800, barmode="stack")
-
-st.plotly_chart(protectops3_fig)
-
-# Pie chart (protectops4)
 st.write(
-    "Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
+    "### Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
 )
 protectops4_counts = df[filter]["protectops4"].value_counts()
-protectops4_fig = px.pie(
-    protectops4_counts,
-    values=protectops4_counts,
-    names=protectops4_counts.index,
-    color=protectops4_counts.index,
-    color_discrete_map={
-        "I have full confidence that the right tools <br>will protect my communication from surveillance": px.colors.qualitative.Prism[
-            4
-        ],
-        "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": px.colors.qualitative.Prism[
-            5
-        ],
-        "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": px.colors.qualitative.Prism[
-            6
-        ],
-        "I have no confidence in the protection offered by <br>technological tools": px.colors.qualitative.Prism[
-            7
-        ],
-        "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": px.colors.qualitative.Prism[
-            8
-        ],
-        "I don't know": px.colors.qualitative.Prism[10],
-        "I prefer not to say": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        protectops4_counts,
+        values=protectops4_counts,
+        names=protectops4_counts.index,
+        color=protectops4_counts.index,
+        color_discrete_map={
+            "I have full confidence that the right tools <br>will protect my communication from surveillance": px.colors.qualitative.Prism[
+                4
+            ],
+            "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": px.colors.qualitative.Prism[
+                5
+            ],
+            "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": px.colors.qualitative.Prism[
+                6
+            ],
+            "I have no confidence in the protection offered by <br>technological tools": px.colors.qualitative.Prism[
+                7
+            ],
+            "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": px.colors.qualitative.Prism[
+                8
+            ],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(protectops4_fig)
+st.write("## Legal Protection")
 
-# Pie chart (protectleg1)
 st.write(
-    "When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[protectleg1]`"
+    "### When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[protectleg1]`"
 )
 
 protectleg1_counts = df[filter]["protectleg1"].value_counts()
-protectleg1_fig = px.pie(
-    df[filter],
-    values=protectleg1_counts,
-    names=protectleg1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=protectleg1_counts,
+        names=protectleg1_counts.index,
+        color=protectleg1_counts.index,
+        color_discrete_map={
+            "Always": px.colors.qualitative.Prism[9],
+            "Often": px.colors.qualitative.Prism[8],
+            "Sometimes": px.colors.qualitative.Prism[7],
+            "Rarely": px.colors.qualitative.Prism[6],
+            "Never": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(protectleg1_fig)
-
-# Pie chart (protectleg2)
 st.write(
-    "Do you regard the existing legal protections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[protectleg2]`"
+    "### Do you regard the existing legal protections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[protectleg2]`"
 )
 
 protectleg2_counts = df[filter]["protectleg2"].value_counts()
-protectleg2_fig = px.pie(
-    protectleg2_counts,
-    values=protectleg2_counts,
-    names=protectleg2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
-    color=protectleg2_counts.index,
-    color_discrete_map={
-        "No": px.colors.qualitative.Prism[8],
-        "Yes": px.colors.qualitative.Prism[2],
-        "I don't know": px.colors.qualitative.Prism[10],
-        "I prefer not to say": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        protectleg2_counts,
+        values=protectleg2_counts,
+        names=protectleg2_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+        color=protectleg2_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(protectleg2_fig)
-
-# Stacked bar chart (protectleg3)
 st.write(
-    "Are any of the following forms of institutional support readily available to you? `[protectleg3]`"
+    "### Are any of the following forms of institutional support readily available to you? `[protectleg3]`"
 )
 protectleg3_options = ["Free legal counsel", "Legal cost insurance", "Other"]
 protectleg3_yes = []
@@ -1430,65 +1461,66 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
         else:
             continue
 
-protectleg3_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Yes",
-            x=protectleg3_options,
-            y=protectleg3_yes,
-            marker_color=px.colors.qualitative.Prism[2],
-        ),
-        go.Bar(
-            name="No",
-            x=protectleg3_options,
-            y=protectleg3_no,
-            marker_color=px.colors.qualitative.Prism[8],
-        ),
-        go.Bar(
-            name="I don't know",
-            x=protectleg3_options,
-            y=protectleg3_dont_know,
-            marker_color="#7f7f7f",
-            opacity=0.8,
-        ),
-        go.Bar(
-            name="I prefer not to say",
-            x=protectleg3_options,
-            y=protectleg3_prefer_not_to_say,
-            marker_color="#525252",
-            opacity=0.8,
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=protectleg3_options,
+                y=protectleg3_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=protectleg3_options,
+                y=protectleg3_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=protectleg3_options,
+                y=protectleg3_dont_know,
+                marker_color="#7f7f7f",
+                opacity=0.8,
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=protectleg3_options,
+                y=protectleg3_prefer_not_to_say,
+                marker_color="#525252",
+                opacity=0.8,
+            ),
+        ],
+    )
 )
 
-protectleg3_fig.update_layout(width=800, height=800, barmode="stack")
-st.plotly_chart(protectleg3_fig)
+st.write("# Constraints")
 
-# Pie chart (constraintinter1)
+st.write("## Interferences")
+
 st.write(
-    "Has your institution or have you yourself been subjected to surveillance by intelligence agencies in the past five years? `[constraintinter1]`"
+    "### Has your institution or have you yourself been subjected to surveillance by intelligence agencies in the past five years? `[constraintinter1]`"
 )
 
 constraintinter1_counts = df[filter]["constraintinter1"].value_counts()
-constraintinter1_fig = px.pie(
-    df[filter],
-    values=constraintinter1_counts,
-    names=constraintinter1_counts.index,
-    color=constraintinter1_counts.index,
-    color_discrete_map={
-        "No": px.colors.qualitative.Prism[8],
-        "Yes, I have evidence": px.colors.qualitative.Prism[1],
-        "Yes, I suspect": px.colors.qualitative.Prism[2],
-        "I don't know": px.colors.qualitative.Prism[10],
-        "I prefer not to say": px.colors.qualitative.Prism[10],
-    },
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=constraintinter1_counts,
+        names=constraintinter1_counts.index,
+        color=constraintinter1_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes, I have evidence": px.colors.qualitative.Prism[1],
+            "Yes, I suspect": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
 )
 
-st.plotly_chart(constraintinter1_fig)
-
-# Pie chart (constraintinter2)
 st.write(
-    "In the past 5 years, have you been threatened with prosecution or have you actually been prosecuted for your work on intelligence-related issues? `[constraintinter2]`"
+    "### In the past 5 years, have you been threatened with prosecution or have you actually been prosecuted for your work on intelligence-related issues? `[constraintinter2]`"
 )
 
 constraintinter2_counts = df[filter]["constraintinter2"].value_counts()
@@ -1501,24 +1533,22 @@ constraintinter2_fig = px.pie(
 
 st.plotly_chart(constraintinter2_fig)
 
-# Pie chart (constraintinter3)
-st.write("What was the outcome? `[constraintinter3]`")
+st.write("### What was the outcome? `[constraintinter3]`")
 
 constraintinter3_counts = df[filter]["constraintinter3"].value_counts()
-constraintinter3_fig = px.pie(
-    df[filter],
-    values=constraintinter3_counts,
-    names=constraintinter3_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=constraintinter3_counts,
+        names=constraintinter3_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+    )
 )
 
-st.plotly_chart(constraintinter3_fig)
-
-# Stacked bar chart (constraintinter4)
 st.write(
-    "In the past 5 years, have you experienced any of the following interferences by public authorities in relation to your work on intelligence related topics? `[constraintinter4]`"
+    "### In the past 5 years, have you experienced any of the following interferences by public authorities in relation to your work on intelligence related topics? `[constraintinter4]`"
 )
-# TODO add proper labels
+# TODO Map proper labels
 constraintinter4_yes = []
 constraintinter4_no = []
 constraintinter4_dont_know = []
@@ -1539,44 +1569,41 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
             constraintinter4_prefer_not_to_say.append(count)
         else:
             continue
-
-constraintinter4_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Yes",
-            x=constraintinter4_options,
-            y=constraintinter4_yes,
-            marker_color=px.colors.qualitative.Prism[2],
-        ),
-        go.Bar(
-            name="No",
-            x=constraintinter4_options,
-            y=constraintinter4_no,
-            marker_color=px.colors.qualitative.Prism[8],
-        ),
-        go.Bar(
-            name="I don't know",
-            x=constraintinter4_options,
-            y=constraintinter4_dont_know,
-            marker_color="#7f7f7f",
-            opacity=0.8,
-        ),
-        go.Bar(
-            name="I prefer not to say",
-            x=constraintinter4_options,
-            y=constraintinter4_prefer_not_to_say,
-            marker_color="#525252",
-            opacity=0.8,
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=constraintinter4_options,
+                y=constraintinter4_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=constraintinter4_options,
+                y=constraintinter4_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=constraintinter4_options,
+                y=constraintinter4_dont_know,
+                marker_color="#7f7f7f",
+                opacity=0.8,
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=constraintinter4_options,
+                y=constraintinter4_prefer_not_to_say,
+                marker_color="#525252",
+                opacity=0.8,
+            ),
+        ],
+    )
 )
 
-constraintinter4_fig.update_layout(width=800, height=800, barmode="stack")
-st.plotly_chart(constraintinter4_fig)
-
-# Stacked bar chart (constraintinter5)
 st.write(
-    "In the past 5 years, have you been approached by intelligence officials and received... `[constraintinter5]`"
+    "### In the past 5 years, have you been approached by intelligence officials and received... `[constraintinter5]`"
 )
 constraintinter5_options = [
     "Unsolicited information",
@@ -1604,43 +1631,41 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
         else:
             continue
 
-constraintinter5_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Yes",
-            x=constraintinter5_options,
-            y=constraintinter5_yes,
-            marker_color=px.colors.qualitative.Prism[2],
-        ),
-        go.Bar(
-            name="No",
-            x=constraintinter5_options,
-            y=constraintinter5_no,
-            marker_color=px.colors.qualitative.Prism[8],
-        ),
-        go.Bar(
-            name="I don't know",
-            x=constraintinter5_options,
-            y=constraintinter5_dont_know,
-            marker_color="#7f7f7f",
-            opacity=0.8,
-        ),
-        go.Bar(
-            name="I prefer not to say",
-            x=constraintinter5_options,
-            y=constraintinter5_prefer_not_to_say,
-            marker_color="#525252",
-            opacity=0.8,
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=constraintinter5_options,
+                y=constraintinter5_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=constraintinter5_options,
+                y=constraintinter5_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=constraintinter5_options,
+                y=constraintinter5_dont_know,
+                marker_color="#7f7f7f",
+                opacity=0.8,
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=constraintinter5_options,
+                y=constraintinter5_prefer_not_to_say,
+                marker_color="#525252",
+                opacity=0.8,
+            ),
+        ],
+    )
 )
 
-constraintinter5_fig.update_layout(width=800, height=800, barmode="stack")
-st.plotly_chart(constraintinter5_fig)
-
-# Stacked bar chart (constraintinter6)
 st.write(
-    "When working on intelligence-related issues have you ever experienced harassment by security agencies or politicians due to your... `[constraintinter6]`"
+    "### When working on intelligence-related issues have you ever experienced harassment by security agencies or politicians due to your... `[constraintinter6]`"
 )
 constraintinter6_options = [
     "Gender",
@@ -1671,77 +1696,74 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
         else:
             continue
 
-constraintinter6_fig = go.Figure(
-    data=[
-        go.Bar(
-            name="Yes",
-            x=constraintinter6_options,
-            y=constraintinter6_yes,
-            marker_color=px.colors.qualitative.Prism[2],
-        ),
-        go.Bar(
-            name="No",
-            x=constraintinter6_options,
-            y=constraintinter6_no,
-            marker_color=px.colors.qualitative.Prism[8],
-        ),
-        go.Bar(
-            name="I don't know",
-            x=constraintinter6_options,
-            y=constraintinter6_dont_know,
-            marker_color="#7f7f7f",
-            opacity=0.8,
-        ),
-        go.Bar(
-            name="I prefer not to say",
-            x=constraintinter6_options,
-            y=constraintinter6_prefer_not_to_say,
-            marker_color="#525252",
-            opacity=0.8,
-        ),
-    ],
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=constraintinter6_options,
+                y=constraintinter6_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=constraintinter6_options,
+                y=constraintinter6_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=constraintinter6_options,
+                y=constraintinter6_dont_know,
+                marker_color="#7f7f7f",
+                opacity=0.8,
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=constraintinter6_options,
+                y=constraintinter6_prefer_not_to_say,
+                marker_color="#525252",
+                opacity=0.8,
+            ),
+        ],
+    )
 )
 
-constraintinter6_fig.update_layout(width=800, height=800, barmode="stack")
-st.plotly_chart(constraintinter6_fig)
+st.write("# Attitude")
 
-# 6. Attitudes
-st.write("# Attitudes `[attitude1-6]`")
-# Pie chart attitudes (attitude1)
 st.write(
-    "The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context. `[attitude1]`"
+    "### The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context. `[attitude1]`"
 )
 
 attitude1_counts = df[filter]["attitude1"].value_counts()
-attitude1_fig = px.pie(
-    df[filter],
-    values=attitude1_counts,
-    names=attitude1_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
-    width=1000,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=attitude1_counts,
+        names=attitude1_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+    )
 )
-
-st.plotly_chart(attitude1_fig)
 
 # Pie chart attitudes (attitude2)
 st.write(
-    "The following four statements are about **intelligence oversight**. Please select the statement you most agree with, based on your national context. `[attitude2]`"
+    "### The following four statements are about **intelligence oversight**. Please select the statement you most agree with, based on your national context. `[attitude2]`"
 )
 
 attitude2_counts = df[filter]["attitude2"].value_counts()
-attitude2_fig = px.pie(
-    df[filter],
-    values=attitude2_counts,
-    names=attitude2_counts.index,
-    color_discrete_sequence=px.colors.qualitative.Prism,
-    width=1000,
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=attitude2_counts,
+        names=attitude2_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+    )
 )
 
-st.plotly_chart(attitude2_fig)
-
 # Histogram (attitude3)
+
 st.write(
-    "In your personal view, what are the goals of intelligence oversight? Please select the three goals of oversight you subscribe to the most. `[attitude3]`"
+    "### In your personal view, what are the goals of intelligence oversight? Please select the three goals of oversight you subscribe to the most. `[attitude3]`"
 )
 
 attitude3_options = [
@@ -1762,26 +1784,27 @@ for label in attitude3_options:
             {"option": label, "count": attitude3_data.count(i), "country": i},
             ignore_index=True,
         )
-
 attitude3_df = attitude3_df.drop_duplicates()
-attitude3_fig = px.histogram(
-    attitude3_df,
-    x="option",
-    y="count",
-    color="country",
-    color_discrete_map={
-        "Germany": px.colors.qualitative.Prism[5],
-        "France": px.colors.qualitative.Prism[1],
-        "United Kingdom": px.colors.qualitative.Prism[7],
-    },
-    labels={"count": "people who answered 'Yes'"},
-)
-st.plotly_chart(attitude3_fig)
 
-# Helper vars for attitude ranking questions
+st.plotly_chart(
+    generate_histogram(
+        df=attitude3_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
 
 scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
-attitude_options = [
+bodies = [
     "Parliamentary oversight bodies",
     "Judicial oversight bodies",
     "Independent expert bodies",
@@ -1790,57 +1813,59 @@ attitude_options = [
     "CSOs | The media",
 ]
 
-
-@st.cache
-def generate_ranking_plot(input_col):
-    input_col_score = pd.Series(index=attitude_options)
-    for i in range(1, 7):
-        input_col_counts = df[filter][f"{input_col}[{i}]"].value_counts()
-        scores = input_col_counts.multiply(scoring[i])
-        input_col_score = input_col_score.add(scores, fill_value=0)
-        input_col_score = input_col_score.sort_values(ascending=False)
-        if i == 1:
-            ranked_first = df[filter][f"{input_col}[1]"].value_counts()
-            attitude4_ranked_first = pd.DataFrame(
-                {"institution": ranked_first.index, "ranked_first": ranked_first.values}
-            )
-    input_col_df = pd.DataFrame(
-        {
-            "institution": input_col_score.index,
-            "score": input_col_score.values,
-        }
-    )
-    input_col_df = input_col_df.merge(
-        attitude4_ranked_first, on="institution", how="left"
-    ).fillna(0)
-    fig = px.bar(
-        input_col_df.sort_values(by="score"),
-        y="institution",
-        x="score",
-        color="ranked_first",
-        range_color=[0, 20],
-        color_continuous_scale="viridis",
-        orientation="h",
-    )
-    return fig
-
-
-# Bar chart (attitude4)
 st.write(
-    "Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[attitude4]`"
+    "### Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[attitude4]`"
+)
+st.plotly_chart(render_ranking_plot("attitude4"))
+
+st.write(
+    "### Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[attitude5]`"
+)
+st.plotly_chart(render_ranking_plot("attitude5"))
+
+st.write(
+    "### Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[attitude6]`"
+)
+st.plotly_chart(render_ranking_plot("attitude6"))
+
+
+###############################################################################
+# Appendix
+###############################################################################
+
+
+st.write("# Appendix")
+
+st.write("## Raw data")
+
+st.write(get_csv_download_link(df, "merged"), unsafe_allow_html=True)
+st.write(get_excel_download_link(df, "merged"), unsafe_allow_html=True)
+
+table = st.checkbox("Show data as table")
+if table:
+    st.dataframe(df[filter])
+
+st.write("## Correlation Matrix (Phik `φK`)")
+
+st.write(
+    "Phik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
 )
 
-st.plotly_chart(generate_ranking_plot("attitude4"))
+show_corr = st.checkbox("Show correlation matrix")
+if show_corr:
+    fig_corr = get_corr_matrix(df)
+    st.plotly_chart(fig_corr, use_container_width=True)
 
-# Bar chart (attitude5)
-st.write(
-    "Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[attitude5]`"
+st.write("## Significance Matrix")
+
+st.markdown(
+    body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
 )
-st.plotly_chart(generate_ranking_plot("attitude5"))
-
-
-# Bar chart (attitude6)
-st.write(
-    "Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[attitude6]`"
+st.markdown(
+    body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
 )
-st.plotly_chart(generate_ranking_plot("attitude6"))
+
+show_sig = st.checkbox("Show significance matrix")
+if show_sig:
+    fig_sig = get_significance_matrix(df)
+    st.plotly_chart(fig_sig, use_container_width=True)
