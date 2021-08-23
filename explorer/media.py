@@ -575,9 +575,9 @@ df["MSsoc4"] = df["MSsoc4"].replace(
 df["MStrans1"] = df["MStrans1"].replace(
     {
         "AO001": "Always",
-        "AO002": "Often",
-        "AO003": "Sometimes",
-        "AO004": "Rarely",
+        "AO002": "Often (75% of the time)",
+        "AO003": "Sometimes (50% of the time)",
+        "AO004": "Rarely (25% of the time)",
         "AO005": "Never",
         "AO006": "I don't know",
         "AO007": "I prefer not to say",
@@ -1405,6 +1405,8 @@ st.plotly_chart(
     )
 )
 
+st.write("# Media Reporting")
+
 st.write("## Scope of Coverage")
 
 st.write(
@@ -1564,6 +1566,112 @@ st.write("### If you selected ‘other’, please specify `[MSsoc6other]`")
 for i in df[filter]["MSsoc6other"].to_list():
     if type(i) != float:
         st.write("- " + i)
+
+st.write("## Transnational Scope")
+
+st.write(
+    "### How often does your work on surveillance by intelligence agencies cover a transnational angle? `[MStrans1]`"
+)
+MStrans1_counts = df[filter]["MStrans1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MStrans1_counts,
+        values=MStrans1_counts,
+        names=MStrans1_counts.index,
+        color=MStrans1_counts.index,
+        color_discrete_map={
+            "Always": px.colors.qualitative.Prism[9],
+            "Often (75% of the time)": px.colors.qualitative.Prism[8],
+            "Sometimes (50% of the time)": px.colors.qualitative.Prism[7],
+            "Rarely (25% of the time)": px.colors.qualitative.Prism[6],
+            "Never": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### How often do you collaborate with colleagues covering other countries when working on surveillance by intelligence agencies? `[MStrans2]`"
+)
+MStrans2_counts = df[filter]["MStrans2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MStrans2_counts,
+        values=MStrans2_counts,
+        names=MStrans2_counts.index,
+        color=MStrans2_counts.index,
+        color_discrete_map={
+            "Always": px.colors.qualitative.Prism[9],
+            "Often (75% of the time)": px.colors.qualitative.Prism[8],
+            "Sometimes (50% of the time)": px.colors.qualitative.Prism[7],
+            "Rarely (25% of the time)": px.colors.qualitative.Prism[6],
+            "Never": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### Have those collaborations included an investigative research project with colleagues from abroad? `[MStrans3]`"
+)
+MStrans3_counts = df[filter]["MStrans3"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MStrans3_counts,
+        values=MStrans3_counts,
+        names=MStrans3_counts.index,
+        color=MStrans3_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write("## Perceived Impact")
+
+st.write(
+    "### When you think about public responses to your articles on intelligence agencies by readers and colleagues, did you receive any of the following forms of public feedback or engagement? `[MSimpact1]`"
+)
+MSimpact1_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in [
+    "above_avg_comments",
+    "above_avg_shares",
+    "above_avg_readers",
+    "letters_to_the_editor",
+    "follow_up_by_other_media",
+    "other",
+    "none_of_the_above",
+    "dont_know",
+    "prefer_not_to_say",
+]:
+    MSimpact1_data = df[filter]["country"][df[f"MSimpact1[{label}]"] == 1].tolist()
+    for i in MSimpact1_data:
+        MSimpact1_df = MSimpact1_df.append(
+            {"option": label, "count": MSimpact1_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MSimpact1_df = MSimpact1_df.drop_duplicates()
+st.plotly_chart(
+    render_histogram(
+        MSsoc6_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
 
 ###############################################################################
 # Appendix
