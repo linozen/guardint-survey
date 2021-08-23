@@ -8,6 +8,7 @@ from pathlib import Path
 from lib.figures import (
     generate_pie_chart,
     generate_histogram,
+    generate_overlaid_histogram,
     generate_stacked_bar_chart,
     generate_ranking_plot,
 )
@@ -47,6 +48,11 @@ def render_pie_chart(
 @st.cache
 def render_histogram(df, x, y, nbins, color, color_discrete_map, labels):
     return generate_histogram(df, x, y, nbins, color, color_discrete_map, labels)
+
+
+@st.cache
+def render_overlaid_histogram(traces):
+    return generate_overlaid_histogram(traces)
 
 
 @st.cache
@@ -1173,7 +1179,6 @@ for label in [
             ignore_index=True,
         )
 foi5_df = foi5_df.drop_duplicates()
-
 st.plotly_chart(
     render_histogram(
         foi5_df,

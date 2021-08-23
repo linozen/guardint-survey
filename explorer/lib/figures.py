@@ -39,6 +39,15 @@ def generate_histogram(df, x, y, nbins, color, color_discrete_map, labels):
     return fig
 
 
+def generate_overlaid_histogram(traces, names, colors):
+    fig = go.Figure()
+    for trace, name, color in zip(traces, names, colors):
+        fig.add_trace(go.Histogram(x=trace, name=name, marker_color=color))
+    fig.update_layout(barmode="overlay")
+    fig.update_traces(opacity=0.75)
+    return fig
+
+
 def generate_stacked_bar_chart(data):
     fig = go.Figure(data=data)
     fig.update_layout(width=800, height=800, barmode="stack")

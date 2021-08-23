@@ -8,6 +8,7 @@ from pathlib import Path
 from lib.figures import (
     generate_pie_chart,
     generate_histogram,
+    generate_overlaid_histogram,
     generate_stacked_bar_chart,
     generate_ranking_plot,
 )
@@ -47,6 +48,11 @@ def render_pie_chart(
 @st.cache
 def render_histogram(df, x, y, nbins, color, color_discrete_map, labels):
     return generate_histogram(df, x, y, nbins, color, color_discrete_map, labels)
+
+
+@st.cache
+def render_overlaid_histogram(traces, names, colors):
+    return generate_overlaid_histogram(traces, names, colors)
 
 
 @st.cache
@@ -942,8 +948,8 @@ for col in df:
     if (
         col.startswith("MShr3")
         or col.startswith("MSfoi5")
-        or col.startswith("MSsoc5")
-        or col.startswith("MSsoc6")
+        or col.startswith("MSsoc5[")
+        or col.startswith("MSsoc6[")
         or col.startswith("MSimpact1")
         or col.startswith("MSimpact2")
         or col.startswith("MSattitude3")
@@ -1398,6 +1404,166 @@ st.plotly_chart(
         },
     )
 )
+
+st.write("## Scope of Coverage")
+
+st.write(
+    "### Please estimate: how many journalistic pieces have you produced on intelligence-related topics in the past year? `[MSsoc1]`"
+)
+st.plotly_chart(
+    render_histogram(
+        df=df[filter],
+        x="MSsoc1",
+        y=None,
+        nbins=10,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"MSsoc1": "pieces produced lasy year"},
+    )
+)
+
+st.write(
+    "### Please estimate: how many of these pieces focused on surveillance by intelligence agencies? `[MSsoc2]`"
+)
+st.plotly_chart(
+    render_histogram(
+        df=df[filter],
+        x="MSsoc2",
+        y=None,
+        nbins=10,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"MSsoc2": "pieces focused on surveillance by intelligence agencies"},
+    )
+)
+
+MSsoc1_list = df[filter]["MSsoc1"].to_list()
+MSsoc2_list = df[filter]["MSsoc2"].to_list()
+
+st.write("### Comparison between `[MSsoc1]` and `[MSsoc2]`")
+st.plotly_chart(
+    render_overlaid_histogram(
+        traces=[MSsoc1_list, MSsoc2_list],
+        names=[
+            "all pieces on <br>intelligence",
+            "pieces focused <br>on surveillance <br>by intelligence",
+        ],
+        colors=[px.colors.qualitative.Prism[0], px.colors.qualitative.Prism[2]],
+    )
+)
+
+st.write(
+    "### How regularly do you report on surveillance by intelligence agencies? `[MSsoc4]`"
+)
+MSsoc4_counts = df[filter]["MSsoc4"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSsoc4_counts,
+        values=MSsoc4_counts,
+        names=MSsoc4_counts.index,
+        color=MSsoc4_counts.index,
+        color_discrete_map={
+            "Very regularly": px.colors.qualitative.Prism[9],
+            "Regularly": px.colors.qualitative.Prism[8],
+            "Somewhat regularly": px.colors.qualitative.Prism[7],
+            "Sometimes": px.colors.qualitative.Prism[6],
+            "Rarely or never": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### When covering surveillance by intelligence agencies, which topics usually prompt you to write an article? `[MSsoc5]`"
+)
+MSsoc5_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in [
+    "follow_up_on_other_media",
+    "statements_government",
+    "oversight_reports",
+    "leaks",
+    "own_investigations",
+    "dont_know",
+    "prefer_not_to_say",
+    "other",
+]:
+    MSsoc5_data = df[filter]["country"][df[f"MSsoc5[{label}]"] == 1].tolist()
+    for i in MSsoc5_data:
+        MSsoc5_df = MSsoc5_df.append(
+            {"option": label, "count": MSsoc5_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MSsoc5_df = MSsoc5_df.drop_duplicates()
+st.plotly_chart(
+    render_histogram(
+        MSsoc5_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
+st.write("### If you selected ‘other’, please specify `[MSsoc5other]`")
+for i in df[filter]["MSsoc5other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
+
+st.write(
+    "### When covering surveillance by intelligence agencies, which of the following topics to you report on frequently? `[MSsoc6]`"
+)
+MSsoc6_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in [
+    "national_security_risks",
+    "intelligence_success",
+    "intelligence_misconduct",
+    "oversight_interventions",
+    "oversight_failures",
+    "policy_debates_leg_reforms",
+    "other",
+]:
+    MSsoc6_data = df[filter]["country"][df[f"MSsoc6[{label}]"] == 1].tolist()
+    for i in MSsoc6_data:
+        MSsoc6_df = MSsoc6_df.append(
+            {"option": label, "count": MSsoc6_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MSsoc6_df = MSsoc6_df.drop_duplicates()
+st.plotly_chart(
+    render_histogram(
+        MSsoc6_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
+st.write("### If you selected ‘other’, please specify `[MSsoc6other]`")
+for i in df[filter]["MSsoc6other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 ###############################################################################
 # Appendix
