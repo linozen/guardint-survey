@@ -970,8 +970,24 @@ st.plotly_chart(
     )
 )
 
+st.write(
+    "### Who works more than 5 days on surveillance by intelligence agencies? `[hr2]`"
+)
+df["hr2_more_than_five"] = np.where(df[filter]["hr2"] > 5, True, False)
+hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        hr2_more_than_five_counts,
+        values=hr2_more_than_five_counts,
+        names=hr2_more_than_five_counts.index,
+        color=hr2_more_than_five_counts.index,
+    )
+)
+
+
 st.write("## Expertise")
 
+# TODO Show distribution/average for the three countries
 st.write(
     "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
 )
