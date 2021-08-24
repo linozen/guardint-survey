@@ -11,6 +11,7 @@ def generate_pie_chart(
     color,
     color_discrete_sequence,
     color_discrete_map,
+    labels,
 ):
     fig = px.pie(
         df,
@@ -21,6 +22,7 @@ def generate_pie_chart(
         color_discrete_sequence=color_discrete_sequence,
         color_discrete_map=color_discrete_map,
         width=800,
+        labels=labels,
     )
     fig.update_traces(textinfo="percent+value")
     return fig
