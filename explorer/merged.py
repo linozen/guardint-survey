@@ -29,6 +29,7 @@ def render_pie_chart(
     df,
     values,
     names,
+    labels=None,
     color=None,
     color_discrete_sequence=px.colors.qualitative.Prism,
     color_discrete_map=None,
@@ -42,6 +43,7 @@ def render_pie_chart(
         color,
         color_discrete_sequence,
         color_discrete_map,
+        labels,
     )
 
 
@@ -970,19 +972,20 @@ st.plotly_chart(
     )
 )
 
-st.write(
-    "### Who works more than 5 days on surveillance by intelligence agencies? `[hr2]`"
-)
-df["hr2_more_than_five"] = np.where(df[filter]["hr2"] > 5, True, False)
-hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
-st.plotly_chart(
-    render_pie_chart(
-        hr2_more_than_five_counts,
-        values=hr2_more_than_five_counts,
-        names=hr2_more_than_five_counts.index,
-        color=hr2_more_than_five_counts.index,
-    )
-)
+# st.write(
+#     "### Who works more than 5 days on surveillance by intelligence agencies? `[hr2]`"
+# )
+# df["hr2_more_than_five"] = np.where(df[filter]["hr2"] > 5, True, False)
+# hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
+# st.plotly_chart(
+#     render_pie_chart(
+#         hr2_more_than_five_counts,
+#         values=hr2_more_than_five_counts,
+#         names=hr2_more_than_five_counts.index,
+#         color=hr2_more_than_five_counts.index,
+#         labels={"true": ">5 days", "false": "<5 days"},
+#     )
+# )
 
 
 st.write("## Expertise")
