@@ -214,6 +214,7 @@ def get_merged_cs_df():
             "CSprotectops3[encrypted_hardware]",
             "CSprotectops3[2fa]",
             "CSprotectops3[other]",
+            "CSprotectops3other",
             "CSprotectops4",
             "CSprotectleg1",
             "CSprotectleg2",
@@ -397,6 +398,7 @@ def get_merged_ms_df():
             "MSprotectops3[encrypted_hardware]",
             "MSprotectops3[2fa]",
             "MSprotectops3[other]",
+            "MSprotectops3other",
             "MSprotectops4",
             "MSprotectleg1",
             "MSprotectleg2",
@@ -1392,6 +1394,11 @@ st.plotly_chart(
         ],
     )
 )
+
+st.write("### If you selected ‘other’, please specify `[protectops3other]`")
+for i in df[filter]["protectops3other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 st.write(
     "### Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
