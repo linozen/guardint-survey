@@ -33,6 +33,7 @@ def render_pie_chart(
     color_discrete_sequence=px.colors.qualitative.Prism,
     color_discrete_map=None,
     hover_name=None,
+    labels=None,
 ):
     return generate_pie_chart(
         df,
@@ -42,6 +43,7 @@ def render_pie_chart(
         color,
         color_discrete_sequence,
         color_discrete_map,
+        labels,
     )
 
 
