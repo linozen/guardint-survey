@@ -155,12 +155,14 @@ def get_merged_cs_df():
             "CSconstraintinter5[SQ01]": "CSconstraintinter5[unsolicited_information]",
             "CSconstraintinter5[SQ02]": "CSconstraintinter5[invitations]",
             "CSconstraintinter5[SQ03]": "CSconstraintinter5[other]",
+            "CSconstraintinter5ot": "CSconstraintinter5other",
             "CSconstraintinter6[SQ01]": "CSconstraintinter6[gender]",
             "CSconstraintinter6[SQ02]": "CSconstraintinter6[ethnicity]",
             "CSconstraintinter6[SQ03]": "CSconstraintinter6[political]",
             "CSconstraintinter6[SQ04]": "CSconstraintinter6[sexual]",
             "CSconstraintinter6[SQ05]": "CSconstraintinter6[religious]",
             "CSconstraintinter6[SQ06]": "CSconstraintinter6[other]",
+            "CSconstraintinter6ot": "CSconstraintinter6other",
             "CSattitude3[SQ01]": "CSattitude3[rule_of_law]",
             "CSattitude3[SQ02]": "CSattitude3[civil_liberties]",
             "CSattitude3[SQ03]": "CSattitude3[effectiveness_of_intel]",
@@ -240,12 +242,14 @@ def get_merged_cs_df():
             "CSconstraintinter5[unsolicited_information]",
             "CSconstraintinter5[invitations]",
             "CSconstraintinter5[other]",
+            "CSconstraintinter5other",
             "CSconstraintinter6[gender]",
             "CSconstraintinter6[ethnicity]",
             "CSconstraintinter6[political]",
             "CSconstraintinter6[sexual]",
             "CSconstraintinter6[religious]",
             "CSconstraintinter6[other]",
+            "CSconstraintinter6other",
             "CSattitude1",
             "CSattitude2",
             "CSattitude3[rule_of_law]",
@@ -342,12 +346,14 @@ def get_merged_ms_df():
             "MSconstraintinter5[SQ01]": "MSconstraintinter5[unsolicited_information]",
             "MSconstraintinter5[SQ02]": "MSconstraintinter5[invitations]",
             "MSconstraintinter5[SQ03]": "MSconstraintinter5[other]",
+            "MSconstraintinter5ot": "MSconstraintinter5other",
             "MSconstraintinter6[SQ01]": "MSconstraintinter6[gender]",
             "MSconstraintinter6[SQ02]": "MSconstraintinter6[ethnicity]",
             "MSconstraintinter6[SQ03]": "MSconstraintinter6[political]",
             "MSconstraintinter6[SQ04]": "MSconstraintinter6[sexual]",
             "MSconstraintinter6[SQ05]": "MSconstraintinter6[religious]",
             "MSconstraintinter6[SQ06]": "MSconstraintinter6[other]",
+            "MSconstraintinter6ot": "MSconstraintinter6other",
             "MSattitude3[SQ01]": "MSattitude3[rule_of_law]",
             "MSattitude3[SQ02]": "MSattitude3[civil_liberties]",
             "MSattitude3[SQ03]": "MSattitude3[effectiveness_of_intel]",
@@ -427,12 +433,14 @@ def get_merged_ms_df():
             "MSconstraintinter5[unsolicited_information]",
             "MSconstraintinter5[invitations]",
             "MSconstraintinter5[other]",
+            "MSconstraintinter5other",
             "MSconstraintinter6[gender]",
             "MSconstraintinter6[ethnicity]",
             "MSconstraintinter6[political]",
             "MSconstraintinter6[sexual]",
             "MSconstraintinter6[religious]",
             "MSconstraintinter6[other]",
+            "MSconstraintinter6other",
             "MSattitude1",
             "MSattitude2",
             "MSattitude3[rule_of_law]",
@@ -1442,6 +1450,7 @@ st.plotly_chart(
 
 st.write("## Legal Protection")
 
+# TODO Clarify that in MS it's about source protection (also for protectleg2)
 st.write(
     "### When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[protectleg1]`"
 )
@@ -1689,7 +1698,6 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
             constraintinter5_prefer_not_to_say.append(count)
         else:
             continue
-
 st.plotly_chart(
     generate_stacked_bar_chart(
         data=[
@@ -1723,6 +1731,11 @@ st.plotly_chart(
     )
 )
 
+st.write("### If you selected ‘other’, please specify `[constraintinter5other]`")
+for i in df[filter]["constraintinter5other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
+
 st.write(
     "### When working on intelligence-related issues have you ever experienced harassment by security agencies or politicians due to your... `[constraintinter6]`"
 )
@@ -1754,7 +1767,6 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
             constraintinter6_prefer_not_to_say.append(count)
         else:
             continue
-
 st.plotly_chart(
     generate_stacked_bar_chart(
         data=[
@@ -1787,6 +1799,11 @@ st.plotly_chart(
         ],
     )
 )
+
+st.write("### If you selected ‘other’, please specify `[constraintinter6other]`")
+for i in df[filter]["constraintinter6other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 st.write("# Attitude")
 
