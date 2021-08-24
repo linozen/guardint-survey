@@ -203,6 +203,7 @@ def get_merged_cs_df():
             "CSfoi5[other]",
             "CSfoi5[dont_know]",
             "CSfoi5[prefer_not_to_say]",
+            "CSfoi5other",
             "CSprotectops1[sectraining]",
             "CSprotectops1[e2e]",
             "CSprotectops2",
@@ -308,6 +309,7 @@ def get_merged_ms_df():
             "MSfoi5[SQ07]": "MSfoi5[other]",
             "MSfoi5[SQ08]": "MSfoi5[dont_know]",
             "MSfoi5[SQ09]": "MSfoi5[prefer_not_to_say]",
+            "MSfoi5specify": "MSfoi5other",
             "MScontstraintinter1": "MSconstraintinter1",
             "MSprotectleg2A": "MSprotectleg2",
             "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
@@ -381,6 +383,10 @@ def get_merged_ms_df():
             "MSfoi5[too_time_consuming]",
             "MSfoi5[afraid_of_data_destruction]",
             "MSfoi5[afraid_of_discrimination]",
+            "MSfoi5[other]",
+            "MSfoi5[dont_know]",
+            "MSfoi5[prefer_not_to_say]",
+            "MSfoi5other",
             "MSprotectops1[sectraining]",
             "MSprotectops1[e2e]",
             "MSprotectops2",
@@ -850,7 +856,7 @@ df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
 
 # Here, I change the datatype to boolean for all the multiple choice answers
 for col in df:
-    if col.startswith("foi5") or col.startswith("attitude3"):
+    if col.startswith("foi5[") or col.startswith("attitude3"):
         df[col] = df[col].replace(np.nan, False)
         df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
@@ -972,20 +978,20 @@ st.plotly_chart(
     )
 )
 
-# st.write(
-#     "### Who works more than 5 days on surveillance by intelligence agencies? `[hr2]`"
-# )
-# df["hr2_more_than_five"] = np.where(df[filter]["hr2"] > 5, True, False)
-# hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
-# st.plotly_chart(
-#     render_pie_chart(
-#         hr2_more_than_five_counts,
-#         values=hr2_more_than_five_counts,
-#         names=hr2_more_than_five_counts.index,
-#         color=hr2_more_than_five_counts.index,
-#         labels={"true": ">5 days", "false": "<5 days"},
-#     )
-# )
+st.write(
+    "### Respondents working more than 5 days on surveillance by intelligence agencies? `[hr2]`"
+)
+df["hr2_more_than_five"] = np.where(df["hr2"] > 5, True, False)
+df["hr2_more_than_five"] = pd.to_numeric(df["hr2_more_than_five"], errors="coerce")
+hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        hr2_more_than_five_counts,
+        values=hr2_more_than_five_counts,
+        names=["<5 days", ">5 days"],
+        color=hr2_more_than_five_counts.index,
+    )
+)
 
 
 st.write("## Expertise")
@@ -1213,6 +1219,11 @@ st.plotly_chart(
         labels={"count": "people who answered 'Yes'"},
     )
 )
+
+st.write("### If you selected ‘other’, please specify `[foi5other]`")
+for i in df[filter]["foi5other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 st.write("# Protection")
 
