@@ -987,13 +987,16 @@ st.write(
     "### Respondents working more than 5 days on surveillance by intelligence agencies? `[hr2]`"
 )
 df["hr2_more_than_five"] = np.where(df["hr2"] > 5, True, False)
-df["hr2_more_than_five"] = pd.to_numeric(df["hr2_more_than_five"], errors="coerce")
+df["hr2_more_than_five"] = df["hr2_more_than_five"].replace(
+    {True: ">5 days", False: "5 days or less"}
+)
 hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
+print(hr2_more_than_five_counts)
 st.plotly_chart(
     render_pie_chart(
         hr2_more_than_five_counts,
         values=hr2_more_than_five_counts,
-        names=["<5 days", ">5 days"],
+        names=hr2_more_than_five_counts.index,
         color=hr2_more_than_five_counts.index,
     )
 )
@@ -1481,7 +1484,7 @@ st.plotly_chart(
     )
 )
 
-st.write("### If you selected ‘other’, please specify `[protectleg2no]`")
+st.write("### If you selected ‘no’, please specify `[protectleg2no]`")
 for i in df[filter]["protectleg2no"].to_list():
     if type(i) != float:
         st.write("- " + i)
