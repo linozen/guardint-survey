@@ -218,6 +218,7 @@ def get_merged_cs_df():
             "CSprotectops4",
             "CSprotectleg1",
             "CSprotectleg2",
+            "CSprotectleg2no",
             "CSprotectleg3[free_counsel]",
             "CSprotectleg3[cost_insurance]",
             "CSprotectleg3[other]",
@@ -313,6 +314,7 @@ def get_merged_ms_df():
             "MSfoi5specify": "MSfoi5other",
             "MScontstraintinter1": "MSconstraintinter1",
             "MSprotectleg2A": "MSprotectleg2",
+            "MSprotectleg2Ano": "MSprotectleg2no",
             "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
             "MSprotectops1[SQ03]": "MSprotectops1[e2e]",
             "MSprotectops3[SQ01]": "MSprotectops3[encrypted_email]",
@@ -402,6 +404,7 @@ def get_merged_ms_df():
             "MSprotectops4",
             "MSprotectleg1",
             "MSprotectleg2",
+            "MSprotectleg2no",
             "MSprotectleg3[free_counsel]",
             "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[other]",
@@ -1477,6 +1480,11 @@ st.plotly_chart(
         },
     )
 )
+
+st.write("### If you selected ‘other’, please specify `[protectleg2no]`")
+for i in df[filter]["protectleg2no"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 st.write(
     "### Are any of the following forms of institutional support readily available to you? `[protectleg3]`"
