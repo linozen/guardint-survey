@@ -222,6 +222,7 @@ def get_merged_cs_df():
             "CSprotectleg3[free_counsel]",
             "CSprotectleg3[cost_insurance]",
             "CSprotectleg3[other]",
+            "CSprotectleg3other",
             "CSconstraintinter1",
             "CSconstraintinter2",
             "CSconstraintinter3",
@@ -408,6 +409,7 @@ def get_merged_ms_df():
             "MSprotectleg3[free_counsel]",
             "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[other]",
+            "MSprotectleg3other",
             "MSconstraintinter1",
             "MSconstraintinter2",
             "MSconstraintinter3",
@@ -1513,7 +1515,6 @@ for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
             protectleg3_prefer_not_to_say.append(count)
         else:
             continue
-
 st.plotly_chart(
     generate_stacked_bar_chart(
         data=[
@@ -1546,6 +1547,11 @@ st.plotly_chart(
         ],
     )
 )
+
+st.write("### If you selected ‘other’, please specify `[protectleg3other]`")
+for i in df[filter]["protectleg3other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 st.write("# Constraints")
 
