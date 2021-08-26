@@ -339,6 +339,7 @@ def get_ms_df():
             "MSprotectleg3[free_counsel]",
             "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[other]",
+            "MSprotectleg3other",
             "MSprotectleg4[free_counsel]",
             "MSprotectleg4[cost_insurance]",
             "MSprotectleg4[other]",
@@ -614,13 +615,10 @@ for label in [
 ]:
     df[f"MSprotectops1[{label}]"] = df[f"MSprotectops1[{label}]"].replace(
         {
-            "AO01": "Very important",
-            "AO02": "Important",
-            "AO03": "Somewhat important",
-            "AO04": "Slightly important",
-            "AO05": "Not important at all",
-            "AO06": "I don't know",
-            "AO07": "I prefer not to say",
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
         }
     )
 
@@ -952,9 +950,9 @@ for col in df:
         or col.startswith("MSfoi5")
         or col.startswith("MSsoc5[")
         or col.startswith("MSsoc6[")
-        or col.startswith("MSimpact1")
-        or col.startswith("MSimpact2")
-        or col.startswith("MSattitude3")
+        or col.startswith("MSimpact1[")
+        or col.startswith("MSimpact2[")
+        or col.startswith("MSattitude3[")
     ):
         df[col] = df[col].replace(np.nan, False)
         df[col] = df[col].replace("Y", True)
@@ -1674,6 +1672,365 @@ st.plotly_chart(
     )
 )
 
+st.write(
+    "### When you think of responses to your articles on intelligence agencies by administrations or policy makers, did your reporting contribute to any of the following forms of political action? `[MSimpact2]`"
+)
+
+MSimpact2_df = pd.DataFrame(columns=("option", "count", "country"))
+for label in [
+    "diplomatic_pressure",
+    "civic_action",
+    "conversations_with_government",
+    "official_inquiries",
+    "government_statements",
+    "conversations_with_intelligence",
+    "dont_know",
+    "prefer_not_to_say",
+    "other",
+]:
+    MSimpact2_data = df[filter]["country"][df[f"MSimpact2[{label}]"] == 1].tolist()
+    for i in MSimpact2_data:
+        MSimpact2_df = MSimpact2_df.append(
+            {"option": label, "count": MSimpact2_data.count(i), "country": i},
+            ignore_index=True,
+        )
+MSimpact2_df = MSimpact2_df.drop_duplicates()
+st.plotly_chart(
+    render_histogram(
+        MSsoc6_df,
+        x="option",
+        y="count",
+        nbins=None,
+        color="country",
+        color_discrete_map={
+            "Germany": px.colors.qualitative.Prism[5],
+            "France": px.colors.qualitative.Prism[1],
+            "United Kingdom": px.colors.qualitative.Prism[7],
+        },
+        labels={"count": "people who answered 'Yes'"},
+    )
+)
+
+st.write("### If you selected ‘other’, please specify `[MSimpact2other]`")
+for i in df[filter]["MSimpact2other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
+
+st.write("# Protection")
+
+st.write("## Operational Protection")
+
+st.write(
+    "### Have you taken any of the following measures to protect your datas from attacks and surveillance? `[MSprotectops1]`"
+)
+MSprotectops1_options = [
+    "Participation in digital security training",
+    "Provision of secure drop or similar anonymous leaking platform",
+    "Use of E2E encrypted communication channels",
+]
+
+MSprotectops1_yes = []
+MSprotectops1_no = []
+MSprotectops1_dont_know = []
+MSprotectops1_prefer_not_to_say = []
+for answer in [
+    "Yes",
+    "No",
+    "I don't know",
+    "I prefer not to say",
+]:
+    for label in ["sectraining", "secure_drop", "e2e"]:
+        try:
+            count = df[filter][f"MSprotectops1[{label}]"].value_counts()[answer]
+        except KeyError:
+            count = 0
+        if answer == "Yes":
+            MSprotectops1_yes.append(count)
+        elif answer == "No":
+            MSprotectops1_no.append(count)
+        elif answer == "I don't know":
+            MSprotectops1_dont_know.append(count)
+        elif answer == "I prefer not to say":
+            MSprotectops1_prefer_not_to_say.append(count)
+        else:
+            continue
+
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=MSprotectops1_options,
+                y=MSprotectops1_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=MSprotectops1_options,
+                y=MSprotectops1_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=MSprotectops1_options,
+                y=MSprotectops1_dont_know,
+                marker_color=px.colors.qualitative.Prism[10],
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=MSprotectops1_options,
+                y=MSprotectops1_prefer_not_to_say,
+                marker_color=px.colors.qualitative.Prism[10],
+            ),
+        ],
+    )
+)
+
+st.write("### Were any of these measures provided by your employer? `[MSprotectops2]`")
+MSprotectops2_counts = df[filter]["MSprotectops2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSprotectops2_counts,
+        names=MSprotectops2_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+    )
+)
+
+st.write(
+    "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[MSprotectops3]`"
+)
+MSprotectops3_options = [
+    "Encrypted Email",
+    "VPN",
+    "Tor",
+    "E2E Messengers",
+    "Encrpyted hardware",
+    "Two-Factor authentication",
+    "Other",
+]
+
+MSprotectops3_very_important = []
+MSprotectops3_somewhat_important = []
+MSprotectops3_important = []
+MSprotectops3_slightly_important = []
+MSprotectops3_not_important = []
+for importance in [
+    "Very important",
+    "Somewhat important",
+    "Important",
+    "Slightly important",
+    "Not important at all",
+]:
+    for label in [
+        "encrypted_email",
+        "vpn",
+        "tor",
+        "e2e_chat",
+        "encrypted_hardware",
+        "2fa",
+        "other",
+    ]:
+        try:
+            count = df[filter][f"MSprotectops3[{label}]"].value_counts()[importance]
+        except KeyError:
+            count = 0
+        if importance == "Very important":
+            MSprotectops3_very_important.append(count)
+        elif importance == "Somewhat important":
+            MSprotectops3_somewhat_important.append(count)
+        elif importance == "Important":
+            MSprotectops3_important.append(count)
+        elif importance == "Slightly important":
+            MSprotectops3_slightly_important.append(count)
+        elif importance == "Not important at all":
+            MSprotectops3_not_important.append(count)
+        else:
+            continue
+
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Very important",
+                x=MSprotectops3_options,
+                y=MSprotectops3_very_important,
+                marker_color="#581845",
+            ),
+            go.Bar(
+                name="Somewhat important",
+                x=MSprotectops3_options,
+                y=MSprotectops3_somewhat_important,
+                marker_color="#900C3F",
+            ),
+            go.Bar(
+                name="Important",
+                x=MSprotectops3_options,
+                y=MSprotectops3_important,
+                marker_color="#C70039",
+            ),
+            go.Bar(
+                name="Slightly important",
+                x=MSprotectops3_options,
+                y=MSprotectops3_slightly_important,
+                marker_color="#FF5733",
+            ),
+            go.Bar(
+                name="Not important at all",
+                x=MSprotectops3_options,
+                y=MSprotectops3_not_important,
+                marker_color="#FFC300",
+            ),
+        ],
+    )
+)
+
+st.write("### If you selected ‘other’, please specify `[MSprotectops3other]`")
+for i in df[filter]["MSprotectops3other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
+
+st.write(
+    "### Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[MSprotectops4]`"
+)
+MSprotectops4_counts = df[filter]["MSprotectops4"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSprotectops4_counts,
+        values=MSprotectops4_counts,
+        names=MSprotectops4_counts.index,
+        color=MSprotectops4_counts.index,
+        color_discrete_map={
+            "I have full confidence that the right tools <br>will protect my communication from surveillance": px.colors.qualitative.Prism[
+                4
+            ],
+            "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": px.colors.qualitative.Prism[
+                5
+            ],
+            "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": px.colors.qualitative.Prism[
+                6
+            ],
+            "I have no confidence in the protection offered by <br>technological tools": px.colors.qualitative.Prism[
+                7
+            ],
+            "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": px.colors.qualitative.Prism[
+                8
+            ],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+
+st.write("## Legal Protection")
+
+# TODO Clarify that in MS it's about source protection (also for MSprotectleg2)
+st.write(
+    "### When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[MSprotectleg1]`"
+)
+
+MSprotectleg1_counts = df[filter]["MSprotectleg1"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        df[filter],
+        values=MSprotectleg1_counts,
+        names=MSprotectleg1_counts.index,
+        color=MSprotectleg1_counts.index,
+        color_discrete_map={
+            "Always": px.colors.qualitative.Prism[9],
+            "Often": px.colors.qualitative.Prism[8],
+            "Sometimes": px.colors.qualitative.Prism[7],
+            "Rarely": px.colors.qualitative.Prism[6],
+            "Never": px.colors.qualitative.Prism[5],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### Do you regard the existing legal protections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[MSprotectleg2]`"
+)
+
+MSprotectleg2_counts = df[filter]["MSprotectleg2"].value_counts()
+st.plotly_chart(
+    render_pie_chart(
+        MSprotectleg2_counts,
+        values=MSprotectleg2_counts,
+        names=MSprotectleg2_counts.index,
+        color_discrete_sequence=px.colors.qualitative.Prism,
+        color=MSprotectleg2_counts.index,
+        color_discrete_map={
+            "No": px.colors.qualitative.Prism[8],
+            "Yes": px.colors.qualitative.Prism[2],
+            "I don't know": px.colors.qualitative.Prism[10],
+            "I prefer not to say": px.colors.qualitative.Prism[10],
+        },
+    )
+)
+
+st.write(
+    "### Are any of the following forms of institutional support readily available to you? `[MSprotectleg3]`"
+)
+MSprotectleg3_options = ["Free legal counsel", "Legal cost insurance", "Other"]
+MSprotectleg3_yes = []
+MSprotectleg3_no = []
+MSprotectleg3_dont_know = []
+MSprotectleg3_prefer_not_to_say = []
+for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
+    for label in ["free_counsel", "cost_insurance", "other"]:
+        try:
+            count = df[filter][f"MSprotectleg3[{label}]"].value_counts()[answer]
+        except KeyError:
+            count = 0
+        if answer == "Yes":
+            MSprotectleg3_yes.append(count)
+        elif answer == "No":
+            MSprotectleg3_no.append(count)
+        elif answer == "I don't know":
+            MSprotectleg3_dont_know.append(count)
+        elif answer == "I prefer not to say":
+            MSprotectleg3_prefer_not_to_say.append(count)
+        else:
+            continue
+st.plotly_chart(
+    generate_stacked_bar_chart(
+        data=[
+            go.Bar(
+                name="Yes",
+                x=MSprotectleg3_options,
+                y=MSprotectleg3_yes,
+                marker_color=px.colors.qualitative.Prism[2],
+            ),
+            go.Bar(
+                name="No",
+                x=MSprotectleg3_options,
+                y=MSprotectleg3_no,
+                marker_color=px.colors.qualitative.Prism[8],
+            ),
+            go.Bar(
+                name="I don't know",
+                x=MSprotectleg3_options,
+                y=MSprotectleg3_dont_know,
+                marker_color="#7f7f7f",
+                opacity=0.8,
+            ),
+            go.Bar(
+                name="I prefer not to say",
+                x=MSprotectleg3_options,
+                y=MSprotectleg3_prefer_not_to_say,
+                marker_color="#525252",
+                opacity=0.8,
+            ),
+        ],
+    )
+)
+
+st.write("### If you selected ‘other’, please specify `[MSprotectleg3other]`")
+for i in df[filter]["MSprotectleg3other"].to_list():
+    if type(i) != float:
+        st.write("- " + i)
 
 ###############################################################################
 # Appendix
