@@ -5,4 +5,7 @@ _merged_ data represents a subset of all the questions that were asked in both
 surveys individually.
 
 To see all answers given by members of civil society organisations, click [here](https://ioi.civsoc.sehn.dev).
-To see all answers given by members of media organisations, click [here](https://ioi.media.sehn.dev).
+To see all answers given by members of media organisations, click
+[here](https://ioi.media.sehn.dev). Use the sidebar on the left to choose the
+section of the survey that is relevant for you and use the drop-down menus to
+filter by country or survey type.
