@@ -9,6 +9,8 @@ def generate_pie_chart(
     names,
     hover_name,
     color,
+    hover_data,
+    custom_data,
     color_discrete_sequence,
     color_discrete_map,
     labels,
@@ -19,12 +21,16 @@ def generate_pie_chart(
         names=names,
         hover_name=hover_name,
         color=color,
+        custom_data=custom_data,
         color_discrete_sequence=color_discrete_sequence,
         color_discrete_map=color_discrete_map,
-        width=800,
+        width=730,
         labels=labels,
     )
-    fig.update_traces(textinfo="percent+value")
+    fig.update_traces(
+        textinfo="percent+value",
+        hovertemplate="<b>Answer</b> %{label}<br><br>given by <b>%{value}</b> respondents or <b>%{percent}</b><br>of all who answered the question.<br>",
+    )
     return fig
 
 
@@ -41,10 +47,25 @@ def generate_histogram(df, x, y, nbins, color, color_discrete_map, labels):
     return fig
 
 
+def generate_boxplot(df, x, y, points, color, color_discrete_map):
+    fig = px.box(
+        df,
+        x=x,
+        y=y,
+        points=points,
+        color=color,
+        color_discrete_map=color_discrete_map,
+        width=730,
+    )
+    return fig
+
+
 def generate_overlaid_histogram(traces, names, colors):
     fig = go.Figure()
     for trace, name, color in zip(traces, names, colors):
-        fig.add_trace(go.Histogram(x=trace, name=name, marker_color=color))
+        fig.add_trace(
+            go.Histogram(x=trace, name=name, marker_color=color, xbins={"size": 5})
+        )
     fig.update_layout(barmode="overlay")
     fig.update_traces(opacity=0.75)
     return fig
