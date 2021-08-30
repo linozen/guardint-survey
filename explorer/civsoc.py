@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -1164,49 +1165,45 @@ for col in df:
 # Sidebar | Filter logic
 ###############################################################################
 
+# This is getting triggered when section is changed
+def callback():
+    st.experimental_set_query_params(section=st.session_state.section)
+
+
+sections = [
+    "Overview",
+    "Resources",
+    "Public Campaigning",
+    "Policy Advocacy",
+    "Strategic Litigation",
+    "Protection",
+    "Constraints",
+    "Attitudes",
+    "Appendix",
+]
+
 try:
-    sections = [
-        "Overview",
-        "Resources",
-        "Public Campaigning",
-        "Policy Advocacy",
-        "Strategic Litigation",
-        "Protection",
-        "Constraints",
-        "Attitudes",
-        "Appendix",
-    ]
     query_params = st.experimental_get_query_params()
     query_section = query_params["section"][0]
-    section = st.sidebar.radio(
-        "Choose section",
-        sections,
-        index=sections.index(query_section),
-        key="section_with_param",
-    )
+    if "section" not in st.session_state:
+        st.session_state.section = query_section
 
-except:
-    sections = [
-        "Overview",
-        "Resources",
-        "Public Campaigning",
-        "Policy Advocacy",
-        "Strategic Litigation",
-        "Protection",
-        "Constraints",
-        "Attitudes",
-        "Appendix",
-    ]
+except KeyError:
     st.experimental_set_query_params(section=sections[0])
     query_params = st.experimental_get_query_params()
     query_section = query_params["section"][0]
-    section = st.sidebar.radio(
-        "Choose section",
-        sections,
-        index=sections.index(query_section),
-        key="section_no_param",
-    )
+    if "section" not in st.session_state:
+        st.session_state.section = query_section
 
+selected_section = st.sidebar.radio(
+    "Choose section",
+    sections,
+    index=sections.index(query_section),
+    key="section",
+    on_change=callback
+)
+
+st.write(selected_section)
 
 filters = {
     "country": st.sidebar.selectbox(
@@ -1233,9 +1230,19 @@ df.to_csv("./data/civsoc.csv")
 
 
 ###############################################################################
-# Custom CSS
+# Custom JS/CSS
 ###############################################################################
 
+# This causes the page to scroll to top when section is changed
+components.html(
+    f"""
+        <!--{st.session_state.section}-->
+        <script>
+            window.parent.document.querySelector('section.main').scrollTo(0, 0);
+        </script>
+    """,
+    height=0
+)
 
 st.markdown(
     """ <style> h3 {line-height: 1.3} </style> """,
@@ -1251,7 +1258,7 @@ st.markdown(
 st.title("IOI Survey Data Explorer")
 st.write("... of the responses given by __civil society organisation__ representatives")
 
-if section == "Overview":
+if selected_section == "Overview":
     st.write("# Overview")
 
     merged_markdown = read_markdown_file("explorer/markdown/media.md")
@@ -1284,7 +1291,7 @@ if section == "Overview":
         )
     )
 
-if section == "Resources":
+if selected_section == "Resources":
     st.write("# Resources")
 
     st.write("## Human Resources")
@@ -1715,7 +1722,7 @@ if section == "Resources":
         )
     )
 
-if section == "Public Campaigning":
+if selected_section == "Public Campaigning":
 
     st.write("## Activity")
 
@@ -1967,7 +1974,7 @@ if section == "Public Campaigning":
     else:
         st.write("_no answers given_")
 
-if section == "Policy Advocacy":
+if selected_section == "Policy Advocacy":
     st.write("## Activity")
 
     st.write(
@@ -2208,7 +2215,7 @@ if section == "Policy Advocacy":
     else:
         st.write("_no answers given_")
 
-if section == "Strategic Litigation":
+if selected_section == "Strategic Litigation":
     st.write("## Activity")
 
     st.write(
@@ -2519,7 +2526,7 @@ if section == "Strategic Litigation":
         st.write("_no answers given_")
 
 
-if section == "Protection":
+if selected_section == "Protection":
 
     st.write("# Protection")
 
@@ -2850,7 +2857,7 @@ if section == "Protection":
     else:
         st.write("_no answers given_")
 
-if section == "Constraints":
+if selected_section == "Constraints":
 
     st.write("# Constraints")
 
@@ -3197,7 +3204,7 @@ if section == "Constraints":
     else:
         st.write("_no answers given_")
 
-if section == "Attitudes":
+if selected_section == "Attitudes":
 
     st.write("# CSattitudes")
 
@@ -3300,7 +3307,7 @@ if section == "Attitudes":
     )
     st.plotly_chart(render_ranking_plot("CSattitude6"))
 
-if section == "Appendix":
+if selected_section == "Appendix":
     st.write("# Appendix")
 
     st.write("## Raw data")
@@ -3336,6 +3343,3 @@ if section == "Appendix":
     if show_sig:
         fig_sig = get_significance_matrix(df)
         st.plotly_chart(fig_sig, use_container_width=True)
-
-if section:
-    st.experimental_set_query_params(section=section)

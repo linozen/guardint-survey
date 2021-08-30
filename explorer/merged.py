@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -893,43 +894,41 @@ for col in df:
 ###############################################################################
 
 
+def callback():
+    st.experimental_set_query_params(section=st.session_state.section)
+
+
+sections = [
+    "Overview",
+    "Resources",
+    "Protection",
+    "Constraints",
+    "Attitudes",
+    "Appendix",
+]
+
 try:
-    sections = [
-        "Overview",
-        "Resources",
-        "Protection",
-        "Constraints",
-        "Attitudes",
-        "Appendix",
-    ]
     query_params = st.experimental_get_query_params()
     query_section = query_params["section"][0]
-    section = st.sidebar.radio(
-        "Choose section",
-        sections,
-        index=sections.index(query_section),
-        key="section_with_param",
-    )
+    if "section" not in st.session_state:
+        st.session_state.section = query_section
 
-except:
-    sections = [
-        "Overview",
-        "Resources",
-        "Protection",
-        "Constraints",
-        "Attitudes",
-        "Appendix",
-    ]
+except KeyError:
     st.experimental_set_query_params(section=sections[0])
     query_params = st.experimental_get_query_params()
     query_section = query_params["section"][0]
-    section = st.sidebar.radio(
-        "Choose section",
-        sections,
-        index=sections.index(query_section),
-        key="section_no_param",
-    )
+    if "section" not in st.session_state:
+        st.session_state.section = query_section
 
+selected_section = st.sidebar.radio(
+    "Choose section",
+    sections,
+    index=sections.index(query_section),
+    key="section",
+    on_change=callback,
+)
+
+st.write(selected_section)
 
 filters = {
     "surveytype": st.sidebar.selectbox(
@@ -959,9 +958,19 @@ df.to_csv("./data/merged.csv")
 
 
 ###############################################################################
-# Custom CSS
+# Custom JS/CSS
 ###############################################################################
 
+# This causes the page to scroll to top when section is changed
+components.html(
+    f"""
+        <!--{st.session_state.section}-->
+        <script>
+            window.parent.document.querySelector('section.main').scrollTo(0, 0);
+        </script>
+    """,
+    height=0,
+)
 
 st.markdown(
     """ <style> h3 {line-height: 1.3} </style> """,
@@ -979,7 +988,7 @@ st.write(
     "... of the responses given by __media__ and __civil society organisation__ representatives"
 )
 
-if section == "Overview":
+if selected_section == "Overview":
     st.write("# Overview")
 
     merged_markdown = read_markdown_file("explorer/markdown/merged.md")
@@ -1024,7 +1033,7 @@ if section == "Overview":
         use_container_width=True,
     )
 
-if section == "Resources":
+if selected_section == "Resources":
     st.write("# Resources")
 
     st.write("## Human Resources")
@@ -1370,7 +1379,7 @@ if section == "Resources":
         if type(i) != float:
             st.write("- " + i)
 
-if section == "Protection":
+if selected_section == "Protection":
     st.write("# Protection")
 
     st.write("## Operational Protection")
@@ -1696,7 +1705,7 @@ if section == "Protection":
         if type(i) != float:
             st.write("- " + i)
 
-if section == "Constraints":
+if selected_section == "Constraints":
     st.write("# Constraints")
 
     st.write("## Interference by state authorities")
@@ -1949,7 +1958,7 @@ if section == "Constraints":
         if type(i) != float:
             st.write("- " + i)
 
-if section == "Attitudes":
+if selected_section == "Attitudes":
     st.write("# Attitudes")
 
     st.write(
@@ -2050,7 +2059,7 @@ if section == "Attitudes":
     st.plotly_chart(render_ranking_plot("attitude6"), use_container_width=True)
 
 
-if section == "Appendix":
+if selected_section == "Appendix":
     st.write("# Appendix")
 
     st.write("## Raw data")
@@ -2086,7 +2095,3 @@ if section == "Appendix":
     if show_sig:
         fig_sig = get_significance_matrix(df)
         st.plotly_chart(fig_sig, use_container_width=True)
-
-
-if section:
-    st.experimental_set_query_params(section=section)
