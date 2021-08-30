@@ -24,12 +24,14 @@ def generate_pie_chart(
         custom_data=custom_data,
         color_discrete_sequence=color_discrete_sequence,
         color_discrete_map=color_discrete_map,
-        width=730,
         labels=labels,
     )
     fig.update_traces(
         textinfo="percent+value",
         hovertemplate="<b>Answer</b> %{label}<br><br>given by <b>%{value}</b> respondents or <b>%{percent}</b><br>of all who answered the question.<br>",
+    )
+    fig.update_layout(
+        legend={"y": 1.5, "font": {"size": 11}, "orientation": "v"},
     )
     return fig
 
@@ -55,7 +57,6 @@ def generate_boxplot(df, x, y, points, color, color_discrete_map):
         points=points,
         color=color,
         color_discrete_map=color_discrete_map,
-        width=730,
     )
     return fig
 
