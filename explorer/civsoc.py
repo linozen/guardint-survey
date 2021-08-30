@@ -1102,7 +1102,7 @@ for i in range(4, 7):
                 "AO03": "Independent expert bodies",
                 "AO04": "Data protection authorities",
                 "AO05": "Audit courts",
-                "AO06": "Civil society organisations",
+                "AO06": "The media",
             }
         )
         # Here, FR is coded differently
@@ -1113,7 +1113,7 @@ for i in range(4, 7):
                 "AO03": "Independent expert bodies",
                 "AO04": "Data protection authorities",
                 "AO07": "Audit courts",
-                "AO06": "Civil society organisations",
+                "AO06": "Media organisations",
             }
         )
 
@@ -1228,6 +1228,13 @@ if section == "Overview":
 
     merged_markdown = read_markdown_file("explorer/markdown/media.md")
     st.markdown(merged_markdown, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    col1.metric("Civil Society Representatives", len(df[filter].index))
+    col2.metric(
+        "Cumulative years spent working on SBIA",
+        int(df[filter]["CSexpertise1"].sum()),
+    )
 
     st.write("### Country `[country]`")
     country_counts = df[filter]["country"].value_counts()
@@ -3247,7 +3254,7 @@ if section == "Attitudes":
         "Independent expert bodies",
         "Data protection authorities",
         "Audit courts",
-        "CSOs | The media",
+        "The media",
     ]
 
     st.write(

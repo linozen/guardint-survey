@@ -1038,6 +1038,13 @@ if section == "Overview":
     merged_markdown = read_markdown_file("explorer/markdown/media.md")
     st.markdown(merged_markdown, unsafe_allow_html=True)
 
+    col1, col2 = st.columns(2)
+    col1.metric("Media representatives", len(df[filter].index))
+    col2.metric(
+        "Cumulative years spent working on SBIA",
+        int(df[filter]["MSexpertise1"].sum()),
+    )
+
     st.write("### Country `[country]`")
     country_counts = df[filter]["country"].value_counts()
     st.plotly_chart(
@@ -1045,7 +1052,8 @@ if section == "Overview":
             df[filter],
             values=country_counts,
             names=country_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
 if section == "Resources":
@@ -1068,7 +1076,8 @@ if section == "Resources":
                 "Freelance": px.colors.qualitative.Prism[4],
                 "Other": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1087,7 +1096,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"MShr2": "days per month"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1102,7 +1112,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### Which type of medium do you work for? `[MShr3]`")
@@ -1139,7 +1150,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who work for this medium"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1160,7 +1172,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Expertise")
@@ -1181,7 +1194,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"MSexpertise1": "years"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1196,7 +1210,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1219,7 +1234,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1242,7 +1258,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1265,7 +1282,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Financial Resources")
@@ -1290,7 +1308,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1309,7 +1328,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Freedom of Information")
@@ -1330,7 +1350,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### How often did you request information? `[MSfoi2]`")
@@ -1347,7 +1368,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"MSfoi2": "Number of requests"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1362,7 +1384,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1382,7 +1405,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1395,7 +1419,8 @@ if section == "Resources":
             df[filter],
             values=protectops2_counts,
             names=protectops2_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1435,7 +1460,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Appreciation")
@@ -1456,7 +1482,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1475,7 +1502,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
 if section == "Media Reporting":
@@ -1499,7 +1527,8 @@ if section == "Media Reporting":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"MSsoc1": "pieces produced lasy year"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1514,7 +1543,8 @@ if section == "Media Reporting":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1535,7 +1565,8 @@ if section == "Media Reporting":
             labels={
                 "MSsoc2": "pieces focused on surveillance by intelligence agencies"
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1550,7 +1581,8 @@ if section == "Media Reporting":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     MSsoc1_list = df[filter]["MSsoc1"].to_list()
@@ -1565,7 +1597,8 @@ if section == "Media Reporting":
                 "pieces focused <br>on surveillance <br>by intelligence",
             ],
             colors=[px.colors.qualitative.Prism[0], px.colors.qualitative.Prism[2]],
-        )
+        ),
+        use_container_width=True,
     )
 
     df_comp = df[filter][["MSsoc1", "country"]].dropna()
@@ -1590,7 +1623,8 @@ if section == "Media Reporting":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1612,7 +1646,8 @@ if section == "Media Reporting":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1649,7 +1684,8 @@ if section == "Media Reporting":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSsoc5other]`")
@@ -1690,7 +1726,8 @@ if section == "Media Reporting":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSsoc6other]`")
@@ -1719,7 +1756,8 @@ if section == "Media Reporting":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1741,7 +1779,8 @@ if section == "Media Reporting":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1760,7 +1799,8 @@ if section == "Media Reporting":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Perceived Impact")
@@ -1800,7 +1840,8 @@ if section == "Media Reporting":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1839,7 +1880,8 @@ if section == "Media Reporting":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSimpact2other]`")
@@ -1928,7 +1970,8 @@ if section == "Protection":
             values=MSprotectops2_counts,
             names=MSprotectops2_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2053,7 +2096,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Legal Protection")
@@ -2079,7 +2123,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2100,7 +2145,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2246,7 +2292,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Rights to Access")
@@ -2267,7 +2314,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### Have you ever made use of this right? `[MSprotectrta2]`")
@@ -2284,7 +2332,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2303,7 +2352,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2322,7 +2372,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2342,7 +2393,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2368,7 +2420,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
 if section == "Constraints":
@@ -2392,7 +2445,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2411,7 +2465,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2430,7 +2485,8 @@ if section == "Constraints":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"MSconstraintcen3": "times"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2449,7 +2505,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘yes’, please specify `[MSconstraintcen4spec]`")
@@ -2473,7 +2530,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘yes’, please specify `[MSconstraintcen5spec]`")
@@ -2501,7 +2559,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2527,7 +2586,8 @@ if section == "Constraints":
             values=MSconstraintinter3_counts,
             names=MSconstraintinter3_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2827,7 +2887,8 @@ if section == "Attitudes":
             values=MSattitude1_counts,
             names=MSattitude1_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     # Pie chart MSattitudes (MSattitude2)
@@ -2842,7 +2903,8 @@ if section == "Attitudes":
             values=MSattitude2_counts,
             names=MSattitude2_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     # Histogram (MSattitude3)
@@ -2871,7 +2933,7 @@ if section == "Attitudes":
             )
     MSattitude3_df = MSattitude3_df.drop_duplicates()
     st.plotly_chart(
-        generate_histogram(
+        render_histogram(
             df=MSattitude3_df,
             x="option",
             y="count",
@@ -2883,7 +2945,8 @@ if section == "Attitudes":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
@@ -2899,17 +2962,17 @@ if section == "Attitudes":
     st.write(
         "### Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[MSattitude4]`"
     )
-    st.plotly_chart(render_ranking_plot("MSattitude4"))
+    st.plotly_chart(render_ranking_plot("MSattitude4"), use_container_width=True)
 
     st.write(
         "### Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[MSattitude5]`"
     )
-    st.plotly_chart(render_ranking_plot("MSattitude5"))
+    st.plotly_chart(render_ranking_plot("MSattitude5"), use_container_width=True)
 
     st.write(
         "### Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[MSattitude6]`"
     )
-    st.plotly_chart(render_ranking_plot("MSattitude6"))
+    st.plotly_chart(render_ranking_plot("MSattitude6"), use_container_width=True)
 
 
 if section == "Appendix":

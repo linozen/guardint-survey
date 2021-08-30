@@ -958,6 +958,23 @@ if section == "Overview":
     merged_markdown = read_markdown_file("explorer/markdown/merged.md")
     st.markdown(merged_markdown, unsafe_allow_html=True)
 
+    col1, col2 = st.columns(2)
+    col1.metric("Respondents", len(df[filter].index))
+    col2.metric(
+        "Cumulative years spent working on SBIA",
+        int(df[filter]["expertise1"].sum()),
+    )
+
+    col1, col2 = st.columns(2)
+    col1.metric(
+        "Media representatives",
+        len(df[filter & (df.surveytype == "Media Scrutiny")].index),
+    )
+    col2.metric(
+        "Civil Society representatives",
+        len(df[filter & (df.surveytype == "Civil Society Scrutiny")].index),
+    )
+
     st.write("### Country `[country]`")
     country_counts = df[filter]["country"].value_counts()
     st.plotly_chart(
@@ -965,7 +982,8 @@ if section == "Overview":
             df[filter],
             values=country_counts,
             names=country_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### Surveytype `[surveytype]`")
@@ -975,7 +993,8 @@ if section == "Overview":
             df[filter],
             values=surveytype_counts,
             names=surveytype_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
 if section == "Resources":
@@ -998,7 +1017,8 @@ if section == "Resources":
                 "Freelance": px.colors.qualitative.Prism[4],
                 "Other": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1017,7 +1037,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"hr2": "days per month"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1032,7 +1053,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     df["hr2_more_than_five"] = np.where(df["hr2"] > 5, True, False)
@@ -1046,7 +1068,8 @@ if section == "Resources":
             values=hr2_more_than_five_counts,
             names=hr2_more_than_five_counts.index,
             color=hr2_more_than_five_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Expertise")
@@ -1067,7 +1090,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"expertise1": "years"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1082,7 +1106,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1105,7 +1130,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1128,7 +1154,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1151,7 +1178,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Financial Resources")
@@ -1197,7 +1225,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### How often did you request information? `[foi2]`")
@@ -1214,7 +1243,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"foi2": "Number of requests"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.plotly_chart(
@@ -1229,7 +1259,8 @@ if section == "Resources":
                 "France": px.colors.qualitative.Prism[1],
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1249,7 +1280,8 @@ if section == "Resources":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1262,7 +1294,8 @@ if section == "Resources":
             df[filter],
             values=foi4_counts,
             names=foi4_counts.index,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1301,7 +1334,8 @@ if section == "Resources":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[foi5other]`")
@@ -1389,7 +1423,8 @@ if section == "Protection":
             values=protectops2_counts,
             names=protectops2_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1514,7 +1549,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("## Legal Protection")
@@ -1540,7 +1576,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1561,7 +1598,8 @@ if section == "Protection":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘no’, please specify `[protectleg2no]`")
@@ -1654,7 +1692,8 @@ if section == "Constraints":
                 "I don't know": px.colors.qualitative.Prism[10],
                 "I prefer not to say": px.colors.qualitative.Prism[10],
             },
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1680,7 +1719,8 @@ if section == "Constraints":
             values=constraintinter3_counts,
             names=constraintinter3_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1896,7 +1936,8 @@ if section == "Attitudes":
             values=attitude1_counts,
             names=attitude1_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1910,7 +1951,8 @@ if section == "Attitudes":
             values=attitude2_counts,
             names=attitude2_counts.index,
             color_discrete_sequence=px.colors.qualitative.Prism,
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1939,7 +1981,7 @@ if section == "Attitudes":
     attitude3_df = attitude3_df.drop_duplicates()
 
     st.plotly_chart(
-        generate_histogram(
+        render_histogram(
             df=attitude3_df,
             x="option",
             y="count",
@@ -1951,7 +1993,8 @@ if section == "Attitudes":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
@@ -1967,17 +2010,17 @@ if section == "Attitudes":
     st.write(
         "### Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[attitude4]`"
     )
-    st.plotly_chart(render_ranking_plot("attitude4"))
+    st.plotly_chart(render_ranking_plot("attitude4"), use_container_width=True)
 
     st.write(
         "### Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[attitude5]`"
     )
-    st.plotly_chart(render_ranking_plot("attitude5"))
+    st.plotly_chart(render_ranking_plot("attitude5"), use_container_width=True)
 
     st.write(
         "### Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[attitude6]`"
     )
-    st.plotly_chart(render_ranking_plot("attitude6"))
+    st.plotly_chart(render_ranking_plot("attitude6"), use_container_width=True)
 
 
 if section == "Appendix":
