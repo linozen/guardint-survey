@@ -1164,10 +1164,8 @@ for col in df:
 # Sidebar | Filter logic
 ###############################################################################
 
-
-section = st.sidebar.radio(
-    "Choose section",
-    [
+try:
+    sections = [
         "Overview",
         "Resources",
         "Public Campaigning",
@@ -1177,8 +1175,38 @@ section = st.sidebar.radio(
         "Constraints",
         "Attitudes",
         "Appendix",
-    ],
-)
+    ]
+    query_params = st.experimental_get_query_params()
+    query_section = query_params["section"][0]
+    section = st.sidebar.radio(
+        "Choose section",
+        sections,
+        index=sections.index(query_section),
+        key="section_with_param",
+    )
+
+except:
+    sections = [
+        "Overview",
+        "Resources",
+        "Public Campaigning",
+        "Policy Advocacy",
+        "Strategic Litigation",
+        "Protection",
+        "Constraints",
+        "Attitudes",
+        "Appendix",
+    ]
+    st.experimental_set_query_params(section=sections[0])
+    query_params = st.experimental_get_query_params()
+    query_section = query_params["section"][0]
+    section = st.sidebar.radio(
+        "Choose section",
+        sections,
+        index=sections.index(query_section),
+        key="section_no_param",
+    )
+
 
 filters = {
     "country": st.sidebar.selectbox(
@@ -3308,3 +3336,6 @@ if section == "Appendix":
     if show_sig:
         fig_sig = get_significance_matrix(df)
         st.plotly_chart(fig_sig, use_container_width=True)
+
+if section:
+    st.experimental_set_query_params(section=section)
