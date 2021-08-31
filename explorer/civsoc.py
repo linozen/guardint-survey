@@ -1740,6 +1740,16 @@ if selected_section == "Resources":
         )
     )
 
+    foi5other_list = df[filter]["CSfoi5other"].dropna().to_list()
+    st.write("### If you selected ‘other’, please specify `[CSfoi5other]`")
+    if len(foi5other_list) > 0:
+        for i in foi5other_list:
+            if type(i) != float:
+                st.write("- " + i)
+    else:
+        st.write("_no answers given_")
+
+
 if selected_section == "Public Campaigning":
 
     st.write("## Activity")
