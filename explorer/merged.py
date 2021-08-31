@@ -956,9 +956,9 @@ for column_name, selectbox in filters.items():
 ###############################################################################
 
 
-df.to_pickle("./data/merged.pkl")
-df.to_excel("./data/merged.xlsx")
-df.to_csv("./data/merged.csv")
+# df.to_pickle("./data/merged.pkl")
+# df.to_excel("./data/merged.xlsx")
+# df.to_csv("./data/merged.csv")
 
 
 ###############################################################################

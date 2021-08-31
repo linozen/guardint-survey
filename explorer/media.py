@@ -1034,9 +1034,9 @@ for column_name, selectbox in filters.items():
 ###############################################################################
 
 
-df.to_pickle("./data/media.pkl")
-df.to_excel("./data/media.xlsx")
-df.to_csv("./data/media.csv")
+# df.to_pickle("./data/media.pkl")
+# df.to_excel("./data/media.xlsx")
+# df.to_csv("./data/media.csv")
 
 
 ###############################################################################
