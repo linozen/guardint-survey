@@ -1200,10 +1200,10 @@ selected_section = st.sidebar.radio(
     sections,
     index=sections.index(query_section),
     key="section",
-    on_change=callback
+    on_change=callback,
 )
 
-st.write(selected_section)
+st.caption("__" + selected_section + "__ | Civil Society representatives")
 
 filters = {
     "country": st.sidebar.selectbox(
@@ -1241,7 +1241,7 @@ components.html(
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
     """,
-    height=0
+    height=0,
 )
 
 st.markdown(
@@ -1254,9 +1254,6 @@ st.markdown(
 # Display dynamic charts
 ###############################################################################
 
-
-st.title("IOI Survey Data Explorer")
-st.write("... of the responses given by __civil society organisation__ representatives")
 
 if selected_section == "Overview":
     st.write("# Overview")
@@ -1278,6 +1275,12 @@ if selected_section == "Overview":
             df[filter],
             values=country_counts,
             names=country_counts.index,
+            color=country_counts.index,
+            color_discrete_map={
+                "Germany": px.colors.qualitative.Prism[5],
+                "France": px.colors.qualitative.Prism[1],
+                "United Kingdom": px.colors.qualitative.Prism[7],
+            },
         )
     )
 
@@ -1527,7 +1530,7 @@ if selected_section == "Resources":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -1560,7 +1563,8 @@ if selected_section == "Resources":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[CSfinance2other]`")
@@ -1795,7 +1799,7 @@ if selected_section == "Public Campaigning":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -1828,7 +1832,8 @@ if selected_section == "Public Campaigning":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     campact2other_list = df[filter]["CScampact2other"].dropna().to_list()
@@ -1927,7 +1932,7 @@ if selected_section == "Public Campaigning":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Agree completely",
@@ -1960,7 +1965,8 @@ if selected_section == "Public Campaigning":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     CScampimpact2_list = df[filter]["CScampimpact2"].dropna().to_list()
@@ -2036,7 +2042,7 @@ if selected_section == "Policy Advocacy":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -2069,7 +2075,8 @@ if selected_section == "Policy Advocacy":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     campact2other_list = df[filter]["CSadvocact2other"].dropna().to_list()
@@ -2168,7 +2175,7 @@ if selected_section == "Policy Advocacy":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Agree completely",
@@ -2201,7 +2208,8 @@ if selected_section == "Policy Advocacy":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     CSadvocimpact2_list = df[filter]["CSadvocimpact2"].dropna().to_list()
@@ -2277,7 +2285,7 @@ if selected_section == "Strategic Litigation":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -2310,7 +2318,8 @@ if selected_section == "Strategic Litigation":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     campact2other_list = df[filter]["CSlitigateact2other"].dropna().to_list()
@@ -2478,7 +2487,7 @@ if selected_section == "Strategic Litigation":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Agree completely",
@@ -2511,7 +2520,8 @@ if selected_section == "Strategic Litigation":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     CSlitigateimpact2_list = df[filter]["CSlitigateimpact2"].dropna().to_list()
@@ -2567,7 +2577,7 @@ if selected_section == "Protection":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2594,7 +2604,8 @@ if selected_section == "Protection":
                     marker_color=px.colors.qualitative.Prism[10],
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2662,7 +2673,7 @@ if selected_section == "Protection":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -2695,7 +2706,8 @@ if selected_section == "Protection":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     CSprotectops3other_list = df[filter]["CSprotectops3other"].dropna().to_list()
@@ -2816,7 +2828,7 @@ if selected_section == "Protection":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2845,7 +2857,8 @@ if selected_section == "Protection":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     protectleg3other_list = df[filter]["CSprotectleg3other"].dropna().to_list()
@@ -2940,7 +2953,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2969,7 +2982,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -3003,7 +3017,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -3032,7 +3046,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     constraintinter5other_list = (
@@ -3087,7 +3102,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -3116,7 +3131,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     constraintinter6other_list = (
@@ -3163,7 +3179,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -3192,7 +3208,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     constraintself1other_list = df[filter]["CSconstraintself1other"].dropna().to_list()
@@ -3267,7 +3284,7 @@ if selected_section == "Attitudes":
     CSattitude3_df = CSattitude3_df.drop_duplicates()
 
     st.plotly_chart(
-        generate_histogram(
+        render_histogram(
             df=CSattitude3_df,
             x="option",
             y="count",
@@ -3279,7 +3296,8 @@ if selected_section == "Attitudes":
                 "United Kingdom": px.colors.qualitative.Prism[7],
             },
             labels={"count": "people who answered 'Yes'"},
-        )
+        ),
+        use_container_width=True,
     )
 
     scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
@@ -3308,6 +3326,7 @@ if selected_section == "Attitudes":
     st.plotly_chart(render_ranking_plot("CSattitude6"))
 
 if selected_section == "Appendix":
+
     st.write("# Appendix")
 
     st.write("## Raw data")

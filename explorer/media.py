@@ -1010,10 +1010,10 @@ selected_section = st.sidebar.radio(
     sections,
     index=sections.index(query_section),
     key="section",
-    on_change=callback
+    on_change=callback,
 )
 
-st.write(selected_section)
+st.caption("__" + selected_section + "__ | Media representatives")
 
 filters = {
     "country": st.sidebar.selectbox(
@@ -1051,7 +1051,7 @@ components.html(
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
         </script>
     """,
-    height=0
+    height=0,
 )
 
 st.markdown(
@@ -1064,9 +1064,6 @@ st.markdown(
 # Display dynamic charts
 ###############################################################################
 
-
-st.title("IOI Survey Data Explorer")
-st.write("... of the responses given by __media__ representatives")
 
 if selected_section == "Overview":
     st.write("# Overview")
@@ -1088,6 +1085,12 @@ if selected_section == "Overview":
             df[filter],
             values=country_counts,
             names=country_counts.index,
+            color=country_counts.index,
+            color_discrete_map={
+                "Germany": px.colors.qualitative.Prism[5],
+                "France": px.colors.qualitative.Prism[1],
+                "United Kingdom": px.colors.qualitative.Prism[7],
+            },
         ),
         use_container_width=True,
     )
@@ -2062,7 +2065,7 @@ if selected_section == "Protection":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -2095,7 +2098,8 @@ if selected_section == "Protection":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSprotectops3other]`")
@@ -2210,7 +2214,7 @@ if selected_section == "Protection":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2239,7 +2243,8 @@ if selected_section == "Protection":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSprotectleg3other]`")
@@ -2272,7 +2277,7 @@ if selected_section == "Protection":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2301,7 +2306,8 @@ if selected_section == "Protection":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSprotectleg4other]`")
@@ -2653,7 +2659,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2682,7 +2688,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -2716,7 +2723,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2745,7 +2752,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSconstraintinter5other]`")
@@ -2794,7 +2802,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2823,7 +2831,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSconstraintinter6other]`")
@@ -2872,7 +2881,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -2901,7 +2910,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[MSconstraintself1other]`")

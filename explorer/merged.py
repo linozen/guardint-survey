@@ -928,7 +928,11 @@ selected_section = st.sidebar.radio(
     on_change=callback,
 )
 
-st.write(selected_section)
+st.caption(
+    "__"
+    + selected_section
+    + "__ | Civil Society Organisation and Media representatives"
+)
 
 filters = {
     "surveytype": st.sidebar.selectbox(
@@ -983,11 +987,6 @@ st.markdown(
 ###############################################################################
 
 
-st.title("IOI Survey Data Explorer")
-st.write(
-    "... of the responses given by __media__ and __civil society organisation__ representatives"
-)
-
 if selected_section == "Overview":
     st.write("# Overview")
 
@@ -1018,6 +1017,12 @@ if selected_section == "Overview":
             df[filter],
             values=country_counts,
             names=country_counts.index,
+            color=country_counts.index,
+            color_discrete_map={
+                "Germany": px.colors.qualitative.Prism[5],
+                "France": px.colors.qualitative.Prism[1],
+                "United Kingdom": px.colors.qualitative.Prism[7],
+            },
         ),
         use_container_width=True,
     )
@@ -1419,7 +1424,7 @@ if selected_section == "Protection":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1446,7 +1451,8 @@ if selected_section == "Protection":
                     marker_color=px.colors.qualitative.Prism[10],
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1515,7 +1521,7 @@ if selected_section == "Protection":
                 continue
 
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Very important",
@@ -1548,7 +1554,8 @@ if selected_section == "Protection":
                     marker_color="#FFC300",
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[protectops3other]`")
@@ -1668,7 +1675,7 @@ if selected_section == "Protection":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1697,7 +1704,8 @@ if selected_section == "Protection":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[protectleg3other]`")
@@ -1784,7 +1792,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1813,7 +1821,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write(
@@ -1845,7 +1854,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1874,7 +1883,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[constraintinter5other]`")
@@ -1921,7 +1931,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        generate_stacked_bar_chart(
+        render_stacked_bar_chart(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1950,7 +1960,8 @@ if selected_section == "Constraints":
                     opacity=0.8,
                 ),
             ],
-        )
+        ),
+        use_container_width=True,
     )
 
     st.write("### If you selected ‘other’, please specify `[constraintinter6other]`")
