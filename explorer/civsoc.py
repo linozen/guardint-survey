@@ -2802,7 +2802,7 @@ if selected_section == "Protection":
     )
 
     st.write(
-        "### Do you regard the existing legal CSprotections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[CSprotectleg2]`"
+        "### Do you regard the existing legal protections against surveillance of your activities in your country as a sufficient safeguard for your work on intelligence-related issues? `[CSprotectleg2]`"
     )
 
     CSprotectleg2_counts = df[filter]["CSprotectleg2"].value_counts()
@@ -3247,7 +3247,7 @@ if selected_section == "Constraints":
 
 if selected_section == "Attitudes":
 
-    st.write("# CSattitudes")
+    st.write("# Attitudes")
 
     st.write(
         "### The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context. `[CSattitude1]`"
@@ -3263,7 +3263,6 @@ if selected_section == "Attitudes":
         )
     )
 
-    # Pie chart CSattitudes (CSattitude2)
     st.write(
         "### The following four statements are about **intelligence oversight**. Please select the statement you most agree with, based on your national context. `[CSattitude2]`"
     )
@@ -3277,8 +3276,6 @@ if selected_section == "Attitudes":
             color_discrete_sequence=px.colors.qualitative.Prism,
         )
     )
-
-    # Histogram (CSattitude3)
 
     st.write(
         "### In your personal view, what are the goals of intelligence oversight? Please select the three goals of oversight you subscribe to the most. `[CSattitude3]`"
