@@ -1002,12 +1002,26 @@ if selected_section == "Overview":
 
     col1, col2 = st.columns(2)
     col1.metric(
+        "Average years spent working on SBIA†",
+        "%.1f" % df[filter]["expertise1"].mean(),
+    )
+    col2.metric(
+        "Average Number of FOI requests sent in the past 5 years",
+        int(df[filter]["foi2"].mean()),
+    )
+
+    col1, col2 = st.columns(2)
+    col1.metric(
         "Media representatives",
         len(df[filter & (df.surveytype == "Media Scrutiny")].index),
     )
     col2.metric(
         "Civil Society representatives",
         len(df[filter & (df.surveytype == "Civil Society Scrutiny")].index),
+    )
+
+    st.caption(
+        "†For the calculation of the mean, only valid numerical answers were counted. This is why the number might differ from the number one gets when simply dividing e.g. the cumulative years spent working on SBIA by the overall number of respondents (including those who haven't specified their experience in years)."
     )
 
     st.write("### Country `[country]`")

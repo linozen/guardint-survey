@@ -1224,9 +1224,9 @@ for column_name, selectbox in filters.items():
 ###############################################################################
 
 
-df.to_pickle("./data/civsoc.pkl")
-df.to_excel("./data/civsoc.xlsx")
-df.to_csv("./data/civsoc.csv")
+# df.to_pickle("./data/civsoc.pkl")
+# df.to_excel("./data/civsoc.xlsx")
+# df.to_csv("./data/civsoc.csv")
 
 
 ###############################################################################
@@ -1265,7 +1265,21 @@ if selected_section == "Overview":
     col1.metric("Civil Society Representatives", len(df[filter].index))
     col2.metric(
         "Cumulative years spent working on SBIA",
-        int(df[filter]["CSexpertise1"].sum()),
+        df[filter]["CSexpertise1"].sum(),
+    )
+
+    col1, col2 = st.columns(2)
+    col1.metric(
+        "Average years spent working on SBIA†",
+        "%.1f" % df[filter]["CSexpertise1"].mean(),
+    )
+    col2.metric(
+        "Average Number of FOI requests sent in the past 5 years",
+        int(df[filter]["CSfoi2"].mean()),
+    )
+
+    st.caption(
+        "†For the calculation of the mean, only valid numerical answers were counted. This is why the number might differ from the number one gets when simply dividing e.g. the cumulative years spent working on SBIA by the overall number of respondents (including those who haven't specified their experience in years)."
     )
 
     st.write("### Country `[country]`")
