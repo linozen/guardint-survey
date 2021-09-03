@@ -2777,7 +2777,6 @@ if selected_section == "Protection":
 
     st.write("## Legal Protection")
 
-    # TODO Clarify that in MS it's about source CSprotection (also for CSprotectleg2)
     st.write(
         "### When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[CSprotectleg1]`"
     )
