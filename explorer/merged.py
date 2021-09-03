@@ -1614,7 +1614,7 @@ if selected_section == "Protection":
 
     # TODO Clarify that in MS it's about source protection (also for protectleg2)
     st.write(
-        "### When working on intelligence-related issues, do you feel you have reason to be concerned about surveillance of your activities `[protectleg1]`"
+        "### When working on intelligence-related issues, do you feel you have reason to be concerned about... surveillance of your activities (_CSO representatives_) | regarding the protection of your sources (_media representatives_) `[protectleg1]`"
     )
 
     protectleg1_counts = df[filter]["protectleg1"].value_counts()
