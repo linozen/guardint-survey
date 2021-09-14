@@ -539,13 +539,14 @@ df.loc[is_media, "hr1"] = df["hr1"].replace(
     }
 )
 
-df["gender"] = df["gender"].fillna("Other")
+df["gender"] = df["gender"].fillna("Not specified")
 df["gender"] = df["gender"].replace(
     {
         "AO01": "Female",
         "AO02": "Non-binary",
         "AO03": "Male",
-        "AO04": "Other",
+        "AO04": "I prefer not to say",
+        "AO05": "Other",
     }
 )
 
@@ -1048,6 +1049,24 @@ if selected_section == "Overview":
             df[filter],
             values=surveytype_counts,
             names=surveytype_counts.index,
+        ),
+        use_container_width=True,
+    )
+
+    st.write("### Gender `[gender]`")
+    gender_counts = df[filter]["gender"].value_counts()
+    st.plotly_chart(
+        render_pie_chart(
+            df[filter],
+            values=gender_counts,
+            names=gender_counts.index,
+            color=gender_counts.index,
+            color_discrete_map={
+                "Not specified": px.colors.qualitative.Prism[10],
+                "Male": px.colors.qualitative.Prism[9],
+                "Female": px.colors.qualitative.Prism[7],
+                "Other": px.colors.qualitative.Prism[5],
+            },
         ),
         use_container_width=True,
     )

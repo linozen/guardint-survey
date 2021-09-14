@@ -1,25 +1,23 @@
-FROM python:3.9-slim-buster
+FROM bitnami/python:3.9 as base
+WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install build-essential make gcc -y \
-    && apt-get install dpkg-dev -y \
-    && apt-get install libjpeg-dev -y \
-    && apt-get upgrade -y
+# Install some build dependencies
+RUN install_packages build-essential make gcc dpkg-dev libjpeg-dev sudo dbus-tests
 
-RUN useradd --create-home --uid 9000 nonroot
-USER nonroot
-WORKDIR /home/nonroot/app
-COPY --chown=nonroot:nonroot . .
-ENV PATH="/home/nonroot/.local/bin:${PATH}"
-RUN python3 -m pip install --user pipenv
-RUN pipenv install
+# Set path and install poetry in it
+ENV PATH /root/.local/bin:$PATH
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
 
-USER root
-RUN apt-get remove -y --purge make gcc build-essential \
-    && apt-get auto-remove -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && find /usr/local/lib/python3.9 -name "*.pyc" -type f -delete
+# We don't need poetry to create virtual environments; global site is just fine
+RUN poetry config virtualenvs.create false
 
-USER nonroot
+# Install project dependencies
+COPY pyproject.toml poetry.lock /app/
+RUN poetry install
+
+# Copy files
+COPY . .
+
+# Expoe ports and provide entrypoint
 EXPOSE 8501-8503
-ENTRYPOINT [ "pipenv", "run" ]
+ENTRYPOINT [ "poetry", "run" ]

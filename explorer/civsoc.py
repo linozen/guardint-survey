@@ -1118,6 +1118,7 @@ for i in range(4, 7):
             }
         )
 
+df["CSgender"] = df["CSgender"].fillna("Not specified")
 df["CSgender"] = df["CSgender"].replace(
     {
         "AO01": "Woman",

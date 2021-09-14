@@ -902,6 +902,7 @@ for i in range(4, 7):
             }
         )
 
+df["MSgender"] = df["MSgender"].fillna("Not specified")
 df["MSgender"] = df["MSgender"].replace(
     {
         "AO01": "Woman",
@@ -1119,6 +1120,23 @@ if selected_section == "Overview":
         use_container_width=True,
     )
 
+    st.write("### Gender `[MSgender]`")
+    gender_counts = df[filter]["MSgender"].value_counts()
+    st.plotly_chart(
+        render_pie_chart(
+            df[filter],
+            values=gender_counts,
+            names=gender_counts.index,
+            color=gender_counts.index,
+            color_discrete_map={
+                "Not specified": px.colors.qualitative.Prism[10],
+                "Male": px.colors.qualitative.Prism[9],
+                "Female": px.colors.qualitative.Prism[7],
+                "Other": px.colors.qualitative.Prism[5],
+            },
+        ),
+        use_container_width=True,
+    )
 if selected_section == "Resources":
     st.write("# Resources")
 

@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ioi"
+version = "0.1.0"
+description = "Analysis of the intelligence oversight index survey data"
+authors = ["linozen <linus@sehn.tech>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+streamlit = "^0.88.0"
+plotly = "^5.3.1"
+openpyxl = "^3.0.8"
+XlsxWriter = "^3.0.1"
+phik = "^0.12.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
