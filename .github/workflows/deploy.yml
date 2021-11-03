@@ -1,7 +1,10 @@
 ---
 name: deploy streamlit app
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 env:
   IMAGE_NAME: streamlit-ioi-base
