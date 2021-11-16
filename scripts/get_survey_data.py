@@ -138,13 +138,13 @@ def get_survey_data_long(survey_id: str, survey_name: str):
     survey_name -- name under which the .csv should be saved
     """
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read("scripts/config.ini")
     url = config["limesurvey"]["url"]
     username = config["limesurvey"]["username"]
     uid = config["limesurvey"]["uid"]
     password = config["limesurvey"]["password"]
     csv = get_responses(url, username, password, uid, survey_id, response_type="long")
-    path = Path(f"data/{survey_name}.csv")
+    path = Path(f"data/limesurvey/{survey_name}.csv")
     path.write_text(csv)
 
 
@@ -164,13 +164,13 @@ def get_survey_data_short(survey_id: str, survey_name: str):
     survey_name -- name under which the .csv should be saved
     """
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read("scripts/config.ini")
     url = config["limesurvey"]["url"]
     username = config["limesurvey"]["username"]
     uid = config["limesurvey"]["uid"]
     password = config["limesurvey"]["password"]
     csv = get_responses(url, username, password, uid, survey_id, response_type="short")
-    path = Path(f"data/{survey_name}.csv")
+    path = Path(f"data/limesurvey/{survey_name}.csv")
     path.write_text(csv)
 
 

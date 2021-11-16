@@ -11,16 +11,16 @@ df_civsoc = pd.read_pickle("data/civsoc.pkl")
 
 def save_corr_matrix(df, name):
     corr = df.phik_matrix()
-    corr.to_pickle(f"./data/{name}.pkl")
-    corr.to_excel(f"./data/{name}.xlsx")
-    corr.to_csv(f"./data/{name}.csv")
+    corr.to_pickle(f"./data/corr_sig/{name}.pkl")
+    corr.to_excel(f"./data/corr_sig/{name}.xlsx")
+    corr.to_csv(f"./data/corr_sig/{name}.csv")
 
 
 def save_sig_matrix(df, name):
     sig = df.significance_matrix(significance_method="asymptotic")
-    sig.to_pickle(f"./data/{name}.pkl")
-    sig.to_excel(f"./data/{name}.xlsx")
-    sig.to_csv(f"./data/{name}.csv")
+    sig.to_pickle(f"./data/corr_sig/{name}.pkl")
+    sig.to_excel(f"./data/corr_sig/{name}.xlsx")
+    sig.to_csv(f"./data/corr_sig/{name}.csv")
 
 
 df_corr_merged = save_corr_matrix(df_merged, "merged_corr")
