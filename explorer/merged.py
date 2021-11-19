@@ -23,11 +23,20 @@ from lib.download import (
 # Helper functions
 ###############################################################################
 
+colors = [
+    "#600b0c",
+    "#C01518",
+    "#ff1c1f",
+    "#ff5557",
+    "#ff8e8f",
+    "#ffc7c7",
+    "#ffe3e3",
+    "#ffffff",
+]
+
 
 @st.cache
-def gen_px_pie(
-    df, values, names, color_discrete_sequence=px.colors.qualitative.Prism, **kwargs
-):
+def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
     fig = px.pie(
         df,
         values=values,
@@ -50,23 +59,37 @@ def gen_px_pie(
     fig.update_layout(
         autosize=False,
         width=700,
-        height=400,
-        margin=dict(l=0, r=0, b=30, t=0),
+        height=450,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": 18, "family": "Roboto Mono, monospace"},
         legend={
-            "font": {"size": kwargs.get("legend_font_size", 14)},
+            "font": {"size": kwargs.get("legend_font_size", 12)},
             "orientation": "h",
             "bgcolor": "#efefef",
-            "x": 0.00,
-            "y": 1.10,
+            "x": -0.2,
+            "y": 1.1,
         },
+        modebar={"orientation": "v"},
+    )
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png?token=AI3WJCDZHU4NDLOGH2VJFNDBS7SQG",
+            xref="paper",
+            yref="paper",
+            x=1,
+            y=1.00,
+            sizex=0.20,
+            sizey=0.20,
+            xanchor="right",
+            yanchor="bottom",
+        )
     )
     return fig
 
 
 px_pie_config = {
-    "displaylogo": True,
+    "displaylogo": False,
     "modeBarButtonsToRemove": ["hoverClosestPie"],
-    "watermark": True,
     "toImageButtonOptions": {
         "width": 700,
         "height": 450,
@@ -214,10 +237,33 @@ components.html(
 )
 
 st.markdown(
-    """ <style> h3 {line-height: 1.3} </style> """,
+    """ <style>
+    @font-face {
+        font-family: 'Roboto Mono';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/robotomono/v13/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vq_ROW4.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    html, body, [class*="css"]  {
+    font-family: 'Roboto Mono';
+
+    }
+    .st-bx,input {
+        font-family: 'Roboto Mono' !important;
+    }
+
+    .css-1rh8hwn {
+        font-size: 0.8rem;
+    }
+
+    h3 {line-height: 1.3}
+
+    </style> """,
     unsafe_allow_html=True,
 )
-
 
 ###############################################################################
 # Display dynamic charts
@@ -243,7 +289,7 @@ if selected_section == "Overview":
         "%.1f" % df[filter]["expertise1"].mean(),
     )
     col2.metric(
-        "Average Number of FOI requests sent in the past 5 years",
+        "Avg. No. of FOI requests in the past 5 years",
         int(df[filter]["foi2"].mean()),
     )
 
@@ -274,17 +320,21 @@ if selected_section == "Overview":
             names=country_counts.index,
             color=country_counts.index,
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[0],
+                "United Kingdom": colors[2],
+                "France": colors[5],
             },
         ),
         use_container_width=True,
         config=px_pie_config,
     )
 
-    st.write("### Surveytype `[surveytype]`")
+    st.write("### Field")
     surveytype_counts = df[filter]["surveytype"].value_counts()
+    surveytype_total = surveytype_counts.sum()
+    st.write(
+        f"_**{surveytype_total}** respondents in total answered the question with the current filter._"
+    )
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -292,10 +342,15 @@ if selected_section == "Overview":
             names=surveytype_counts.index,
         ),
         use_container_width=True,
+        config=px_pie_config,
     )
 
-    st.write("### Gender `[gender]`")
+    st.write("### Gender")
     gender_counts = df[filter]["gender"].value_counts()
+    gender_total = gender_counts.sum()
+    st.write(
+        f"_**{gender_total}** respondents in total answered the question with the current filter._"
+    )
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -303,13 +358,14 @@ if selected_section == "Overview":
             names=gender_counts.index,
             color=gender_counts.index,
             color_discrete_map={
-                "Not specified": px.colors.qualitative.Prism[10],
-                "Male": px.colors.qualitative.Prism[9],
-                "Female": px.colors.qualitative.Prism[7],
-                "Other": px.colors.qualitative.Prism[5],
+                "Not specified": colors[0],
+                "Male": colors[1],
+                "Female": colors[2],
+                "Other": colors[3],
             },
         ),
         use_container_width=True,
+        config=px_pie_config,
     )
 
 if selected_section == "Resources":
@@ -364,9 +420,9 @@ if selected_section == "Resources":
             y="hr2",
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[5],
+                "France": colors[1],
+                "United Kingdom": colors[7],
             },
         ),
         use_container_width=True,
