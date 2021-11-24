@@ -7,7 +7,6 @@ import plotly.express as px
 from pathlib import Path
 
 from lib.figures import (
-    generate_histogram,
     generate_overlaid_histogram,
     generate_stacked_bar_chart,
     generate_ranking_plot,
@@ -18,10 +17,10 @@ from lib.download import (
     get_excel_download_link,
 )
 
+# ===========================================================================
+# Define GUARDINT color scheme
+# ===========================================================================
 
-###############################################################################
-# Helper functions
-###############################################################################
 
 colors = [
     "#600b0c",
@@ -33,6 +32,10 @@ colors = [
     "#ffe3e3",
     "#ffffff",
 ]
+
+# ===========================================================================
+# Functions to be cached
+# ===========================================================================
 
 
 @st.cache
@@ -48,11 +51,11 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
     )
     # Update what is shown on the slices (on hover)
     fig.update_traces(
-        textinfo="percent+value",
+        texttemplate="<b>%{value}</b><br>%{percent}",
         hovertemplate="""<b>Answer</b> %{label}
 <br><br>given by <b>%{value}</b> respondents or <b>%{percent}</b>
 <br>of all who answered the question
-<br>given the current filter setup.
+<br>given the current filter.
         """,
     )
     # Update layout
@@ -71,15 +74,16 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
         },
         modebar={"orientation": "v"},
     )
+    # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png?token=AI3WJCDZHU4NDLOGH2VJFNDBS7SQG",
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
             xref="paper",
             yref="paper",
-            x=1,
-            y=1.00,
-            sizex=0.20,
-            sizey=0.20,
+            x=1.00,
+            y=0.00,
+            sizex=0.15,
+            sizey=0.15,
             xanchor="right",
             yanchor="bottom",
         )
@@ -87,33 +91,98 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
     return fig
 
 
-px_pie_config = {
-    "displaylogo": False,
-    "modeBarButtonsToRemove": ["hoverClosestPie"],
-    "toImageButtonOptions": {
-        "width": 700,
-        "height": 450,
-        "scale": (210 / 25.4) / (700 / 300),
-    },
-}
+@st.cache
+def gen_go_pie(labels, values, marker_colors=colors):
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels, values=values, marker_colors=marker_colors, sort=False
+            )
+        ]
+    )
+    return fig
 
 
 @st.cache
-def gen_px_box(df, x, y, points, color, color_discrete_map):
+def gen_px_histogram(
+    df, x, y, nbins, color, labels, color_discrete_map=colors, **kwargs
+):
+    fig = px.histogram(
+        df,
+        x=x,
+        y=y,
+        nbins=nbins,
+        color=color,
+        color_discrete_map=color_discrete_map,
+        labels=labels,
+    )
+    # Update layout
+    fig.update_layout(
+        autosize=False,
+        width=700,
+        height=450,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": 13, "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 10)},
+        },
+        modebar={"orientation": "h"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.18,
+            y=-0.005,
+            sizex=0.15,
+            sizey=0.15,
+            xanchor="right",
+            yanchor="bottom",
+        )
+    )
+    return fig
+
+
+@st.cache
+def gen_px_box(df, x, y, points, color, labels, color_discrete_map=colors, **kwargs):
     fig = px.box(
         df,
         x=x,
         y=y,
         points=points,
         color=color,
+        labels=labels,
         color_discrete_map=color_discrete_map,
     )
+    # Update layout
+    fig.update_layout(
+        autosize=False,
+        width=700,
+        height=450,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": 13, "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 10)},
+        },
+        modebar={"orientation": "h"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.18,
+            y=-0.005,
+            sizex=0.15,
+            sizey=0.15,
+            xanchor="right",
+            yanchor="bottom",
+        )
+    )
     return fig
-
-
-@st.cache
-def render_histogram(df, x, y, nbins, color, color_discrete_map, labels):
-    return generate_histogram(df, x, y, nbins, color, color_discrete_map, labels)
 
 
 @st.cache
@@ -150,8 +219,21 @@ def get_significance_matrix(df):
     return fig
 
 
+def print_total(number):
+    st.write(f"**{number}** respondents answered the question with the current filter")
+
+
+chart_config = {
+    "displaylogo": False,
+    "modeBarButtonsToRemove": ["hoverClosestPie"],
+    "toImageButtonOptions": {
+        "width": 700,
+        "height": 450,
+        "scale": (210 / 25.4) / (700 / 300),
+    },
+}
 # ===========================================================================
-# Import data
+# Import data from stored pickle
 # ===========================================================================
 
 df = pd.read_pickle("data/merged.pkl")
@@ -162,6 +244,7 @@ df = pd.read_pickle("data/merged.pkl")
 
 st.set_page_config(
     page_title="IOI Survey Data Explorer",
+    page_icon="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_favicon.png",
 )
 
 
@@ -175,7 +258,6 @@ sections = [
     "Protection",
     "Constraints",
     "Attitudes",
-    "Appendix",
 ]
 
 try:
@@ -236,6 +318,7 @@ components.html(
     height=0,
 )
 
+# Here, a custom font is loaded from the GitHub repo
 st.markdown(
     """ <style>
     @font-face {
@@ -243,7 +326,7 @@ st.markdown(
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url(https://fonts.gstatic.com/s/robotomono/v13/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vq_ROW4.woff2) format('woff2');
+        src: url(https://raw.githubusercontent.com/snv-berlin/ioi/master/roboto_mono.woff2) format('woff2');
         unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
@@ -251,7 +334,12 @@ st.markdown(
     font-family: 'Roboto Mono';
 
     }
-    .st-bx,input {
+
+    .st-bx {
+        font-family: 'Roboto Mono' !important;
+    }
+
+    .st-ae {
         font-family: 'Roboto Mono' !important;
     }
 
@@ -259,22 +347,66 @@ st.markdown(
         font-size: 0.8rem;
     }
 
+    button {
+        border-width: 3px 3px 3px 3px !important;
+        border-radius: 0 !important;
+    }
+
     h3 {line-height: 1.3}
 
-    </style> """,
+    footer {visibility: hidden;}
+
+    .custom-footer {
+        display: block;
+        padding-top: 150px;
+        margin-bottom: -400px;
+        color: rgba(38, 39, 48, 0.4);
+        flex: 0 1 0%;
+        font-size: 0.8rem !important;
+        max-width: 730px;
+        width: 100%;
+    }
+
+    a {
+        color: #ff1c1f !important;
+    }
+
+    a:hover {
+        color: #ff5557 !important;
+    }
+
+    </style>
+    """,
     unsafe_allow_html=True,
 )
 
-###############################################################################
-# Display dynamic charts
-###############################################################################
+
+# ===========================================================================
+# Overview
+# ===========================================================================
 
 
 if selected_section == "Overview":
     st.write("# Overview")
 
-    merged_markdown = read_markdown_file("explorer/markdown/merged.md")
-    st.markdown(merged_markdown, unsafe_allow_html=True)
+    # TODO Add correct links
+    st.write(
+        """
+        This is the _merged_ data containing the responses to the questions
+        from both the Civil Society Scrutiny questionnaire and the Media
+        Scrutiny questionnaire. Since only some questions were asked in both
+        questionnaires, this _merged_ data represents a subset of all the
+        questions that were asked in both surveys individually.
+
+        To see all answers given by members of civil society organisations,
+        click [here](https://ioi.civsoc.sehn.dev). To see all answers given
+        by members of media organisations, click
+        [here](https://ioi.media.sehn.dev). Use the sidebar on the left to
+        choose the section of the survey that is relevant for you and use
+        the drop-down menus to filter by country or survey type.
+
+        """
+    )
 
     col1, col2 = st.columns(2)
     col1.metric("Respondents", len(df[filter].index))
@@ -285,7 +417,7 @@ if selected_section == "Overview":
 
     col1, col2 = st.columns(2)
     col1.metric(
-        "Average years spent working on SBIA†",
+        "Avg. years spent working on SBIA†",
         "%.1f" % df[filter]["expertise1"].mean(),
     )
     col2.metric(
@@ -304,15 +436,38 @@ if selected_section == "Overview":
     )
 
     st.caption(
-        "†For the calculation of the mean, only valid numerical answers were counted. This is why the number might differ from the number one gets when simply dividing e.g. the cumulative years spent working on SBIA by the overall number of respondents (including those who haven't specified their experience in years)."
+        """†For the calculation of the mean, only valid numerical answers were
+        counted. This is why the number might differ from the number one gets
+        when simply dividing e.g. the cumulative years spent working on SBIA
+        by the overall number of respondents (including those who haven't
+        specified their experience in years).
+        """
     )
+
+    st.write("## Open Data")
+    st.write(
+        """We cleaned and anonymised the data so you can take look at it yourself.
+        Using the buttons below, you can download the entire dataset. If you want
+        to find out how this page was created, you can take a look at the code on
+        [Github](https://github.com/snv-berlin/ioi).
+    """
+    )
+    with open("data/merged.csv", "rb") as file:
+        st.download_button(
+            label="Download data as CSV",
+            data=file,
+            file_name="GUARDINT_survey_data_merged.csv",
+        )
+    with open("profiles/merged.html", "rb") as file:
+        st.download_button(
+            label="Download data profile",
+            data=file,
+            file_name="GUARDINT_survey_data_merged_profile.html",
+        )
 
     country_counts = df[filter]["country"].value_counts()
     st.write("### Country")
-    country_total = country_counts.sum()
-    st.write(
-        f"_**{country_total}** respondents in total answered the question with the current filter._"
-    )
+    print_total(country_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -326,15 +481,12 @@ if selected_section == "Overview":
             },
         ),
         use_container_width=True,
-        config=px_pie_config,
+        config=chart_config,
     )
 
     st.write("### Field")
     surveytype_counts = df[filter]["surveytype"].value_counts()
-    surveytype_total = surveytype_counts.sum()
-    st.write(
-        f"_**{surveytype_total}** respondents in total answered the question with the current filter._"
-    )
+    print_total(surveytype_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -342,15 +494,12 @@ if selected_section == "Overview":
             names=surveytype_counts.index,
         ),
         use_container_width=True,
-        config=px_pie_config,
+        config=chart_config,
     )
 
     st.write("### Gender")
     gender_counts = df[filter]["gender"].value_counts()
-    gender_total = gender_counts.sum()
-    st.write(
-        f"_**{gender_total}** respondents in total answered the question with the current filter._"
-    )
+    print_total(gender_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -365,16 +514,24 @@ if selected_section == "Overview":
             },
         ),
         use_container_width=True,
-        config=px_pie_config,
+        config=chart_config,
     )
+
+    # TODO Privacy notice
+
+# ===========================================================================
+# Resources
+# ===========================================================================
+
 
 if selected_section == "Resources":
     st.write("# Resources")
 
     st.write("## Human Resources")
 
-    st.write("### What is your employment status `[hr1]`")
+    st.write("### What is your employment status?")
     hr1_counts = df[filter]["hr1"].value_counts()
+    print_total(hr1_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             hr1_counts,
@@ -382,34 +539,38 @@ if selected_section == "Resources":
             names=hr1_counts.index,
             color=hr1_counts.index,
             color_discrete_map={
-                "Full-time": px.colors.qualitative.Prism[0],
-                "Part-time (>50%)": px.colors.qualitative.Prism[1],
-                "Part-time (<50%)": px.colors.qualitative.Prism[2],
-                "Freelance": px.colors.qualitative.Prism[4],
-                "Other": px.colors.qualitative.Prism[10],
+                "Full-time": colors[0],
+                "Part-time (>50%)": colors[1],
+                "Part-time (<50%)": colors[2],
+                "Freelance": colors[3],
+                "Other": colors[4],
             },
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
+        "### How many days per month do you work on surveillance by intelligence agencies?"
     )
+    hr2_counts = df[filter]["hr2"].value_counts()
+    print_total(hr2_counts.sum())
     st.plotly_chart(
-        render_histogram(
+        gen_px_histogram(
             df=df[filter],
             x="hr2",
             y=None,
             nbins=None,
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"hr2": "days per month"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.plotly_chart(
@@ -420,17 +581,19 @@ if selected_section == "Resources":
             y="hr2",
             color="country",
             color_discrete_map={
-                "Germany": colors[5],
-                "France": colors[1],
-                "United Kingdom": colors[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
+            labels={"hr2": "days per month"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     df["hr2_more_than_five"] = np.where(df["hr2"] > 5, True, False)
     df["hr2_more_than_five"] = df["hr2_more_than_five"].replace(
-        {True: ">5 days", False: "5 days or less"}
+        {True: "more than 5 days", False: "5 days or less"}
     )
     hr2_more_than_five_counts = df[filter]["hr2_more_than_five"].value_counts()
     st.plotly_chart(
@@ -441,24 +604,27 @@ if selected_section == "Resources":
             color=hr2_more_than_five_counts.index,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write("## Expertise")
 
     st.write(
-        "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
+        "### How many years have you spent working on surveillance by intelligence agencies?"
     )
+    expertise1_counts = df[filter]["expertise1"].value_counts()
+    print_total(expertise1_counts.sum())
     st.plotly_chart(
-        render_histogram(
+        gen_px_histogram(
             df[filter],
             x="expertise1",
             y=None,
             nbins=20,
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"expertise1": "years"},
         ),
@@ -473,34 +639,34 @@ if selected_section == "Resources":
             y="expertise1",
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[5],
+                "France": colors[1],
+                "United Kingdom": colors[7],
             },
+            labels={"expertise1": "years"},
         ),
         use_container_width=True,
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? For example, knowledge of intelligence law, case law. `[expertise2]`"
+        "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies?"
     )
-    expertise2_counts = df[filter]["expertise2"].value_counts()
+    expertise2_counts = df[filter]["expertise2"].value_counts().sort_index()
+    print_total(expertise2_counts.sum())
+    print(expertise2_counts.sort_index().index)
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=expertise2_counts,
-            names=expertise2_counts.index,
-            color_discrete_sequence=None,
-            color=expertise2_counts.index,
-            color_discrete_map={
-                "Expert knowledge": px.colors.qualitative.Prism[9],
-                "Advanced knowledge": px.colors.qualitative.Prism[8],
-                "Some knowledge": px.colors.qualitative.Prism[7],
-                "Basic knowledge": px.colors.qualitative.Prism[6],
-                "No knowledge": px.colors.qualitative.Prism[5],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
-            },
+        gen_go_pie(
+            labels=expertise2_counts.sort_index().index,
+            values=expertise2_counts.sort_index().values
+            # color_discrete_map={
+            #     "Expert knowledge": colors[0],
+            #     "Advanced knowledge": colors[1],
+            #     "Some knowledge": colors[2],
+            #     "Basic knowledge": colors[3],
+            #     "No knowledge": colors[4],
+            #     "I don't know": colors[5],
+            #     "I prefer not to say": colors[6],
+            # },
         ),
         use_container_width=True,
     )
@@ -517,13 +683,13 @@ if selected_section == "Resources":
             color_discrete_sequence=None,
             color=expertise3_counts.index,
             color_discrete_map={
-                "Expert knowledge": px.colors.qualitative.Prism[9],
-                "Advanced knowledge": px.colors.qualitative.Prism[8],
-                "Some knowledge": px.colors.qualitative.Prism[7],
-                "Basic knowledge": px.colors.qualitative.Prism[6],
-                "No knowledge": px.colors.qualitative.Prism[5],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "Expert knowledge": colors[9],
+                "Advanced knowledge": colors[8],
+                "Some knowledge": colors[7],
+                "Basic knowledge": colors[6],
+                "No knowledge": colors[5],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -541,13 +707,13 @@ if selected_section == "Resources":
             color_discrete_sequence=None,
             color=expertise4_counts.index,
             color_discrete_map={
-                "Expert knowledge": px.colors.qualitative.Prism[9],
-                "Advanced knowledge": px.colors.qualitative.Prism[8],
-                "Some knowledge": px.colors.qualitative.Prism[7],
-                "Basic knowledge": px.colors.qualitative.Prism[6],
-                "No knowledge": px.colors.qualitative.Prism[5],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "Expert knowledge": colors[9],
+                "Advanced knowledge": colors[8],
+                "Some knowledge": colors[7],
+                "Basic knowledge": colors[6],
+                "No knowledge": colors[5],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -567,13 +733,13 @@ if selected_section == "Resources":
             color_discrete_sequence=None,
             color=finance1_counts.index,
             color_discrete_map={
-                "A great deal of funding": px.colors.qualitative.Prism[9],
-                "Sufficient funding": px.colors.qualitative.Prism[8],
-                "Some funding": px.colors.qualitative.Prism[7],
-                "Little funding": px.colors.qualitative.Prism[6],
-                "No funding": px.colors.qualitative.Prism[5],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "A great deal of funding": colors[9],
+                "Sufficient funding": colors[8],
+                "Some funding": colors[7],
+                "Little funding": colors[6],
+                "No funding": colors[5],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         )
     )
@@ -591,10 +757,10 @@ if selected_section == "Resources":
             names=foi1_counts.index,
             color=foi1_counts.index,
             color_discrete_map={
-                "No": px.colors.qualitative.Prism[8],
-                "Yes": px.colors.qualitative.Prism[2],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "No": colors[8],
+                "Yes": colors[2],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -602,16 +768,16 @@ if selected_section == "Resources":
 
     st.write("### How often did you request information? `[foi2]`")
     st.plotly_chart(
-        render_histogram(
+        gen_px_histogram(
             df[filter],
             x="foi2",
             y=None,
             nbins=10,
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[5],
+                "France": colors[1],
+                "United Kingdom": colors[7],
             },
             labels={"foi2": "Number of requests"},
         ),
@@ -626,9 +792,9 @@ if selected_section == "Resources":
             y="foi2",
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[5],
+                "France": colors[1],
+                "United Kingdom": colors[7],
             },
         ),
         use_container_width=True,
@@ -645,11 +811,11 @@ if selected_section == "Resources":
             names=foi3_counts.index,
             color=foi3_counts.index,
             color_discrete_map={
-                "Never": px.colors.qualitative.Prism[9],
-                "No, usually longer than 30 days": px.colors.qualitative.Prism[8],
-                "Yes, within 30 days": px.colors.qualitative.Prism[2],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "Never": colors[9],
+                "No, usually longer than 30 days": colors[8],
+                "Yes, within 30 days": colors[2],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -693,16 +859,16 @@ if selected_section == "Resources":
             )
     foi5_df = foi5_df.drop_duplicates()
     st.plotly_chart(
-        render_histogram(
+        gen_px_histogram(
             foi5_df,
             x="option",
             y="count",
             nbins=None,
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[5],
+                "France": colors[1],
+                "United Kingdom": colors[7],
             },
             labels={"count": "people who answered 'Yes'"},
         ),
@@ -760,25 +926,25 @@ if selected_section == "Protection":
                     name="Yes",
                     x=protectops1_options,
                     y=protectops1_yes,
-                    marker_color=px.colors.qualitative.Prism[2],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
                     x=protectops1_options,
                     y=protectops1_no,
-                    marker_color=px.colors.qualitative.Prism[8],
+                    marker_color=colors[8],
                 ),
                 go.Bar(
                     name="I don't know",
                     x=protectops1_options,
                     y=protectops1_dont_know,
-                    marker_color=px.colors.qualitative.Prism[10],
+                    marker_color=colors[10],
                 ),
                 go.Bar(
                     name="I prefer not to say",
                     x=protectops1_options,
                     y=protectops1_prefer_not_to_say,
-                    marker_color=px.colors.qualitative.Prism[10],
+                    marker_color=colors[10],
                 ),
             ],
         ),
@@ -794,7 +960,7 @@ if selected_section == "Protection":
             df[filter],
             values=protectops2_counts,
             names=protectops2_counts.index,
-            color_discrete_sequence=px.colors.qualitative.Prism,
+            color_discrete_sequence=colors,
         ),
         use_container_width=True,
     )
@@ -904,23 +1070,23 @@ if selected_section == "Protection":
             names=protectops4_counts.index,
             color=protectops4_counts.index,
             color_discrete_map={
-                "I have full confidence that the right tools <br>will protect my communication from surveillance": px.colors.qualitative.Prism[
+                "I have full confidence that the right tools <br>will protect my communication from surveillance": colors[
                     4
                 ],
-                "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": px.colors.qualitative.Prism[
+                "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": colors[
                     5
                 ],
-                "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": px.colors.qualitative.Prism[
+                "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": colors[
                     6
                 ],
-                "I have no confidence in the protection offered by <br>technological tools": px.colors.qualitative.Prism[
+                "I have no confidence in the protection offered by <br>technological tools": colors[
                     7
                 ],
-                "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": px.colors.qualitative.Prism[
+                "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": colors[
                     8
                 ],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -941,13 +1107,13 @@ if selected_section == "Protection":
             names=protectleg1_counts.index,
             color=protectleg1_counts.index,
             color_discrete_map={
-                "Always": px.colors.qualitative.Prism[9],
-                "Often": px.colors.qualitative.Prism[8],
-                "Sometimes": px.colors.qualitative.Prism[7],
-                "Rarely": px.colors.qualitative.Prism[6],
-                "Never": px.colors.qualitative.Prism[5],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "Always": colors[9],
+                "Often": colors[8],
+                "Sometimes": colors[7],
+                "Rarely": colors[6],
+                "Never": colors[5],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -963,13 +1129,13 @@ if selected_section == "Protection":
             protectleg2_counts,
             values=protectleg2_counts,
             names=protectleg2_counts.index,
-            color_discrete_sequence=px.colors.qualitative.Prism,
+            color_discrete_sequence=colors,
             color=protectleg2_counts.index,
             color_discrete_map={
-                "No": px.colors.qualitative.Prism[8],
-                "Yes": px.colors.qualitative.Prism[2],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "No": colors[8],
+                "Yes": colors[2],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -1011,13 +1177,13 @@ if selected_section == "Protection":
                     name="Yes",
                     x=protectleg3_options,
                     y=protectleg3_yes,
-                    marker_color=px.colors.qualitative.Prism[2],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
                     x=protectleg3_options,
                     y=protectleg3_no,
-                    marker_color=px.colors.qualitative.Prism[8],
+                    marker_color=colors[8],
                 ),
                 go.Bar(
                     name="I don't know",
@@ -1060,11 +1226,11 @@ if selected_section == "Constraints":
             names=constraintinter1_counts.index,
             color=constraintinter1_counts.index,
             color_discrete_map={
-                "No": px.colors.qualitative.Prism[8],
-                "Yes, I have evidence": px.colors.qualitative.Prism[1],
-                "Yes, I suspect": px.colors.qualitative.Prism[2],
-                "I don't know": px.colors.qualitative.Prism[10],
-                "I prefer not to say": px.colors.qualitative.Prism[10],
+                "No": colors[8],
+                "Yes, I have evidence": colors[1],
+                "Yes, I suspect": colors[2],
+                "I don't know": colors[10],
+                "I prefer not to say": colors[10],
             },
         ),
         use_container_width=True,
@@ -1079,7 +1245,7 @@ if selected_section == "Constraints":
         df[filter],
         values=constraintinter2_counts,
         names=constraintinter2_counts.index,
-        color_discrete_sequence=px.colors.qualitative.Prism,
+        color_discrete_sequence=colors,
     )
 
     st.plotly_chart(constraintinter2_fig)
@@ -1092,7 +1258,7 @@ if selected_section == "Constraints":
             df[filter],
             values=constraintinter3_counts,
             names=constraintinter3_counts.index,
-            color_discrete_sequence=px.colors.qualitative.Prism,
+            color_discrete_sequence=colors,
         ),
         use_container_width=True,
     )
@@ -1128,13 +1294,13 @@ if selected_section == "Constraints":
                     name="Yes",
                     x=constraintinter4_options,
                     y=constraintinter4_yes,
-                    marker_color=px.colors.qualitative.Prism[2],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
                     x=constraintinter4_options,
                     y=constraintinter4_no,
-                    marker_color=px.colors.qualitative.Prism[8],
+                    marker_color=colors[8],
                 ),
                 go.Bar(
                     name="I don't know",
@@ -1190,13 +1356,13 @@ if selected_section == "Constraints":
                     name="Yes",
                     x=constraintinter5_options,
                     y=constraintinter5_yes,
-                    marker_color=px.colors.qualitative.Prism[2],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
                     x=constraintinter5_options,
                     y=constraintinter5_no,
-                    marker_color=px.colors.qualitative.Prism[8],
+                    marker_color=colors[8],
                 ),
                 go.Bar(
                     name="I don't know",
@@ -1267,13 +1433,13 @@ if selected_section == "Constraints":
                     name="Yes",
                     x=constraintinter6_options,
                     y=constraintinter6_yes,
-                    marker_color=px.colors.qualitative.Prism[2],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
                     x=constraintinter6_options,
                     y=constraintinter6_no,
-                    marker_color=px.colors.qualitative.Prism[8],
+                    marker_color=colors[8],
                 ),
                 go.Bar(
                     name="I don't know",
@@ -1312,7 +1478,7 @@ if selected_section == "Attitudes":
             df[filter],
             values=attitude1_counts,
             names=attitude1_counts.index,
-            color_discrete_sequence=px.colors.qualitative.Prism,
+            color_discrete_sequence=colors,
         ),
         use_container_width=True,
     )
@@ -1327,7 +1493,7 @@ if selected_section == "Attitudes":
             df[filter],
             values=attitude2_counts,
             names=attitude2_counts.index,
-            color_discrete_sequence=px.colors.qualitative.Prism,
+            color_discrete_sequence=colors,
         ),
         use_container_width=True,
     )
@@ -1358,16 +1524,16 @@ if selected_section == "Attitudes":
     attitude3_df = attitude3_df.drop_duplicates()
 
     st.plotly_chart(
-        render_histogram(
+        gen_px_histogram(
             df=attitude3_df,
             x="option",
             y="count",
             nbins=None,
             color="country",
             color_discrete_map={
-                "Germany": px.colors.qualitative.Prism[5],
-                "France": px.colors.qualitative.Prism[1],
-                "United Kingdom": px.colors.qualitative.Prism[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
         ),
@@ -1399,40 +1565,17 @@ if selected_section == "Attitudes":
     )
     st.plotly_chart(render_ranking_plot("attitude6"), use_container_width=True)
 
+# ===========================================================================
+# Footer
+# ===========================================================================
 
-if selected_section == "Appendix":
-    st.write("# Appendix")
-
-    st.write("## Raw data")
-
-    st.write(get_csv_download_link(df, "merged"), unsafe_allow_html=True)
-    st.write(get_excel_download_link(df, "merged"), unsafe_allow_html=True)
-
-    table = st.checkbox("Show data as table")
-    if table:
-        st.dataframe(df[filter])
-
-    st.write("## Correlation Matrix (Phik `φK`)")
-
-    st.write(
-        "Phik (φk) is a new and practical correlation coefficient that works consistently between categorical, ordinal and interval variables, captures non-linear dependency and reverts to the Pearson correlation coefficient in case of a bivariate normal input distribution. There is extensive documentation available [here](https://phik.readthedocs.io/en/latest/index.html)"
-    )
-
-    show_corr = st.checkbox("Show correlation matrix")
-    if show_corr:
-        fig_corr = get_corr_matrix(df)
-        st.plotly_chart(fig_corr, use_container_width=True)
-
-    st.write("## Significance Matrix")
-
-    st.markdown(
-        body="When assessing correlations it is good practise to evaluate both the correlation and the significance of the correlation: a large correlation may be statistically insignificant, and vice versa a small correlation may be very significant. For instance, scipy.stats.pearsonr returns both the pearson correlation and the p-value. Similarly, the phik package offers functionality the calculate a significance matrix. Significance is defined as: "
-    )
-    st.markdown(
-        body="$Z=\Phi^{-1}(1-p); \Phi(z)=\\frac{1}{\\sqrt{2\pi}}\int_{-\infty}^{z} e^{-t^{2}/2}\,dt$"
-    )
-
-    show_sig = st.checkbox("Show significance matrix")
-    if show_sig:
-        fig_sig = get_significance_matrix(df)
-        st.plotly_chart(fig_sig, use_container_width=True)
+st.markdown(
+    """
+    <div class="custom-footer">Developed with
+        <a href="https://streamlit.io" target="_blank">Streamlit</a>
+        and ❤ by the
+        <a href="https://guardint.org" target="_blank">GUARDINT Project</a>
+    </div>
+""",
+    unsafe_allow_html=True,
+)

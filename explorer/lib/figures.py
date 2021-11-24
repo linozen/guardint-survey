@@ -3,52 +3,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-def generate_pie_chart(
-    df,
-    values,
-    names,
-    hover_name,
-    color,
-    hover_data,
-    custom_data,
-    color_discrete_sequence,
-    color_discrete_map,
-    labels,
-):
-    fig = px.pie(
-        df,
-        values=values,
-        names=names,
-        hover_name=hover_name,
-        color=color,
-        custom_data=custom_data,
-        color_discrete_sequence=color_discrete_sequence,
-        color_discrete_map=color_discrete_map,
-        labels=labels,
-    )
-    fig.update_traces(
-        textinfo="percent+value",
-        hovertemplate="<b>Answer</b> %{label}<br><br>given by <b>%{value}</b> respondents or <b>%{percent}</b><br>of all who answered the question.<br>",
-    )
-    fig.update_layout(
-        legend={"y": 1.5, "font": {"size": 11}, "orientation": "v"},
-    )
-    return fig
-
-
-def generate_histogram(df, x, y, nbins, color, color_discrete_map, labels):
-    fig = px.histogram(
-        df,
-        x=x,
-        y=y,
-        nbins=nbins,
-        color=color,
-        color_discrete_map=color_discrete_map,
-        labels=labels,
-    )
-    return fig
-
-
 def generate_boxplot(df, x, y, points, color, color_discrete_map):
     fig = px.box(
         df,

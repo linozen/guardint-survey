@@ -47,6 +47,7 @@ jobs:
 
       - name: Deploy Docker image to server using SSH
         uses: appleboy/ssh-action@master
+        # TODO Set correct browser.serverAddress and server.baseUrlPath
         with:
           host: ioi.sehn.dev
           username: root

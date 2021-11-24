@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 
+
 def construct_cs_df():
 
     # Merge CSV files into DataFrame
@@ -431,13 +432,13 @@ df["gender"] = df["gender"].replace(
 
 df["expertise2"] = df["expertise2"].replace(
     {
-        "AO01": "Expert knowledge",
-        "AO02": "Advanced knowledge",
-        "AO03": "Some knowledge",
-        "AO04": "Basic knowledge",
-        "AO05": "No knowledge",
-        "AO06": "I don't know",
-        "AO07": "I prefer not to say",
+        "AO01": "A1: Expert knowledge",
+        "AO02": "A2: Advanced knowledge",
+        "AO03": "A3: Some knowledge",
+        "AO04": "A4: Basic knowledge",
+        "AO05": "A5: No knowledge",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
     }
 )
 
