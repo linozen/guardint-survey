@@ -7,14 +7,7 @@ import plotly.express as px
 from pathlib import Path
 
 from lib.figures import (
-    generate_overlaid_histogram,
-    generate_stacked_bar_chart,
     generate_ranking_plot,
-)
-
-from lib.download import (
-    get_csv_download_link,
-    get_excel_download_link,
 )
 
 # ===========================================================================
@@ -30,7 +23,7 @@ colors = [
     "#ff8e8f",
     "#ffc7c7",
     "#ffe3e3",
-    "#ffffff",
+    "#efefef",
 ]
 
 # ===========================================================================
@@ -67,7 +60,7 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
         font={"size": 18, "family": "Roboto Mono, monospace"},
         legend={
             "font": {"size": kwargs.get("legend_font_size", 12)},
-            "orientation": "h",
+            "orientation": kwargs.get("legend_orientation", "h"),
             "bgcolor": "#efefef",
             "x": -0.2,
             "y": 1.1,
@@ -92,13 +85,52 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
 
 
 @st.cache
-def gen_go_pie(labels, values, marker_colors=colors):
+def gen_go_pie(labels, values, marker_colors=colors, **kwargs):
     fig = go.Figure(
         data=[
             go.Pie(
                 labels=labels, values=values, marker_colors=marker_colors, sort=False
             )
         ]
+    )
+    # Update what is shown on the slices (on hover)
+    fig.update_traces(
+        texttemplate="<b>%{value}</b><br>%{percent}",
+        hovertemplate="""<b>Answer</b> %{label}
+<br><br>given by <b>%{value}</b> respondents or <b>%{percent}</b>
+<br>of all who answered the question
+<br>given the current filter.<extra></extra>
+        """,
+    )
+    # Update layout
+    fig.update_layout(
+        autosize=False,
+        width=700,
+        height=kwargs.get("height", 450),
+        margin=dict(l=0, r=0, b=50, t=30),
+        font={"size": kwargs.get("font_size", 18), "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 12)},
+            "orientation": "v",
+            "bgcolor": "#efefef",
+            "x": kwargs.get("legend_x", -0.2),
+            "y": kwargs.get("legend_y", 1.1),
+        },
+        modebar={"orientation": "v"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.00,
+            y=0.00,
+            sizex=0.15,
+            sizey=0.15,
+            xanchor="right",
+            yanchor="bottom",
+        )
     )
     return fig
 
@@ -122,7 +154,7 @@ def gen_px_histogram(
         width=700,
         height=450,
         margin=dict(l=0, r=0, b=100, t=30),
-        font={"size": 13, "family": "Roboto Mono, monospace"},
+        font={"size": kwargs.get("font_size", 13), "family": "Roboto Mono, monospace"},
         legend={
             "font": {"size": kwargs.get("legend_font_size", 10)},
         },
@@ -186,13 +218,36 @@ def gen_px_box(df, x, y, points, color, labels, color_discrete_map=colors, **kwa
 
 
 @st.cache
-def render_overlaid_histogram(traces):
-    return generate_overlaid_histogram(traces)
-
-
-@st.cache
-def render_stacked_bar_chart(data):
-    return generate_stacked_bar_chart(data)
+def gen_go_bar_stack(data, **kwargs):
+    fig = go.Figure(data=data)
+    # Update layout
+    fig.update_layout(
+        barmode="stack",
+        autosize=False,
+        width=700,
+        height=700,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": 13, "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 10)},
+        },
+        modebar={"orientation": "h"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.18,
+            y=-0.005,
+            sizex=0.15,
+            sizey=0.15,
+            xanchor="right",
+            yanchor="bottom",
+        )
+    )
+    return fig
 
 
 @st.cache
@@ -367,12 +422,22 @@ st.markdown(
         width: 100%;
     }
 
+    strong {
+        font-style: bold;
+        font-weight: 700;
+        color: #600b0c;
+    }
+
     a {
         color: #ff1c1f !important;
     }
 
     a:hover {
         color: #ff5557 !important;
+    }
+
+    a:visited {
+        color: #600b0c !important;
     }
 
     </style>
@@ -629,6 +694,7 @@ if selected_section == "Resources":
             labels={"expertise1": "years"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.plotly_chart(
@@ -639,13 +705,14 @@ if selected_section == "Resources":
             y="expertise1",
             color="country",
             color_discrete_map={
-                "Germany": colors[5],
-                "France": colors[1],
-                "United Kingdom": colors[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"expertise1": "years"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
@@ -657,99 +724,63 @@ if selected_section == "Resources":
     st.plotly_chart(
         gen_go_pie(
             labels=expertise2_counts.sort_index().index,
-            values=expertise2_counts.sort_index().values
-            # color_discrete_map={
-            #     "Expert knowledge": colors[0],
-            #     "Advanced knowledge": colors[1],
-            #     "Some knowledge": colors[2],
-            #     "Basic knowledge": colors[3],
-            #     "No knowledge": colors[4],
-            #     "I don't know": colors[5],
-            #     "I prefer not to say": colors[6],
-            # },
+            values=expertise2_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?` [expertise3]`"
+        "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?"
     )
-    expertise3_counts = df[filter]["expertise3"].value_counts()
+    expertise3_counts = df[filter]["expertise3"].value_counts().sort_index()
+    print_total(expertise3_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=expertise3_counts,
-            names=expertise3_counts.index,
-            color_discrete_sequence=None,
-            color=expertise3_counts.index,
-            color_discrete_map={
-                "Expert knowledge": colors[9],
-                "Advanced knowledge": colors[8],
-                "Some knowledge": colors[7],
-                "Basic knowledge": colors[6],
-                "No knowledge": colors[5],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
+        gen_go_pie(
+            labels=expertise3_counts.sort_index().index,
+            values=expertise3_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?` [expertise4]`"
+        "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?"
     )
-    expertise4_counts = df[filter]["expertise4"].value_counts()
+    expertise4_counts = df[filter]["expertise4"].value_counts().sort_index()
+    print_total(expertise4_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=expertise4_counts,
-            names=expertise4_counts.index,
-            color_discrete_sequence=None,
-            color=expertise4_counts.index,
-            color_discrete_map={
-                "Expert knowledge": colors[9],
-                "Advanced knowledge": colors[8],
-                "Some knowledge": colors[7],
-                "Basic knowledge": colors[6],
-                "No knowledge": colors[5],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
+        gen_go_pie(
+            labels=expertise4_counts.sort_index().index,
+            values=expertise4_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write("## Financial Resources")
 
     st.write(
-        "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
+        "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years?"
     )
-    finance1_counts = df[filter]["finance1"].value_counts()
+    finance1_counts = df[filter]["finance1"].value_counts().sort_index()
+    print_total(finance1_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=finance1_counts,
-            names=finance1_counts.index,
-            color_discrete_sequence=None,
-            color=finance1_counts.index,
-            color_discrete_map={
-                "A great deal of funding": colors[9],
-                "Sufficient funding": colors[8],
-                "Some funding": colors[7],
-                "Little funding": colors[6],
-                "No funding": colors[5],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
-        )
+        gen_go_pie(
+            labels=finance1_counts.sort_index().index,
+            values=finance1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
     )
 
     st.write("## Freedom of Information")
 
     st.write(
-        "### Have you requested information under the national FOI law when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
+        "### Have you requested information under the national FOI law when you worked on intelligence-related issues over the past 5 years?"
     )
     foi1_counts = df[filter]["foi1"].value_counts()
+    print_total(foi1_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             foi1_counts,
@@ -757,16 +788,18 @@ if selected_section == "Resources":
             names=foi1_counts.index,
             color=foi1_counts.index,
             color_discrete_map={
-                "No": colors[8],
-                "Yes": colors[2],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
+                "No": colors[0],
+                "Yes": colors[3],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
             },
         ),
         use_container_width=True,
     )
 
-    st.write("### How often did you request information? `[foi2]`")
+    st.write("### How often did you request information?")
+    foi2_counts = df[filter]["foi3"].value_counts()
+    print_total(foi2_counts.sum())
     st.plotly_chart(
         gen_px_histogram(
             df[filter],
@@ -775,9 +808,9 @@ if selected_section == "Resources":
             nbins=10,
             color="country",
             color_discrete_map={
-                "Germany": colors[5],
-                "France": colors[1],
-                "United Kingdom": colors[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"foi2": "Number of requests"},
         ),
@@ -792,51 +825,45 @@ if selected_section == "Resources":
             y="foi2",
             color="country",
             color_discrete_map={
-                "Germany": colors[5],
-                "France": colors[1],
-                "United Kingdom": colors[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
+            labels={"foi2": "Number of requests"},
         ),
         use_container_width=True,
     )
 
     st.write(
-        "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[foi3]`"
+        "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner?"
     )
     foi3_counts = df[filter]["foi3"].value_counts()
+    print_total(foi3_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            foi3_counts,
-            values=foi3_counts,
-            names=foi3_counts.index,
-            color=foi3_counts.index,
-            color_discrete_map={
-                "Never": colors[9],
-                "No, usually longer than 30 days": colors[8],
-                "Yes, within 30 days": colors[2],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
+        gen_go_pie(
+            labels=foi3_counts.sort_index().index,
+            values=foi3_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### How helpful have Freedom of Information requests been for your work on intelligence-related issues? `[foi4]`"
+        "### How helpful have Freedom of Information requests been for your work on intelligence-related issues?"
     )
     foi4_counts = df[filter]["foi4"].value_counts()
-
+    print_total(foi4_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=foi4_counts,
-            names=foi4_counts.index,
+        gen_go_pie(
+            labels=foi4_counts.sort_index().index,
+            values=foi4_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[foi5]`"
+        "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years?"
     )
     foi5_df = pd.DataFrame(columns=("option", "count", "country"))
     # TODO Map proper labels
@@ -858,6 +885,19 @@ if selected_section == "Resources":
                 ignore_index=True,
             )
     foi5_df = foi5_df.drop_duplicates()
+    foi5_df = foi5_df.replace(
+        {
+            "not_aware": "I was not aware",
+            "not_covered": "The authority was not covered<br>by FOI law",
+            "too_expensive": "It seemed to expensive",
+            "too_time_consuming": "It seemed to time-consuming",
+            "afraid_of_data_destruction": "I was afraid the request<br>could lead to data destruction",
+            "other": "Other",
+            "prefer_not_to_say": "I prefer not to say",
+            "dont_know": "I don't know ",
+        }
+    )
+    print_total(foi5_df["count"].sum())
     st.plotly_chart(
         gen_px_histogram(
             foi5_df,
@@ -865,20 +905,21 @@ if selected_section == "Resources":
             y="count",
             nbins=None,
             color="country",
+            font_size=11,
             color_discrete_map={
-                "Germany": colors[5],
-                "France": colors[1],
-                "United Kingdom": colors[7],
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
-    st.write("### If you selected ‘other’, please specify `[foi5other]`")
-    for i in df[filter]["foi5other"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
+# ===========================================================================
+# Protection
+# ===========================================================================
 
 if selected_section == "Protection":
     st.write("# Protection")
@@ -886,11 +927,11 @@ if selected_section == "Protection":
     st.write("## Operational Protection")
 
     st.write(
-        "### Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
+        "### Have you taken any of the following measures to protect your datas from attacks and surveillance?"
     )
     protectops1_options = [
-        "Participation in digital security training",
-        "Use of E2E encrypted communication channels",
+        "Participation in<br>digital security training",
+        "Use of E2E encrypted<br>communication channels",
     ]
 
     protectops1_yes = []
@@ -918,55 +959,67 @@ if selected_section == "Protection":
                 protectops1_prefer_not_to_say.append(count)
             else:
                 continue
-
+    totals = [
+        df[filter]["protectops1[sectraining]"].value_counts().sum(),
+        df[filter]["protectops1[e2e]"].value_counts().sum(),
+    ]
+    print_total(max(totals))
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
                     x=protectops1_options,
                     y=protectops1_yes,
-                    marker_color=colors[2],
+                    marker_color=colors[1],
                 ),
                 go.Bar(
                     name="No",
                     x=protectops1_options,
                     y=protectops1_no,
-                    marker_color=colors[8],
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
                     x=protectops1_options,
                     y=protectops1_dont_know,
-                    marker_color=colors[10],
+                    marker_color=colors[4],
                 ),
                 go.Bar(
                     name="I prefer not to say",
                     x=protectops1_options,
                     y=protectops1_prefer_not_to_say,
-                    marker_color=colors[10],
+                    marker_color=colors[5],
                 ),
             ],
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
-    st.write(
-        "### Were any of these measures provided by your employer? `[protectops2]`"
-    )
+    st.write("### Were any of these measures provided by your employer?")
     protectops2_counts = df[filter]["protectops2"].value_counts()
+    print_total(protectops2_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
             values=protectops2_counts,
             names=protectops2_counts.index,
-            color_discrete_sequence=colors,
+            color=protectops2_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I prefer not to say": colors[5],
+                "I don't know": colors[4],
+            },
+            legend_orientation="v",
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[protectops3]`"
+        "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle?"
     )
     protectops3_options = [
         "Encrypted Email",
@@ -1016,107 +1069,91 @@ if selected_section == "Protection":
             else:
                 continue
 
+    totals = [
+        df[filter]["protectops3[encrypted_email]"].value_counts().sum(),
+        df[filter]["protectops3[vpn]"].value_counts().sum(),
+        df[filter]["protectops3[tor]"].value_counts().sum(),
+        df[filter]["protectops3[e2e_chat]"].value_counts().sum(),
+        df[filter]["protectops3[encrypted_hardware]"].value_counts().sum(),
+        df[filter]["protectops3[2fa]"].value_counts().sum(),
+        df[filter]["protectops3[other]"].value_counts().sum(),
+    ]
+    print_total(max(totals))
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Very important",
                     x=protectops3_options,
                     y=protectops3_very_important,
-                    marker_color="#581845",
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="Somewhat important",
                     x=protectops3_options,
                     y=protectops3_somewhat_important,
-                    marker_color="#900C3F",
+                    marker_color=colors[1],
                 ),
                 go.Bar(
                     name="Important",
                     x=protectops3_options,
                     y=protectops3_important,
-                    marker_color="#C70039",
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="Slightly important",
                     x=protectops3_options,
                     y=protectops3_slightly_important,
-                    marker_color="#FF5733",
+                    marker_color=colors[3],
                 ),
                 go.Bar(
                     name="Not important at all",
                     x=protectops3_options,
                     y=protectops3_not_important,
-                    marker_color="#FFC300",
+                    marker_color=colors[5],
                 ),
             ],
         ),
         use_container_width=True,
     )
 
-    st.write("### If you selected ‘other’, please specify `[protectops3other]`")
-    for i in df[filter]["protectops3other"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
-
     st.write(
-        "### Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
+        "### Which of the following statements best describes your level of confidence in the protection offered by technological tools?"
     )
     protectops4_counts = df[filter]["protectops4"].value_counts()
+    print_total(protectops4_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            protectops4_counts,
-            values=protectops4_counts,
-            names=protectops4_counts.index,
-            color=protectops4_counts.index,
-            color_discrete_map={
-                "I have full confidence that the right tools <br>will protect my communication from surveillance": colors[
-                    4
-                ],
-                "Technological tools help to protect my identity <br>to some extent, but an attacker with sufficient power <br>may eventually be able to bypass my technological <br>safeguards": colors[
-                    5
-                ],
-                "Under the current conditions of communications <br>surveillance, technological solutions cannot offer <br>sufficient protection for the data I handle": colors[
-                    6
-                ],
-                "I have no confidence in the protection offered by <br>technological tools": colors[
-                    7
-                ],
-                "I try to avoid technology-based communication whenever <br>possible when I work on intelligence-related issues": colors[
-                    8
-                ],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
+        gen_go_pie(
+            labels=protectops4_counts.sort_index().index,
+            values=protectops4_counts.sort_index().values,
+            height=600,
+            font_size=13,
+            legend_font_size=11,
+            legend_x=-1.0,
+            legend_y=2.0,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write("## Legal Protection")
 
-    # TODO Clarify that in MS it's about source protection (also for protectleg2)
     st.write(
-        "### When working on intelligence-related issues, do you feel you have reason to be concerned about... surveillance of your activities (_CSO representatives_) | regarding the protection of your sources (_media representatives_) `[protectleg1]`"
+        """### When working on intelligence-related issues, do you feel you have reason to be concerned about...
+
+- surveillance of your activities (CSO representatives)
+- regarding the protection of your sources (media representatives)"""
     )
 
     protectleg1_counts = df[filter]["protectleg1"].value_counts()
+    print_total(protectleg1_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=protectleg1_counts,
-            names=protectleg1_counts.index,
-            color=protectleg1_counts.index,
-            color_discrete_map={
-                "Always": colors[9],
-                "Often": colors[8],
-                "Sometimes": colors[7],
-                "Rarely": colors[6],
-                "Never": colors[5],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
-            },
+        gen_go_pie(
+            labels=protectleg1_counts.sort_index().index,
+            values=protectleg1_counts.sort_index().values,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
@@ -1124,6 +1161,7 @@ if selected_section == "Protection":
     )
 
     protectleg2_counts = df[filter]["protectleg2"].value_counts()
+    print_total(protectleg2_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             protectleg2_counts,
@@ -1132,22 +1170,17 @@ if selected_section == "Protection":
             color_discrete_sequence=colors,
             color=protectleg2_counts.index,
             color_discrete_map={
-                "No": colors[8],
+                "No": colors[0],
                 "Yes": colors[2],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
             },
         ),
         use_container_width=True,
     )
 
-    st.write("### If you selected ‘no’, please specify `[protectleg2no]`")
-    for i in df[filter]["protectleg2no"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
-
     st.write(
-        "### Are any of the following forms of institutional support readily available to you? `[protectleg3]`"
+        "### Are any of the following forms of institutional support readily available to you?"
     )
     protectleg3_options = ["Free legal counsel", "Legal cost insurance", "Other"]
     protectleg3_yes = []
@@ -1171,7 +1204,7 @@ if selected_section == "Protection":
             else:
                 continue
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1183,20 +1216,20 @@ if selected_section == "Protection":
                     name="No",
                     x=protectleg3_options,
                     y=protectleg3_no,
-                    marker_color=colors[8],
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
                     x=protectleg3_options,
                     y=protectleg3_dont_know,
-                    marker_color="#7f7f7f",
+                    marker_color=colors[5],
                     opacity=0.8,
                 ),
                 go.Bar(
                     name="I prefer not to say",
                     x=protectleg3_options,
                     y=protectleg3_prefer_not_to_say,
-                    marker_color="#525252",
+                    marker_color=colors[4],
                     opacity=0.8,
                 ),
             ],
@@ -1204,10 +1237,9 @@ if selected_section == "Protection":
         use_container_width=True,
     )
 
-    st.write("### If you selected ‘other’, please specify `[protectleg3other]`")
-    for i in df[filter]["protectleg3other"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
+# ===========================================================================
+# Constraints
+# ===========================================================================
 
 if selected_section == "Constraints":
     st.write("# Constraints")
@@ -1288,7 +1320,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1350,7 +1382,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
@@ -1427,7 +1459,7 @@ if selected_section == "Constraints":
             else:
                 continue
     st.plotly_chart(
-        render_stacked_bar_chart(
+        gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",

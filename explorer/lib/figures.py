@@ -26,12 +26,6 @@ def generate_overlaid_histogram(traces, names, colors):
     return fig
 
 
-def generate_stacked_bar_chart(data):
-    fig = go.Figure(data=data)
-    fig.update_layout(width=800, height=800, barmode="stack")
-    return fig
-
-
 def generate_ranking_plot(df, input_col, options, scoring):
     input_col_score = pd.Series(index=options)
     for i in range(1, 7):
