@@ -1,23 +1,25 @@
-FROM bitnami/python:3.9 as base
+FROM bitnami/python:3.9-prod
 WORKDIR /app
 
 # Install some build dependencies
-RUN install_packages build-essential make gcc dpkg-dev libjpeg-dev sudo dbus-tests
-
-# Set path and install poetry in it
-ENV PATH /root/.local/bin:$PATH
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-
-# We don't need poetry to create virtual environments; global site is just fine
-RUN poetry config virtualenvs.create false
+RUN install_packages \
+    build-essential \
+    libjpeg-dev
 
 # Install project dependencies
-COPY pyproject.toml poetry.lock /app/
-RUN poetry install
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Switch to non-root user
+RUN adduser \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --gecos "nonroot" \
+    --disabled-password nonroot
+USER nonroot
 
 # Copy files
-COPY . .
+COPY --chown=nonroot:nonroot . .
 
-# Expoe ports and provide entrypoint
-EXPOSE 8501-8503
-ENTRYPOINT [ "poetry", "run" ]
+# Expose ports and provide entrypoint
+EXPOSE 8501

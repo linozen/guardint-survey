@@ -1,0 +1,15 @@
+.ipynb_checkpoints
+profiles/
+publication/
+scripts/
+*.xlsx
+data/corr_sig
+data/limesurvey
+README.org
+guardint.png
+guardint_favicon.png
+guardint_logo.png
+poetry.lock
+pyproject.toml
+pyrightconfig.json
+roboto_mono.woff2

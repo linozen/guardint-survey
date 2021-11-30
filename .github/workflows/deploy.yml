@@ -1,5 +1,5 @@
 ---
-name: deploy streamlit app
+name: Publish docker container
 
 on:
   push:
@@ -7,54 +7,42 @@ on:
       - master
 
 env:
-  IMAGE_NAME: streamlit-ioi-base
+  REGISTRY: ghcr.io
 
 jobs:
-  deploy:
-    name: Deploy to server
+  build-and-publish-container:
     runs-on: ubuntu-latest
     permissions:
-      packages: write
       contents: read
+      packages: write
 
     steps:
-      - name: Check out the repo
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
-
-      - name: Log in to registry
-        # This is where you will update the PAT to GITHUB_TOKEN
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
-
-      - name: Deploy Docker image to server using SSH
-        uses: appleboy/ssh-action@master
-        # TODO Set correct browser.serverAddress and server.baseUrlPath
         with:
-          host: ioi.sehn.dev
-          username: root
-          key: ${{ secrets.KEY }}
-          script: |
-            docker pull ghcr.io/snv-berlin/streamlit-ioi-base:latest
-            docker stop $(docker ps -a -q)
-            docker run -d -p 8501:8501 ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8501 explorer/merged.py
-            docker run -d -p 8502:8502 ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8502 explorer/media.py
-            docker run -d -p 8503:8503 ghcr.io/snv-berlin/streamlit-ioi-base:latest streamlit run --server.port 8503 explorer/civsoc.py
+          ref: "master"
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/snv-berlin/streamlit-guardint
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=schedule,pattern={{date 'YYYYMMDD'}}
+
+      - name: Build and push Docker image for front
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

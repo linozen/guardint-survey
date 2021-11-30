@@ -21,6 +21,12 @@ def construct_cs_df():
         columns={
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
+            "CSfinance2[SQ01]": "CSfinance2cs[private_foundations]",
+            "CSfinance2[SQ02]": "CSfinance2cs[donations]",
+            "CSfinance2[SQ03]": "CSfinance2cs[national_public_funds]",
+            "CSfinance2[SQ04]": "CSfinance2cs[corporate_sponsorship]",
+            "CSfinance2[SQ05]": "CSfinance2cs[international_public_funds]",
+            "CSfinance2[SQ06]": "CSfinance2cs[other]",
             "CSfoi5[SQ01]": "CSfoi5[not_aware]",
             "CSfoi5[SQ02]": "CSfoi5[not_covered]",
             "CSfoi5[SQ03]": "CSfoi5[too_expensive]",
@@ -93,6 +99,15 @@ def construct_cs_df():
             "CSexpertise3",
             "CSexpertise4",
             "CSfinance1",
+            "CSfinance2cs[private_foundations]",
+            "CSfinance2cs[donations]",
+            "CSfinance2cs[national_public_funds]",
+            "CSfinance2cs[corporate_sponsorship]",
+            "CSfinance2cs[international_public_funds]",
+            "CSfinance2cs[other]",
+            # "CSfinance2other",
+            "CSfinance3",
+            "CSfinance4",
             "CSfoi1",
             "CSfoi2",
             "CSfoi3",
@@ -184,8 +199,8 @@ def construct_cs_df():
     # Make column names compatible
     df.columns = df.columns.str[2:]
 
-    # Set surveytype
-    df["surveytype"] = "Civil Society Scrutiny"
+    # Set field
+    df["field"] = "CSO Professionals"
     return df
 
 
@@ -206,6 +221,7 @@ def construct_ms_df():
         columns={
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
+            "MSfinance2": "MSfinance2ms",
             "MFfoi2": "MSfoi2",
             "MSfoi5[SQ01]": "MSfoi5[not_aware]",
             "MSfoi5[SQ02]": "MSfoi5[not_covered]",
@@ -283,6 +299,7 @@ def construct_ms_df():
             "MSexpertise3",
             "MSexpertise4",
             "MSfinance1",
+            "MSfinance2ms",
             "MSfoi1",
             "MSfoi2",
             "MSfoi3",
@@ -374,8 +391,8 @@ def construct_ms_df():
     # Make column names compatible
     df.columns = df.columns.str[2:]
 
-    # Set surveytype
-    df["surveytype"] = "Media Scrutiny"
+    # Set field
+    df["field"] = "Media Professionals"
     return df
 
 
@@ -388,8 +405,8 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 
 # Helper variables needed when answers are coded differently in the
 # respective survey types or languages
-is_civsoc = df.surveytype == "Civil Society Scrutiny"
-is_media = df.surveytype == "Media Scrutiny"
+is_civsoc = df.field == "CSO Professionals"
+is_media = df.field == "Media Professionals"
 is_de = df.country == "Germany"
 is_uk = df.country == "United Kingdom"
 is_fr = df.country == "France"
@@ -475,6 +492,48 @@ df["finance1"] = df["finance1"].replace(
         "AO05": "A5: No funding",
         "AO06": "A6: I don't know",
         "AO07": "A7: I prefer not to say",
+    }
+)
+
+df["finance2ms"] = df["finance2ms"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
+
+finance2cs_options = [
+    "private_foundations",
+    "donations",
+    "national_public_funds",
+    "corporate_sponsorship",
+    "international_public_funds",
+    "other",
+]
+for label in finance2cs_options:
+    df[f"finance2cs[{label}]"] = df[f"finance2cs[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO07": "Not important at all",
+            "AO09": "I don't know",
+            "AO11": "I prefer not to say",
+        }
+    )
+
+df["finance4"] = df["finance4"].replace(
+    {
+        "AO01": "Clearly beneficial for fundraising",
+        "AO02": "Rather beneficial for fundraising",
+        "AO03": "No effect on fundraising",
+        "AO04": "Rather constraining for fundraising",
+        "AO05": "Clearly constraining for fundraising",
+        "AO06": "I don't know",
+        "AO07": "I prefer not to say",
     }
 )
 
@@ -700,21 +759,21 @@ for label in ["gender", "ethnicity", "political", "sexual", "religious", "other"
 
 df["attitude1"] = df["attitude1"].replace(
     {
-        "AO01": "Intelligence agencies are incompatible with democratic <br>values and should be abolished",
-        "AO02": "Intelligence agencies contradict democratic principles,<br>and their powers should be kept at a bare minimum",
-        "AO03": "Intelligence agencies are necessary and legitimate institutions <br>of democratic states, even though they may sometimes overstep <br>their legal mandates",
-        "AO04": "Intelligence agencies are a vital component of national <br>security and should be shielded from excessive bureaucratic <br>restrictions",
-        "AO05": "I prefer not to say",
+        "AO01": "A1: Intelligence agencies are incompatible with<br>democratic values and should be abolished",
+        "AO02": "A2: Intelligence agencies contradict democratic<br>principles, and their powers should be kept at a<br>bare minimum",
+        "AO03": "A3: Intelligence agencies are necessary and<br>legitimate institutions of democratic states,<br>even though they may sometimes overstep their<br>legal mandates",
+        "AO04": "A4: Intelligence agencies are a vital component<br>of national security and should be shielded from<br>excessive bureaucratic restrictions",
+        "AO05": "A5: I prefer not to say",
     }
 )
 
 df["attitude2"] = df["attitude2"].replace(
     {
-        "AO01": "Intelligence oversight generally succeeds in uncovering <br>past misconduct and preventing future misconduct",
-        "AO02": "Intelligence oversight is mostly effective, however its <br>institutional design needs reform for oversight practitioners <br> to reliably uncover past misconduct and prevent future <br>misconduct",
-        "AO03": "Intelligence oversight lacks efficacy, hence a fundamental <br>reorganization of oversight capacity is needed for oversight <br>practitioners to reliably uncover past misconduct and <br>prevent future misconduct",
-        "AO04": "Effective intelligence oversight is a hopeless endeavour <br>and even a systematic reorganization is unlikely to ensure <br>misconduct is uncovered and prevented.",
-        "AO05": "I prefer not to say",
+        "AO01": "A1: Intelligence oversight generally succeeds<br>in uncovering past misconduct and preventing<br>future misconduct",
+        "AO02": "A2: Intelligence oversight is mostly effective,<br>however its institutional design needs reform<br>for oversight practitioners to reliably uncover<br>past misconduct and prevent future misconduct",
+        "AO03": "A3: Intelligence oversight lacks efficacy,<br>hence a fundamental reorganization of oversight<br>capacity is needed for oversight practitioners<br>to reliably uncover past misconduct and prevent<br>future misconduct",
+        "AO04": "A4: Effective intelligence oversight is a<br>hopeless endeavour and even a systematic<br>reorganization is unlikely to ensure misconduct<br>is uncovered and prevented.",
+        "AO05": "A5: I prefer not to say",
     }
 )
 

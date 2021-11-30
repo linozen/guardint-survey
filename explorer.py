@@ -4,14 +4,10 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-from pathlib import Path
 
-from lib.figures import (
-    generate_ranking_plot,
-)
 
 # ===========================================================================
-# Define GUARDINT color scheme
+# GUARDINT color scheme
 # ===========================================================================
 
 
@@ -126,8 +122,8 @@ def gen_go_pie(labels, values, marker_colors=colors, **kwargs):
             yref="paper",
             x=1.00,
             y=0.00,
-            sizex=0.15,
-            sizey=0.15,
+            sizex=kwargs.get("image_sizex", 0.15),
+            sizey=kwargs.get("image_sizey", 0.15),
             xanchor="right",
             yanchor="bottom",
         )
@@ -251,31 +247,66 @@ def gen_go_bar_stack(data, **kwargs):
 
 
 @st.cache
-def render_ranking_plot(input_col):
-    return generate_ranking_plot(df[filter], input_col, bodies, scoring)
-
-
-@st.cache
-def read_markdown_file(file):
-    return Path(file).read_text()
-
-
-@st.cache
-def get_corr_matrix(df):
-    df = pd.read_pickle("./data/merged_corr.pkl")
-    fig = px.imshow(df, zmin=0, zmax=1, color_continuous_scale="viridis", height=1300)
+def gen_rank_plt(input_col, options, **kwargs):
+    input_col_score = pd.Series(index=options)
+    for i in range(1, 7):
+        input_col_counts = df[f"{input_col}[{i}]"].value_counts()
+        scores = input_col_counts.multiply(scoring[i])
+        input_col_score = input_col_score.add(scores, fill_value=0)
+        input_col_score = input_col_score.sort_values(ascending=False)
+        if i == 1:
+            ranked_first = df[f"{input_col}[1]"].value_counts()
+            ranked_first_clean = pd.DataFrame(
+                {
+                    "institution": ranked_first.index,
+                    "No of times<br>ranked first": ranked_first.values,
+                }
+            )
+    input_col_df = pd.DataFrame(
+        {
+            "institution": input_col_score.index,
+            "score": input_col_score.values,
+        }
+    )
+    input_col_df = input_col_df.merge(
+        ranked_first_clean, on="institution", how="left"
+    ).fillna(0)
+    input_col_df = input_col_df.sort_values(["score", "No of times<br>ranked first"])
+    fig = px.bar(
+        input_col_df.sort_values(by="score"),
+        y="institution",
+        x="score",
+        color="No of times<br>ranked first",
+        color_continuous_scale=[colors[5], colors[2]],
+        orientation="h",
+    )
+    # Update layout
+    fig.update_layout(
+        autosize=False,
+        width=700,
+        height=450,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": 13, "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 10)},
+        },
+        modebar={"orientation": "h"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.0,
+            y=0.0,
+            sizex=0.25,
+            sizey=0.25,
+            xanchor="right",
+            yanchor="bottom",
+        )
+    )
     return fig
-
-
-@st.cache
-def get_significance_matrix(df):
-    df = pd.read_pickle("./data/merged_sig.pkl")
-    fig = px.imshow(df, zmin=-5, zmax=5, color_continuous_scale="viridis", height=1300)
-    return fig
-
-
-def print_total(number):
-    st.write(f"**{number}** respondents answered the question with the current filter")
 
 
 chart_config = {
@@ -287,6 +318,20 @@ chart_config = {
         "scale": (210 / 25.4) / (700 / 300),
     },
 }
+
+
+def print_total(number):
+    st.write(f"**{number}** respondents answered the question with the current filter")
+
+
+def print_answered_by(group):
+    if group == "cso":
+        text = "CSO professionals"
+    else:
+        text = "media professionals"
+    st.caption(f"This question was only answered by {text}")
+
+
 # ===========================================================================
 # Import data from stored pickle
 # ===========================================================================
@@ -337,17 +382,15 @@ selected_section = st.sidebar.radio(
 )
 
 st.caption(
-    "__"
-    + selected_section
-    + "__ | Civil Society Organisation and Media representatives"
+    "__" + selected_section + "__ | Civil Society Organisation and Media professionals"
 )
 
 filters = {
-    "surveytype": st.sidebar.selectbox(
-        "Survey type", ["All", "Civil Society Scrutiny", "Media Scrutiny"]
-    ),
     "country": st.sidebar.selectbox(
         "Country", ["All", "United Kingdom", "Germany", "France"]
+    ),
+    "field": st.sidebar.selectbox(
+        "Field", ["All", "CSO Professionals", "Media Professionals"]
     ),
 }
 
@@ -410,6 +453,7 @@ st.markdown(
     h3 {line-height: 1.3}
 
     footer {visibility: hidden;}
+    .e8zbici2 {visibility: hidden;}
 
     .custom-footer {
         display: block;
@@ -425,7 +469,7 @@ st.markdown(
     strong {
         font-style: bold;
         font-weight: 700;
-        color: #600b0c;
+        color: #000;
     }
 
     a {
@@ -492,12 +536,12 @@ if selected_section == "Overview":
 
     col1, col2 = st.columns(2)
     col1.metric(
-        "Media representatives",
-        len(df[filter & (df.surveytype == "Media Scrutiny")].index),
+        "Media professionals",
+        len(df[filter & (df.field == "Media Professionals")].index),
     )
     col2.metric(
-        "Civil Society representatives",
-        len(df[filter & (df.surveytype == "Civil Society Scrutiny")].index),
+        "Civil Society Organisation professionals",
+        len(df[filter & (df.field == "CSO Professionals")].index),
     )
 
     st.caption(
@@ -523,12 +567,6 @@ if selected_section == "Overview":
             data=file,
             file_name="GUARDINT_survey_data_merged.csv",
         )
-    with open("profiles/merged.html", "rb") as file:
-        st.download_button(
-            label="Download data profile",
-            data=file,
-            file_name="GUARDINT_survey_data_merged_profile.html",
-        )
 
     country_counts = df[filter]["country"].value_counts()
     st.write("### Country")
@@ -550,13 +588,13 @@ if selected_section == "Overview":
     )
 
     st.write("### Field")
-    surveytype_counts = df[filter]["surveytype"].value_counts()
-    print_total(surveytype_counts.sum())
+    field_counts = df[filter]["field"].value_counts()
+    print_total(field_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
-            values=surveytype_counts,
-            names=surveytype_counts.index,
+            values=field_counts,
+            names=field_counts.index,
         ),
         use_container_width=True,
         config=chart_config,
@@ -720,7 +758,6 @@ if selected_section == "Resources":
     )
     expertise2_counts = df[filter]["expertise2"].value_counts().sort_index()
     print_total(expertise2_counts.sum())
-    print(expertise2_counts.sort_index().index)
     st.plotly_chart(
         gen_go_pie(
             labels=expertise2_counts.sort_index().index,
@@ -774,6 +811,130 @@ if selected_section == "Resources":
         config=chart_config,
     )
 
+    st.write(
+        "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend)"
+    )
+    finance2ms_counts = df[filter]["finance2ms"].value_counts()
+    print_total(finance2ms_counts.sum())
+    st.caption("This question was only answered by media professionals")
+    st.plotly_chart(
+        gen_px_pie(
+            finance2ms_counts,
+            values=finance2ms_counts,
+            names=finance2ms_counts.index,
+            color=finance2ms_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    st.write(
+        "### How important are the following funding categories for your organisation's work on intelligence-related issues?"
+    )
+    finance2cs_options = [
+        "private_foundations",
+        "donations",
+        "national_public_funds",
+        "corporate_sponsorship",
+        "international_public_funds",
+        "other",
+    ]
+    finance2cs_options_clean = [
+        "Private foundations",
+        "Donations",
+        "National public funds",
+        "Corporate sponsorships",
+        "International public funds",
+        "Other",
+    ]
+    finance2cs_very_important = []
+    finance2cs_somewhat_important = []
+    finance2cs_important = []
+    finance2cs_slightly_important = []
+    finance2cs_not_important = []
+    finance2cs_prefer_not_to_say = []
+    for importance in [
+        "Very important",
+        "Somewhat important",
+        "Important",
+        "Slightly important",
+        "Not important at all",
+        "I prefer not to say",
+    ]:
+        for label in finance2cs_options:
+            try:
+                count = df[filter][f"finance2cs[{label}]"].value_counts()[importance]
+            except KeyError:
+                count = 0
+            if importance == "Very important":
+                finance2cs_very_important.append(count)
+            elif importance == "Somewhat important":
+                finance2cs_somewhat_important.append(count)
+            elif importance == "Important":
+                finance2cs_important.append(count)
+            elif importance == "Slightly important":
+                finance2cs_slightly_important.append(count)
+            elif importance == "Not important at all":
+                finance2cs_not_important.append(count)
+            elif importance == "I prefer not to say":
+                finance2cs_prefer_not_to_say.append(count)
+            else:
+                continue
+    totals = [
+        df[filter][f"finance2cs[{option}]"].value_counts().sum()
+        for option in finance2cs_options
+    ]
+    print_total(max(totals))
+    print_answered_by("cso")
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Very important",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_very_important,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Somewhat important",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_somewhat_important,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Important",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_important,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Slightly important",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_slightly_important,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not important at all",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_not_important,
+                    marker_color=colors[4],
+                ),
+                go.Bar(
+                    name="I prefer not to say",
+                    x=finance2cs_options_clean,
+                    y=finance2cs_prefer_not_to_say,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+    )
     st.write("## Freedom of Information")
 
     st.write(
@@ -1141,8 +1302,8 @@ if selected_section == "Protection":
     st.write(
         """### When working on intelligence-related issues, do you feel you have reason to be concerned about...
 
-- surveillance of your activities (CSO representatives)
-- regarding the protection of your sources (media representatives)"""
+- surveillance of your activities (CSO professionals)
+- regarding the protection of your sources (media professionals)"""
     )
 
     protectleg1_counts = df[filter]["protectleg1"].value_counts()
@@ -1251,6 +1412,7 @@ if selected_section == "Constraints":
     )
 
     constraintinter1_counts = df[filter]["constraintinter1"].value_counts()
+    print_total(constraintinter1_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -1258,33 +1420,42 @@ if selected_section == "Constraints":
             names=constraintinter1_counts.index,
             color=constraintinter1_counts.index,
             color_discrete_map={
-                "No": colors[8],
-                "Yes, I have evidence": colors[1],
-                "Yes, I suspect": colors[2],
-                "I don't know": colors[10],
-                "I prefer not to say": colors[10],
+                "No": colors[0],
+                "Yes, I have evidence": colors[2],
+                "Yes, I suspect": colors[3],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
             },
+            legend_orientation="v",
         ),
         use_container_width=True,
     )
 
     st.write(
-        "### In the past 5 years, have you been threatened with prosecution or have you actually been prosecuted for your work on intelligence-related issues? `[constraintinter2]`"
+        "### In the past 5 years, have you been threatened with prosecution or have you actually been prosecuted for your work on intelligence-related issues?"
     )
 
-    constraintinter2_counts = df[filter]["constraintinter2"].value_counts()
-    constraintinter2_fig = px.pie(
-        df[filter],
-        values=constraintinter2_counts,
-        names=constraintinter2_counts.index,
-        color_discrete_sequence=colors,
+    constraintinter2_counts = df[filter]["constraintinter2"].value_counts().sort_index()
+    print_total(constraintinter2_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            df[filter],
+            values=constraintinter2_counts,
+            names=constraintinter2_counts.index,
+            color=constraintinter2_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
     )
 
-    st.plotly_chart(constraintinter2_fig)
-
-    st.write("### What was the outcome? `[constraintinter3]`")
+    st.write("### What was the outcome?")
 
     constraintinter3_counts = df[filter]["constraintinter3"].value_counts()
+    print_total(constraintinter3_counts.sum())
     st.plotly_chart(
         gen_px_pie(
             df[filter],
@@ -1296,17 +1467,42 @@ if selected_section == "Constraints":
     )
 
     st.write(
-        "### In the past 5 years, have you experienced any of the following interferences by public authorities in relation to your work on intelligence related topics? `[constraintinter4]`"
+        "### In the past 5 years, have you experienced any of the following interferences by public authorities in relation to your work on intelligence related topics?"
     )
-    # TODO Map proper labels
     constraintinter4_yes = []
     constraintinter4_no = []
     constraintinter4_dont_know = []
     constraintinter4_prefer_not_to_say = []
+    constraintinter4_options = [
+        "police_search",
+        "seizure",
+        "extortion",
+        "violent_threat",
+        "inspection_during_travel",
+        "detention",
+        "surveillance_signalling",
+        "online_harassment",
+        "entry_on_deny_lists",
+        "exclusion_from_events",
+        "public_defamation",
+    ]
+    constraintinter4_options_clean = [
+        "Police searches",
+        "Seizure of material",
+        "Extortion",
+        "Violent threats",
+        "Special inspections during travels",
+        "Detention",
+        "Surveillance signalling",
+        "Online harassment",
+        "Entry on deny lists",
+        "Exclusion from events",
+        "Public defamation",
+    ]
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in constraintinter4_options:
+        for option in constraintinter4_options:
             try:
-                count = df[filter][f"constraintinter4[{label}]"].value_counts()[answer]
+                count = df[filter][f"constraintinter4[{option}]"].value_counts()[answer]
             except KeyError:
                 count = 0
             if answer == "Yes":
@@ -1319,46 +1515,53 @@ if selected_section == "Constraints":
                 constraintinter4_prefer_not_to_say.append(count)
             else:
                 continue
+    totals = [
+        df[filter][f"constraintinter4[{option}]"].value_counts().sum()
+        for option in constraintinter4_options
+    ]
+    print_total(max(totals))
     st.plotly_chart(
         gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
-                    x=constraintinter4_options,
+                    x=constraintinter4_options_clean,
                     y=constraintinter4_yes,
                     marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
-                    x=constraintinter4_options,
+                    x=constraintinter4_options_clean,
                     y=constraintinter4_no,
-                    marker_color=colors[8],
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
-                    x=constraintinter4_options,
+                    x=constraintinter4_options_clean,
                     y=constraintinter4_dont_know,
-                    marker_color="#7f7f7f",
+                    marker_color=colors[4],
                     opacity=0.8,
                 ),
                 go.Bar(
                     name="I prefer not to say",
-                    x=constraintinter4_options,
+                    x=constraintinter4_options_clean,
                     y=constraintinter4_prefer_not_to_say,
-                    marker_color="#525252",
+                    marker_color=colors[5],
                     opacity=0.8,
                 ),
             ],
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### In the past 5 years, have you been approached by intelligence officials and received... `[constraintinter5]`"
+        "### In the past 5 years, have you been approached by intelligence officials and received..."
     )
-    constraintinter5_options = [
+    constraintinter5_options = ["unsolicited_information", "invitations", "other"]
+    constraintinter5_options_clean = [
         "Unsolicited information",
-        "Invitations to off-the-record events or meetings",
+        "Invitations to off-the-record<br>events or meetings",
         "Other",
     ]
     constraintinter5_yes = []
@@ -1366,7 +1569,7 @@ if selected_section == "Constraints":
     constraintinter5_dont_know = []
     constraintinter5_prefer_not_to_say = []
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in ["unsolicited_information", "invitations", "other"]:
+        for label in constraintinter5_options:
             try:
                 count = df[filter][f"constraintinter5[{label}]"].value_counts()[answer]
             except KeyError:
@@ -1381,33 +1584,38 @@ if selected_section == "Constraints":
                 constraintinter5_prefer_not_to_say.append(count)
             else:
                 continue
+    totals = [
+        df[filter][f"constraintinter5[{option}]"].value_counts().sum()
+        for option in constraintinter5_options
+    ]
+    print_total(max(totals))
     st.plotly_chart(
         gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
-                    x=constraintinter5_options,
+                    x=constraintinter5_options_clean,
                     y=constraintinter5_yes,
                     marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
-                    x=constraintinter5_options,
+                    x=constraintinter5_options_clean,
                     y=constraintinter5_no,
-                    marker_color=colors[8],
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
-                    x=constraintinter5_options,
+                    x=constraintinter5_options_clean,
                     y=constraintinter5_dont_know,
-                    marker_color="#7f7f7f",
+                    marker_color=colors[4],
                     opacity=0.8,
                 ),
                 go.Bar(
                     name="I prefer not to say",
-                    x=constraintinter5_options,
+                    x=constraintinter5_options_clean,
                     y=constraintinter5_prefer_not_to_say,
-                    marker_color="#525252",
+                    marker_color=colors[5],
                     opacity=0.8,
                 ),
             ],
@@ -1415,15 +1623,18 @@ if selected_section == "Constraints":
         use_container_width=True,
     )
 
-    st.write("### If you selected ‘other’, please specify `[constraintinter5other]`")
-    for i in df[filter]["constraintinter5other"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
-
     st.write(
-        "### When working on intelligence-related issues have you ever experienced harassment by security agencies or politicians due to your... `[constraintinter6]`"
+        "### When working on intelligence-related issues have you ever experienced harassment by security agencies or politicians due to your..."
     )
     constraintinter6_options = [
+        "gender",
+        "ethnicity",
+        "political",
+        "sexual",
+        "religious",
+        "other",
+    ]
+    constraintinter6_options_clean = [
         "Gender",
         "Ethnicity",
         "Political orientation",
@@ -1436,14 +1647,7 @@ if selected_section == "Constraints":
     constraintinter6_dont_know = []
     constraintinter6_prefer_not_to_say = []
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in [
-            "gender",
-            "ethnicity",
-            "political",
-            "sexual",
-            "religious",
-            "other",
-        ]:
+        for label in constraintinter6_options:
             try:
                 count = df[filter][f"constraintinter6[{label}]"].value_counts()[answer]
             except KeyError:
@@ -1458,83 +1662,102 @@ if selected_section == "Constraints":
                 constraintinter6_prefer_not_to_say.append(count)
             else:
                 continue
+    totals = [
+        df[filter][f"constraintinter6[{option}]"].value_counts().sum()
+        for option in constraintinter6_options
+    ]
+    print_total(max(totals))
     st.plotly_chart(
         gen_go_bar_stack(
             data=[
                 go.Bar(
                     name="Yes",
-                    x=constraintinter6_options,
+                    x=constraintinter6_options_clean,
                     y=constraintinter6_yes,
                     marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
-                    x=constraintinter6_options,
+                    x=constraintinter6_options_clean,
                     y=constraintinter6_no,
-                    marker_color=colors[8],
+                    marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
-                    x=constraintinter6_options,
+                    x=constraintinter6_options_clean,
                     y=constraintinter6_dont_know,
-                    marker_color="#7f7f7f",
+                    marker_color=colors[4],
                     opacity=0.8,
                 ),
                 go.Bar(
                     name="I prefer not to say",
-                    x=constraintinter6_options,
+                    x=constraintinter6_options_clean,
                     y=constraintinter6_prefer_not_to_say,
-                    marker_color="#525252",
+                    marker_color=colors[5],
                     opacity=0.8,
                 ),
             ],
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
-    st.write("### If you selected ‘other’, please specify `[constraintinter6other]`")
-    for i in df[filter]["constraintinter6other"].to_list():
-        if type(i) != float:
-            st.write("- " + i)
+# ===========================================================================
+# Attitudes
+# ===========================================================================
 
 if selected_section == "Attitudes":
     st.write("# Attitudes")
 
     st.write(
-        "### The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context. `[attitude1]`"
+        "### The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context."
     )
 
-    attitude1_counts = df[filter]["attitude1"].value_counts()
+    attitude1_counts = df[filter]["attitude1"].value_counts().sort_index()
+    print_total(attitude1_counts.sum())
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=attitude1_counts,
-            names=attitude1_counts.index,
-            color_discrete_sequence=colors,
+        gen_go_pie(
+            labels=attitude1_counts.sort_index().index,
+            values=attitude1_counts.sort_index().values,
+            height=600,
+            font_size=13,
+            legend_font_size=11,
+            legend_x=-0.75,
+            legend_y=1.5,
+            image_sizex=0.25,
+            image_sizey=0.25,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
-        "### The following four statements are about **intelligence oversight**. Please select the statement you most agree with, based on your national context. `[attitude2]`"
+        "### The following four statements are about **intelligence oversight**. Please select the statement you most agree with, based on your national context."
     )
-
-    attitude2_counts = df[filter]["attitude2"].value_counts()
+    attitude2_counts = df[filter]["attitude2"].value_counts().sort_index()
+    attitude2_counts[
+        "A1: Intelligence oversight generally succeeds<br>in uncovering past misconduct and preventing<br>future misconduct"
+    ] = 0
+    print(attitude2_counts)
     st.plotly_chart(
-        gen_px_pie(
-            df[filter],
-            values=attitude2_counts,
-            names=attitude2_counts.index,
-            color_discrete_sequence=colors,
+        gen_go_pie(
+            labels=attitude2_counts.sort_index().index,
+            values=attitude2_counts.sort_index().values,
+            height=600,
+            font_size=13,
+            legend_font_size=11,
+            legend_x=-0.75,
+            legend_y=1.5,
+            image_sizex=0.25,
+            image_sizey=0.25,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     st.write(
         "### In your personal view, what are the goals of intelligence oversight? Please select the three goals of oversight you subscribe to the most. `[attitude3]`"
     )
-
-    # TODO Map proper labels
     attitude3_options = [
         "rule_of_law",
         "civil_liberties",
@@ -1544,7 +1767,6 @@ if selected_section == "Attitudes":
         "critique_of_intel",
         "prefer_not_to_say",
     ]
-
     attitude3_df = pd.DataFrame(columns=("option", "count", "country"))
     for label in attitude3_options:
         attitude3_data = df[filter]["country"][df[f"attitude3[{label}]"] == 1].tolist()
@@ -1554,7 +1776,17 @@ if selected_section == "Attitudes":
                 ignore_index=True,
             )
     attitude3_df = attitude3_df.drop_duplicates()
-
+    attitude3_df = attitude3_df.replace(
+        {
+            "rule_of_law": "Rule of law",
+            "civil_liberties": "Civil liberties",
+            "effectiveness_of_intel": "Effectiveness of intelligence agencies",
+            "legitimacy_of_intel": "Legitimacy of intelligence agencies",
+            "trust_in_intel": "Trust in intelligence agencies",
+            "critique_of_intel": "Critique of intelligence agencies",
+            "prefer_not_to_say": "I prefer not to say",
+        }
+    )
     st.plotly_chart(
         gen_px_histogram(
             df=attitude3_df,
@@ -1564,12 +1796,13 @@ if selected_section == "Attitudes":
             color="country",
             color_discrete_map={
                 "Germany": colors[0],
-                "France": colors[2],
-                "United Kingdom": colors[5],
+                "United Kingdom": colors[2],
+                "France": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     scoring = {1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
@@ -1585,17 +1818,23 @@ if selected_section == "Attitudes":
     st.write(
         "### Which of the following actors do you trust the most to **enable public debate** on surveillance by intelligence agencies? `[attitude4]`"
     )
-    st.plotly_chart(render_ranking_plot("attitude4"), use_container_width=True)
+    st.plotly_chart(
+        gen_rank_plt("attitude4", bodies), use_container_width=True, config=chart_config
+    )
 
     st.write(
-        "### Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies? `[attitude5]`"
+        "### Which of the following actors do you trust the most to **contest surveillance** by intelligence agencies?"
     )
-    st.plotly_chart(render_ranking_plot("attitude5"), use_container_width=True)
+    st.plotly_chart(
+        gen_rank_plt("attitude5", bodies), use_container_width=True, config=chart_config
+    )
 
     st.write(
-        "### Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies? `[attitude6]`"
+        "### Which of the following actors do you trust the most to **enforce compliance** regarding surveillance by intelligence agencies?"
     )
-    st.plotly_chart(render_ranking_plot("attitude6"), use_container_width=True)
+    st.plotly_chart(
+        gen_rank_plt("attitude6", bodies), use_container_width=True, config=chart_config
+    )
 
 # ===========================================================================
 # Footer
