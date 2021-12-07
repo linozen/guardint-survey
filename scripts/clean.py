@@ -223,6 +223,15 @@ def construct_ms_df():
             "lastpage": "XXlastpage",
             "MSfinance2": "MSfinance2ms",
             "MFfoi2": "MSfoi2",
+            "MShr3[SQ01]": "MShr3ms[daily_newspaper]",
+            "MShr3[SQ02]": "MShr3ms[weekly_newspaper]",
+            "MShr3[SQ03]": "MShr3ms[magazine]",
+            "MShr3[SQ04]": "MShr3ms[tv]",
+            "MShr3[SQ05]": "MShr3ms[radio]",
+            "MShr3[SQ06]": "MShr3ms[news_agency]",
+            "MShr3[SQ07]": "MShr3ms[online_stand_alone]",
+            "MShr3[SQ08]": "MShr3ms[online_of_offline]",
+            "MShr4": "MShr4ms",
             "MSfoi5[SQ01]": "MSfoi5[not_aware]",
             "MSfoi5[SQ02]": "MSfoi5[not_covered]",
             "MSfoi5[SQ03]": "MSfoi5[too_expensive]",
@@ -293,6 +302,15 @@ def construct_ms_df():
             "XXlastpage",
             "MShr1",
             "MShr2",
+            "MShr3ms[daily_newspaper]",
+            "MShr3ms[weekly_newspaper]",
+            "MShr3ms[magazine]",
+            "MShr3ms[tv]",
+            "MShr3ms[radio]",
+            "MShr3ms[news_agency]",
+            "MShr3ms[online_stand_alone]",
+            "MShr3ms[online_of_offline]",
+            "MShr4ms",
             "MSgender",
             "MSexpertise1",
             "MSexpertise2",
@@ -433,6 +451,17 @@ df.loc[is_media, "hr1"] = df["hr1"].replace(
         "AO08": "Other",
         "AO06": "I don't know",
         "AO07": "I prefer not to say",
+    }
+)
+
+df["hr4ms"] = df["hr4ms"].replace(
+    {
+        "AO01": "A1: I had enough time",
+        "AO02": "A2: I had some time",
+        "AO03": "A3: I had very little time",
+        "AO04": "A4: I had no time",
+        "AO05": "A5: I don't know",
+        "AO06": "A6: I prefer not to say",
     }
 )
 
@@ -822,7 +851,16 @@ df["foi2"] = pd.to_numeric(df["foi2"], errors="coerce")
 
 # Here, I change the datatype to boolean for all the multiple choice answers
 for col in df:
-    if col.startswith("foi5[") or col.startswith("attitude3"):
+    if (
+        col.startswith("foi5[")
+        or col.startswith("attitude3")
+        or col.startswith("hr3")
+        or col.startswith("soc5")
+        or col.startswith("soc6")
+        or col.startswith("impact1")
+        or col.startswith("impact2")
+        or col.startswith("attitude3")
+    ):
         df[col] = df[col].replace(np.nan, False)
         df[col] = df[col].replace("Y", True)
         df[col] = df[col].astype("bool")
