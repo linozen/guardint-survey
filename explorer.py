@@ -324,7 +324,7 @@ def print_total(number):
     st.write(f"**{number}** respondents answered the question with the current filter")
 
 
-def print_answered_by(group):
+def answered_by(group):
     if group == "cso":
         text = "CSO professionals"
     else:
@@ -472,6 +472,10 @@ st.markdown(
         color: #000;
     }
 
+    code {
+        color: #ff1c1f;
+    }
+
     a {
         color: #ff1c1f !important;
     }
@@ -569,7 +573,7 @@ if selected_section == "Overview":
         )
 
     country_counts = df[filter]["country"].value_counts()
-    st.write("### Country")
+    st.write("### Country `[country]`")
     print_total(country_counts.sum())
     st.plotly_chart(
         gen_px_pie(
@@ -587,7 +591,7 @@ if selected_section == "Overview":
         config=chart_config,
     )
 
-    st.write("### Field")
+    st.write("### Field [`field`]")
     field_counts = df[filter]["field"].value_counts()
     print_total(field_counts.sum())
     st.plotly_chart(
@@ -600,7 +604,7 @@ if selected_section == "Overview":
         config=chart_config,
     )
 
-    st.write("### Gender")
+    st.write("### Gender `[gender]`")
     gender_counts = df[filter]["gender"].value_counts()
     print_total(gender_counts.sum())
     st.plotly_chart(
@@ -632,7 +636,7 @@ if selected_section == "Resources":
 
     st.write("## Human Resources")
 
-    st.write("### What is your employment status?")
+    st.write("### What is your employment status? `[hr1]`")
     hr1_counts = df[filter]["hr1"].value_counts()
     print_total(hr1_counts.sum())
     st.plotly_chart(
@@ -654,7 +658,7 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### How many days per month do you work on surveillance by intelligence agencies?"
+        "### How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
     )
     hr2_counts = df[filter]["hr2"].value_counts()
     print_total(hr2_counts.sum())
@@ -710,10 +714,85 @@ if selected_section == "Resources":
         config=chart_config,
     )
 
+    st.write("### Which type of medium do you work for? `[hr3ms]`")
+    hr3ms_df = pd.DataFrame(columns=("option", "count", "country"))
+    answered_by("media")
+    hr3ms_options = [
+        "daily_newspaper",
+        "weekly_newspaper",
+        "magazine",
+        "tv",
+        "radio",
+        "news_agency",
+        "online_stand_alone",
+        "online_of_offline",
+    ]
+    hr3ms_options_clean = [
+        "Daily newspaper",
+        "Weekly newspaper",
+        "Magazine",
+        "TV",
+        "Radio",
+        "News agency",
+        "Online outlet<br>(standalone)",
+        "Online outlet<br>(of an offline publication)",
+    ]
+    for option, option_clean in zip(hr3ms_options, hr3ms_options_clean):
+        hr3ms_data = df[filter]["country"][df[f"hr3ms[{option}]"] == 1].tolist()
+        for i in hr3ms_data:
+            hr3ms_df = hr3ms_df.append(
+                {"option": option_clean, "count": hr3ms_data.count(i), "country": i},
+                ignore_index=True,
+            )
+    hr3ms_df = hr3ms_df.drop_duplicates()
+
+    if filters["field"] == "CSO Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        hr3ms_col_list = [col for col in df[filter].columns if col.startswith("hr3ms")]
+        hr3ms_df_total = df[filter][hr3ms_col_list]
+        hr3ms_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(hr3ms_df_total.values == True, 1)
+        ]
+        print_total(hr3ms_df_total["answered"].value_counts().sort_index()[1])
+
+    st.plotly_chart(
+        gen_px_histogram(
+            hr3ms_df,
+            x="option",
+            y="count",
+            nbins=None,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "United Kingdom": colors[2],
+                "France": colors[4],
+            },
+            labels={"count": "people who work<br>for this medium"},
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    st.write(
+        "### Within the past year, did you have enough time to cover surveillance by intelligence agencies? `[hr4ms]`"
+    )
+    answered_by("media")
+    hr4ms_counts = df[filter]["hr4ms"].value_counts().sort_index()
+    st.plotly_chart(
+        gen_go_pie(
+            labels=hr4ms_counts.sort_index().index,
+            values=hr4ms_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
     st.write("## Expertise")
 
     st.write(
-        "### How many years have you spent working on surveillance by intelligence agencies?"
+        "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
     )
     expertise1_counts = df[filter]["expertise1"].value_counts()
     print_total(expertise1_counts.sum())
@@ -754,7 +833,7 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies?"
+        "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? `[expertise2]`"
     )
     expertise2_counts = df[filter]["expertise2"].value_counts().sort_index()
     print_total(expertise2_counts.sum())
@@ -768,7 +847,7 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies?"
+        "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies `[expertise3]`?"
     )
     expertise3_counts = df[filter]["expertise3"].value_counts().sort_index()
     print_total(expertise3_counts.sum())
@@ -782,7 +861,7 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies?"
+        "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies? `[expertise4]`"
     )
     expertise4_counts = df[filter]["expertise4"].value_counts().sort_index()
     print_total(expertise4_counts.sum())
@@ -798,7 +877,7 @@ if selected_section == "Resources":
     st.write("## Financial Resources")
 
     st.write(
-        "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years?"
+        "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
     )
     finance1_counts = df[filter]["finance1"].value_counts().sort_index()
     print_total(finance1_counts.sum())
@@ -812,11 +891,11 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend)"
+        "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend) `[finance2ms]`"
     )
     finance2ms_counts = df[filter]["finance2ms"].value_counts()
+    answered_by("media")
     print_total(finance2ms_counts.sum())
-    st.caption("This question was only answered by media professionals")
     st.plotly_chart(
         gen_px_pie(
             finance2ms_counts,
@@ -835,7 +914,7 @@ if selected_section == "Resources":
     )
 
     st.write(
-        "### How important are the following funding categories for your organisation's work on intelligence-related issues?"
+        "### How important are the following funding categories for your organisation's work on intelligence-related issues? `[finance2cs]`"
     )
     finance2cs_options = [
         "private_foundations",
@@ -867,9 +946,9 @@ if selected_section == "Resources":
         "Not important at all",
         "I prefer not to say",
     ]:
-        for label in finance2cs_options:
+        for option in finance2cs_options:
             try:
-                count = df[filter][f"finance2cs[{label}]"].value_counts()[importance]
+                count = df[filter][f"finance2cs[{option}]"].value_counts()[importance]
             except KeyError:
                 count = 0
             if importance == "Very important":
@@ -890,8 +969,8 @@ if selected_section == "Resources":
         df[filter][f"finance2cs[{option}]"].value_counts().sum()
         for option in finance2cs_options
     ]
+    answered_by("cso")
     print_total(max(totals))
-    print_answered_by("cso")
     st.plotly_chart(
         gen_go_bar_stack(
             data=[
@@ -1028,7 +1107,7 @@ if selected_section == "Resources":
     )
     foi5_df = pd.DataFrame(columns=("option", "count", "country"))
     # TODO Map proper labels
-    for label in [
+    for option in [
         "not_aware",
         "not_covered",
         "too_expensive",
@@ -1039,10 +1118,10 @@ if selected_section == "Resources":
         "dont_know",
         "prefer_not_to_say",
     ]:
-        foi5_data = df[filter]["country"][df[f"foi5[{label}]"] == 1].tolist()
+        foi5_data = df[filter]["country"][df[f"foi5[{option}]"] == 1].tolist()
         for i in foi5_data:
             foi5_df = foi5_df.append(
-                {"option": label, "count": foi5_data.count(i), "country": i},
+                {"option": option, "count": foi5_data.count(i), "country": i},
                 ignore_index=True,
             )
     foi5_df = foi5_df.drop_duplicates()
@@ -1105,9 +1184,9 @@ if selected_section == "Protection":
         "I don't know",
         "I prefer not to say",
     ]:
-        for label in ["sectraining", "e2e"]:
+        for option in ["sectraining", "e2e"]:
             try:
-                count = df[filter][f"protectops1[{label}]"].value_counts()[answer]
+                count = df[filter][f"protectops1[{option}]"].value_counts()[answer]
             except KeyError:
                 count = 0
             if answer == "Yes":
@@ -1204,7 +1283,7 @@ if selected_section == "Protection":
         "Slightly important",
         "Not important at all",
     ]:
-        for label in [
+        for option in [
             "encrypted_email",
             "vpn",
             "tor",
@@ -1214,7 +1293,7 @@ if selected_section == "Protection":
             "other",
         ]:
             try:
-                count = df[filter][f"protectops3[{label}]"].value_counts()[importance]
+                count = df[filter][f"protectops3[{option}]"].value_counts()[importance]
             except KeyError:
                 count = 0
             if importance == "Very important":
@@ -1349,9 +1428,9 @@ if selected_section == "Protection":
     protectleg3_dont_know = []
     protectleg3_prefer_not_to_say = []
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in ["free_counsel", "cost_insurance", "other"]:
+        for option in ["free_counsel", "cost_insurance", "other"]:
             try:
-                count = df[filter][f"protectleg3[{label}]"].value_counts()[answer]
+                count = df[filter][f"protectleg3[{option}]"].value_counts()[answer]
             except KeyError:
                 count = 0
             if answer == "Yes":
@@ -1569,9 +1648,9 @@ if selected_section == "Constraints":
     constraintinter5_dont_know = []
     constraintinter5_prefer_not_to_say = []
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in constraintinter5_options:
+        for option in constraintinter5_options:
             try:
-                count = df[filter][f"constraintinter5[{label}]"].value_counts()[answer]
+                count = df[filter][f"constraintinter5[{option}]"].value_counts()[answer]
             except KeyError:
                 count = 0
             if answer == "Yes":
@@ -1647,9 +1726,9 @@ if selected_section == "Constraints":
     constraintinter6_dont_know = []
     constraintinter6_prefer_not_to_say = []
     for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
-        for label in constraintinter6_options:
+        for option in constraintinter6_options:
             try:
-                count = df[filter][f"constraintinter6[{label}]"].value_counts()[answer]
+                count = df[filter][f"constraintinter6[{option}]"].value_counts()[answer]
             except KeyError:
                 count = 0
             if answer == "Yes":
@@ -1768,11 +1847,11 @@ if selected_section == "Attitudes":
         "prefer_not_to_say",
     ]
     attitude3_df = pd.DataFrame(columns=("option", "count", "country"))
-    for label in attitude3_options:
-        attitude3_data = df[filter]["country"][df[f"attitude3[{label}]"] == 1].tolist()
+    for option in attitude3_options:
+        attitude3_data = df[filter]["country"][df[f"attitude3[{option}]"] == 1].tolist()
         for i in attitude3_data:
             attitude3_df = attitude3_df.append(
-                {"option": label, "count": attitude3_data.count(i), "country": i},
+                {"option": option, "count": attitude3_data.count(i), "country": i},
                 ignore_index=True,
             )
     attitude3_df = attitude3_df.drop_duplicates()
