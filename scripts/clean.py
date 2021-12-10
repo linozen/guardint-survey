@@ -241,10 +241,50 @@ def construct_ms_df():
             "MSfoi5[SQ07]": "MSfoi5[other]",
             "MSfoi5[SQ08]": "MSfoi5[dont_know]",
             "MSfoi5[SQ09]": "MSfoi5[prefer_not_to_say]",
-            # "MSfoi5specify": "MSfoi5other",
+            "MSapp1": "MSMSapp1",
+            "MSapp2": "MSMSapp2",
+            "MSsoc1": "MSMSsoc1",
+            "MSsoc2": "MSMSsoc2",
+            "MSsoc4": "MSMSsoc3",
+            "MSsoc5[SQ01]": "MSMSsoc4[follow_up_on_other_media]",
+            "MSsoc5[SQ02]": "MSMSsoc4[statements_government]",
+            "MSsoc5[SQ03]": "MSMSsoc4[oversight_reports]",
+            "MSsoc5[SQ04]": "MSMSsoc4[leaks]",
+            "MSsoc5[SQ05]": "MSMSsoc4[own_investigations]",
+            "MSsoc5[SQ07]": "MSMSsoc4[dont_know]",
+            "MSsoc5[SQ08]": "MSMSsoc4[prefer_not_to_say]",
+            "MSsoc5[SQ09]": "MSMSsoc4[other]",
+            "MSsoc6[SQ01]": "MSMSsoc5[national_security_risks]",
+            "MSsoc6[SQ02]": "MSMSsoc5[intelligence_success]",
+            "MSsoc6[SQ03]": "MSMSsoc5[intelligence_misconduct]",
+            "MSsoc6[SQ04]": "MSMSsoc5[oversight_interventions]",
+            "MSsoc6[SQ05]": "MSMSsoc5[oversight_failures]",
+            "MSsoc6[SQ06]": "MSMSsoc5[policy_debates_leg_reforms]",
+            "MSsoc6[SQ07]": "MSMSsoc5[other]",
+            "MStrans1": "MSMStrans1",
+            "MStrans2": "MSMStrans2",
+            "MStrans3": "MSMStrans3",
+            "MSimpact1[SQ01]": "MSMSimpact1[above_avg_comments]",
+            "MSimpact1[SQ02]": "MSMSimpact1[above_avg_shares]",
+            "MSimpact1[SQ03]": "MSMSimpact1[above_avg_readers]",
+            "MSimpact1[SQ04]": "MSMSimpact1[letters_to_the_editor]",
+            "MSimpact1[SQ05]": "MSMSimpact1[follow_up_by_other_media]",
+            "MSimpact1[SQ06]": "MSMSimpact1[other]",
+            "MSimpact1[SQ07]": "MSMSimpact1[none_of_the_above]",
+            "MSimpact1[SQ08]": "MSMSimpact1[dont_know]",
+            "MSimpact1[SQ09]": "MSMSimpact1[prefer_not_to_say]",
+            "MSimpact2[SQ01]": "MSMSimpact2[diplomatic_pressure]",
+            "MSimpact2[SQ02]": "MSMSimpact2[civic_action]",
+            "MSimpact2[SQ03]": "MSMSimpact2[conversations_with_government]",
+            "MSimpact2[SQ04]": "MSMSimpact2[official_inquiries]",
+            "MSimpact2[SQ05]": "MSMSimpact2[government_statements]",
+            "MSimpact2[SQ06]": "MSMSimpact2[conversations_with_intelligence]",
+            "MSimpact2[SQ08]": "MSMSimpact2[dont_know]",
+            "MSimpact2[SQ09]": "MSMSimpact2[prefer_not_to_say]",
+            "MSimpact2[SQ10]": "MSMSimpact2[other]",
+            "MSimpact2[SQ11]": "MSMSimpact2[none_of_the_above]",
             "MScontstraintinter1": "MSconstraintinter1",
             "MSprotectleg2A": "MSprotectleg2",
-            # "MSprotectleg2Ano": "MSprotectleg2no",
             "MSprotectops1[SQ01]": "MSprotectops1[sectraining]",
             "MSprotectops1[SQ03]": "MSprotectops1[e2e]",
             "MSprotectops3[SQ01]": "MSprotectops3[encrypted_email]",
@@ -271,14 +311,12 @@ def construct_ms_df():
             "MSconstraintinter5[SQ01]": "MSconstraintinter5[unsolicited_information]",
             "MSconstraintinter5[SQ02]": "MSconstraintinter5[invitations]",
             "MSconstraintinter5[SQ03]": "MSconstraintinter5[other]",
-            # "MSconstraintinter5ot": "MSconstraintinter5other",
             "MSconstraintinter6[SQ01]": "MSconstraintinter6[gender]",
             "MSconstraintinter6[SQ02]": "MSconstraintinter6[ethnicity]",
             "MSconstraintinter6[SQ03]": "MSconstraintinter6[political]",
             "MSconstraintinter6[SQ04]": "MSconstraintinter6[sexual]",
             "MSconstraintinter6[SQ05]": "MSconstraintinter6[religious]",
             "MSconstraintinter6[SQ06]": "MSconstraintinter6[other]",
-            # "MSconstraintinter6ot": "MSconstraintinter6other",
             "MSattitude3[SQ01]": "MSattitude3[rule_of_law]",
             "MSattitude3[SQ02]": "MSattitude3[civil_liberties]",
             "MSattitude3[SQ03]": "MSattitude3[effectiveness_of_intel]",
@@ -331,7 +369,47 @@ def construct_ms_df():
             "MSfoi5[other]",
             "MSfoi5[dont_know]",
             "MSfoi5[prefer_not_to_say]",
-            # "MSfoi5other",
+            "MSMSapp1",
+            "MSMSapp2",
+            "MSMSsoc1",
+            "MSMSsoc2",
+            "MSMSsoc3",
+            "MSMSsoc4[follow_up_on_other_media]",
+            "MSMSsoc4[statements_government]",
+            "MSMSsoc4[oversight_reports]",
+            "MSMSsoc4[leaks]",
+            "MSMSsoc4[own_investigations]",
+            "MSMSsoc4[dont_know]",
+            "MSMSsoc4[prefer_not_to_say]",
+            "MSMSsoc4[other]",
+            "MSMSsoc5[national_security_risks]",
+            "MSMSsoc5[intelligence_success]",
+            "MSMSsoc5[intelligence_misconduct]",
+            "MSMSsoc5[oversight_interventions]",
+            "MSMSsoc5[oversight_failures]",
+            "MSMSsoc5[policy_debates_leg_reforms]",
+            "MSMSsoc5[other]",
+            "MSMStrans1",
+            "MSMStrans2",
+            "MSMStrans3",
+            "MSMSimpact1[above_avg_comments]",
+            "MSMSimpact1[above_avg_shares]",
+            "MSMSimpact1[above_avg_readers]",
+            "MSMSimpact1[letters_to_the_editor]",
+            "MSMSimpact1[follow_up_by_other_media]",
+            "MSMSimpact1[other]",
+            "MSMSimpact1[none_of_the_above]",
+            "MSMSimpact1[dont_know]",
+            "MSMSimpact1[prefer_not_to_say]",
+            "MSMSimpact2[diplomatic_pressure]",
+            "MSMSimpact2[civic_action]",
+            "MSMSimpact2[conversations_with_government]",
+            "MSMSimpact2[official_inquiries]",
+            "MSMSimpact2[government_statements]",
+            "MSMSimpact2[conversations_with_intelligence]",
+            "MSMSimpact2[dont_know]",
+            "MSMSimpact2[prefer_not_to_say]",
+            "MSMSimpact2[other]",
             "MSprotectops1[sectraining]",
             "MSprotectops1[e2e]",
             "MSprotectops2",
@@ -605,6 +683,54 @@ df.loc[is_media, "foi4"] = df["foi4"].replace(
     }
 )
 
+df["MSapp1"] = df["MSapp1"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+    }
+)
+
+df["MSapp2"] = df["MSapp2"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+    }
+)
+
+df["MStrans1"] = df["MStrans1"].replace(
+    {
+        "AO001": "A1: Always",
+        "AO002": "A2: Often (75% of the time)",
+        "AO003": "A3: Sometimes (50% of the time)",
+        "AO004": "A4: Rarely (25% of the time)",
+        "AO005": "A5: Never",
+        "AO006": "A6: I don't know",
+        "AO007": "A7: I prefer not to say",
+    }
+)
+
+df["MStrans2"] = df["MStrans2"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+df["MStrans3"] = df["MStrans3"].replace(
+    {
+        "AO01": "Yes",
+        "AO02": "No",
+        "AO03": "I don't know",
+        "AO04": "I prefer not to say",
+    }
+)
 df["protectops1[sectraining]"] = df["protectops1[sectraining]"].replace(
     {
         "AO01": "Yes",
@@ -855,10 +981,10 @@ for col in df:
         col.startswith("foi5[")
         or col.startswith("attitude3")
         or col.startswith("hr3")
-        or col.startswith("soc5")
-        or col.startswith("soc6")
-        or col.startswith("impact1")
-        or col.startswith("impact2")
+        or col.startswith("MSsoc4")
+        or col.startswith("MSsoc5")
+        or col.startswith("MSimpact1")
+        or col.startswith("MSimpact2")
         or col.startswith("attitude3")
     ):
         df[col] = df[col].replace(np.nan, False)

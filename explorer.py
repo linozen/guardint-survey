@@ -143,7 +143,52 @@ def gen_px_histogram(
         color=color,
         color_discrete_map=color_discrete_map,
         labels=labels,
+        marginal=kwargs.get("marginal", "rug"),
     )
+    # Update layout
+    fig.update_layout(
+        autosize=False,
+        width=700,
+        height=450,
+        margin=dict(l=0, r=0, b=100, t=30),
+        font={"size": kwargs.get("font_size", 13), "family": "Roboto Mono, monospace"},
+        legend={
+            "font": {"size": kwargs.get("legend_font_size", 10)},
+        },
+        modebar={"orientation": "h"},
+    )
+    # Add logo
+    fig.add_layout_image(
+        dict(
+            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            xref="paper",
+            yref="paper",
+            x=1.18,
+            y=-0.005,
+            sizex=0.15,
+            sizey=0.15,
+            xanchor="right",
+            yanchor="bottom",
+        )
+    )
+    return fig
+
+
+@st.cache
+def gen_go_histogram_overlaid(traces, names, colors, **kwargs):
+    fig = go.Figure()
+    for trace, name, color in zip(traces, names, colors):
+        fig.add_trace(
+            go.Histogram(
+                x=trace,
+                name=name,
+                marker_color=color,
+                xbins={"size": 2},
+                cumulative_enabled=True,
+            )
+        )
+    fig.update_layout(barmode="overlay")
+    fig.update_traces(opacity=0.75)
     # Update layout
     fig.update_layout(
         autosize=False,
@@ -354,7 +399,12 @@ def callback():
 
 sections = [
     "Overview",
-    "Resources",
+    "Resources // HR",
+    "Resources // Expertise",
+    "Resources // Finance",
+    "Resources // FOI",
+    "Resources // Appreciation",
+    "Media Reporting",
     "Protection",
     "Constraints",
     "Attitudes",
@@ -381,9 +431,7 @@ selected_section = st.sidebar.radio(
     on_change=callback,
 )
 
-st.caption(
-    "__" + selected_section + "__ | Civil Society Organisation and Media professionals"
-)
+st.caption("GUARDINT Survey // " + selected_section)
 
 filters = {
     "country": st.sidebar.selectbox(
@@ -583,15 +631,15 @@ if selected_section == "Overview":
             color=country_counts.index,
             color_discrete_map={
                 "Germany": colors[0],
-                "United Kingdom": colors[2],
-                "France": colors[5],
+                "France": colors[2],
+                "United Kingdom": colors[5],
             },
         ),
         use_container_width=True,
         config=chart_config,
     )
 
-    st.write("### Field [`field`]")
+    st.write("### Field `[field]`")
     field_counts = df[filter]["field"].value_counts()
     print_total(field_counts.sum())
     st.plotly_chart(
@@ -631,10 +679,8 @@ if selected_section == "Overview":
 # ===========================================================================
 
 
-if selected_section == "Resources":
-    st.write("# Resources")
-
-    st.write("## Human Resources")
+if selected_section == "Resources // HR":
+    st.write("# Resources // HR")
 
     st.write("### What is your employment status? `[hr1]`")
     hr1_counts = df[filter]["hr1"].value_counts()
@@ -789,7 +835,8 @@ if selected_section == "Resources":
         config=chart_config,
     )
 
-    st.write("## Expertise")
+if selected_section == "Resources // Expertise":
+    st.write("# Resources // Expertise")
 
     st.write(
         "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
@@ -874,7 +921,8 @@ if selected_section == "Resources":
         config=chart_config,
     )
 
-    st.write("## Financial Resources")
+if selected_section == "Resources // Finance":
+    st.write("# Resources // Finance")
 
     st.write(
         "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
@@ -1014,11 +1062,14 @@ if selected_section == "Resources":
         ),
         use_container_width=True,
     )
-    st.write("## Freedom of Information")
+
+if selected_section == "Resources // FOI":
+    st.write("# Resources // FOI")
 
     st.write(
-        "### Have you requested information under the national FOI law when you worked on intelligence-related issues over the past 5 years?"
+        "### Have you requested information under the national FOI† law when you worked on intelligence-related issues over the past 5 years?"
     )
+    st.caption("†Freedom of Information")
     foi1_counts = df[filter]["foi1"].value_counts()
     print_total(foi1_counts.sum())
     st.plotly_chart(
@@ -1155,6 +1206,507 @@ if selected_section == "Resources":
         ),
         use_container_width=True,
         config=chart_config,
+    )
+
+# ===========================================================================
+# Resources // Appreciation
+# ===========================================================================
+
+if selected_section == "Resources // Appreciation":
+    st.write("# Resources // Appreciation")
+
+    st.write(
+        "### In the past 5 years, have stories on surveillance by intelligence agencies been nominated for a journalistic award in the country you primarily work in? `[MSapp1]`"
+    )
+    answered_by("media")
+    MSapp1_counts = df[filter]["MSapp1"].value_counts()
+    print_total(MSapp1_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSapp1_counts,
+            values=MSapp1_counts,
+            names=MSapp1_counts.index,
+            color=MSapp1_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Are there specific awards in the country you primarily work in for reporting on intelligence-related topics? `[MSapp2]`"
+    )
+    answered_by("media")
+    MSapp2_counts = df[filter]["MSapp2"].value_counts()
+    print_total(MSapp2_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSapp2_counts,
+            values=MSapp2_counts,
+            names=MSapp2_counts.index,
+            color=MSapp2_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+# ===========================================================================
+# Media Reporting
+# ===========================================================================
+
+if selected_section == "Media Reporting":
+    st.caption(
+        "__NB__: All questions in this section have only been presented to media professionals."
+    )
+
+    st.write("# Scope of Coverage")
+
+    # =======================================================================
+    st.write(
+        """### Please estimate: how many journalistic pieces have you produced on intelligence-related topics in the past year? `[MSsoc1]`"""
+    )
+
+    answered_by("media")
+    MSsoc1_df = df[filter][["country", "MSsoc1"]]
+    MSsoc1_df = MSsoc1_df.dropna(subset=["MSsoc1"])
+    print_total(MSsoc1_df["MSsoc1"].value_counts().sum())
+    st.plotly_chart(
+        gen_px_histogram(
+            df=MSsoc1_df,
+            x="MSsoc1",
+            y=None,
+            nbins=20,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
+            },
+            labels={"MSsoc1": "pieces produced lasy year"},
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    st.plotly_chart(
+        gen_px_box(
+            df=df[filter],
+            points="all",
+            x="country",
+            y="MSsoc1",
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
+            },
+            labels={"MSsoc1": "pieces produced lasy year"},
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Please estimate: how many of these pieces focused on surveillance by intelligence agencies? `[MSsoc2]`"
+    )
+
+    answered_by("media")
+    MSsoc2_df = df[filter][["country", "MSsoc2"]]
+    MSsoc2_df = MSsoc2_df.dropna(subset=["MSsoc2"])
+    print_total(MSsoc2_df["MSsoc2"].value_counts().sum())
+    st.plotly_chart(
+        gen_px_histogram(
+            df=MSsoc2_df,
+            x="MSsoc2",
+            y=None,
+            nbins=10,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
+            },
+            labels={
+                "MSsoc2": "pieces focused on surveillance by intelligence agencies"
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    st.plotly_chart(
+        gen_px_box(
+            df=df[filter],
+            points="all",
+            x="country",
+            y="MSsoc2",
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
+            },
+            labels={
+                "MSsoc2": "pieces focused on<br>surveillance by intelligence agencies"
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+    MSsoc1_list = df[filter]["MSsoc1"].to_list()
+    MSsoc2_list = df[filter]["MSsoc2"].to_list()
+    MSsoc1_sum = int(df[filter]["MSsoc1"].sum())
+    MSsoc2_sum = int(df[filter]["MSsoc2"].sum())
+    try:
+        MSsoc12_ratio = MSsoc2_sum / MSsoc1_sum
+    except ZeroDivisionError:
+        MSsoc12_ratio = 0
+    st.write("### Comparison between `[MSsoc1]` and `[MSsoc2]`")
+
+    st.write(
+        f"""
+Out of a total of __{MSsoc1_sum}__ pieces written on intelligence,
+__{MSsoc2_sum}__ or __{MSsoc12_ratio:.1%}__ have foused on surveillance
+by intelligence agencies given the current filter.
+        """
+    )
+    df_comp = df[filter][["MSsoc1", "country"]].dropna()
+    df_comp["subject"] = "all pieces on <br>intelligence"
+    df_comp = df_comp.append(df[filter][["MSsoc2", "country"]].dropna())
+    df_comp["subject"] = np.where(
+        df_comp["MSsoc2"].notnull(),
+        "pieces focused <br>on surveillance <br>by intelligence",
+        "all pieces on <br>intelligence",
+    )
+    df_comp["pieces"] = df_comp.loc[:, ["MSsoc1", "MSsoc2"]].sum(axis=1)
+
+    st.plotly_chart(
+        gen_px_box(
+            df=df_comp,
+            points="all",
+            x="subject",
+            y="pieces",
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[4],
+            },
+            labels={"pieces": "journalistic pieces"},
+        ),
+        config=chart_config,
+        use_container_width=True,
+    )
+
+    # =======================================================================
+    st.write(
+        "### How regularly do you report on surveillance by intelligence agencies? `[MSsoc3]`"
+    )
+
+    answered_by("media")
+    MSsoc3_counts = df[filter]["MSsoc3"].value_counts()
+    print_total(MSsoc3_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=MSsoc3_counts.sort_index().index,
+            values=MSsoc3_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When covering surveillance by intelligence agencies, which topics usually prompt you to write an article? `[MSsoc4]`"
+    )
+
+    answered_by("media")
+    MSsoc4_df = pd.DataFrame(columns=("option", "count", "country"))
+    MSsoc4_options = [
+        "follow_up_on_other_media",
+        "statements_government",
+        "oversight_reports",
+        "leaks",
+        "own_investigations",
+        "dont_know",
+        "prefer_not_to_say",
+        "other",
+    ]
+    MSsoc4_options_clean = [
+        "Follow-up on other media",
+        "Statements by Government",
+        "Oversight reports",
+        "Leaked material",
+        "Own investigations",
+        "I don't know",
+        "I prefer not to say",
+        "Other",
+    ]
+    for option, option_clean in zip(MSsoc4_options, MSsoc4_options_clean):
+        MSsoc4_data = df[filter]["country"][df[f"MSsoc4[{option}]"] == 1].tolist()
+        for i in MSsoc4_data:
+            MSsoc4_df = MSsoc4_df.append(
+                {"option": option_clean, "count": MSsoc4_data.count(i), "country": i},
+                ignore_index=True,
+            )
+    MSsoc4_df = MSsoc4_df.drop_duplicates()
+    st.plotly_chart(
+        gen_px_histogram(
+            MSsoc4_df,
+            x="option",
+            y="count",
+            nbins=None,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[4],
+            },
+            labels={"count": "people who answered 'Yes'"},
+            marginal=None,
+        ),
+        use_container_width=True,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When covering surveillance by intelligence agencies, which of the following topics to you report on frequently? `[MSsoc5]`"
+    )
+
+    MSsoc5_df = pd.DataFrame(columns=("option", "count", "country"))
+    MSsoc5_options = [
+        "national_security_risks",
+        "intelligence_success",
+        "intelligence_misconduct",
+        "oversight_interventions",
+        "oversight_failures",
+        "policy_debates_leg_reforms",
+        "other",
+    ]
+    MSsoc5_options_clean = [
+        "National security risks",
+        "Successful intelligence<br>operations",
+        "Misconduct by intelligence",
+        "Oversight interventions",
+        "Oversight failures",
+        "Policy debates and/or<br>legilsative reform",
+        "Other",
+    ]
+    for option, option_clean in zip(MSsoc5_options, MSsoc5_options_clean):
+        MSsoc5_data = df[filter]["country"][df[f"MSsoc5[{option}]"] == 1].tolist()
+        for i in MSsoc5_data:
+            MSsoc5_df = MSsoc5_df.append(
+                {"option": option_clean, "count": MSsoc5_data.count(i), "country": i},
+                ignore_index=True,
+            )
+    MSsoc5_df = MSsoc5_df.drop_duplicates()
+    st.plotly_chart(
+        gen_px_histogram(
+            MSsoc5_df,
+            x="option",
+            y="count",
+            nbins=None,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[4],
+            },
+            labels={"count": "people who answered 'Yes'"},
+            marginal=None,
+        ),
+        use_container_width=True,
+    )
+
+    # =======================================================================
+    st.write("# Transnational Scope")
+
+    st.write(
+        "### How often does your work on surveillance by intelligence agencies cover a transnational angle? `[MStrans1]`"
+    )
+
+    MStrans1_counts = df[filter]["MStrans1"].value_counts().sort_index()
+    answered_by("media")
+    print_total(MStrans1_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=MStrans1_counts.sort_index().index,
+            values=MStrans1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### How often do you collaborate with colleagues covering other countries when working on surveillance by intelligence agencies? `[MStrans2]`"
+    )
+    MStrans2_counts = df[filter]["MStrans2"].value_counts().sort_index()
+    answered_by("media")
+    print_total(MStrans2_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=MStrans2_counts.sort_index().index,
+            values=MStrans2_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Have those collaborations included an investigative research project with colleagues from abroad? `[MStrans3]`"
+    )
+    MStrans3_counts = df[filter]["MStrans3"].value_counts()
+    answered_by("media")
+    print_total(MStrans3_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MStrans3_counts,
+            values=MStrans3_counts,
+            names=MStrans3_counts.index,
+            color=MStrans3_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[4],
+                "I prefer not to say": colors[5],
+            },
+        ),
+        use_container_width=True,
+    )
+
+    # =======================================================================
+    st.write("# Perceived Impact")
+
+    st.write(
+        "### When you think about public responses to your articles on intelligence agencies by readers and colleagues, did you receive any of the following forms of public feedback or engagement? `[MSimpact1]`"
+    )
+
+    MSimpact1_df = pd.DataFrame(columns=("option", "count", "country"))
+    options = [
+        "above_avg_comments",
+        "above_avg_shares",
+        "above_avg_readers",
+        "letters_to_the_editor",
+        "follow_up_by_other_media",
+        "other",
+        "none_of_the_above",
+        "dont_know",
+        "prefer_not_to_say",
+    ]
+    options_clean = [
+        "An above average number of comments",
+        "An above average number of shares",
+        "An above average number of readers",
+        "Letters to the editor",
+        "Follow-up reporting by other media",
+        "Other",
+        "None of the above",
+        "I don't know",
+        "I prefer not to say",
+    ]
+    print(df[filter]["country"][df["MSimpact1[above_avg_comments]"]])
+    for option, option_clean in zip(options, options_clean):
+        MSimpact1_data = df[filter]["country"][df[f"MSimpact1[{option}]"] == 1].tolist()
+        for i in MSimpact1_data:
+            MSimpact1_df = MSimpact1_df.append(
+                {
+                    "option": option_clean,
+                    "count": MSimpact1_data.count(i),
+                    "country": i,
+                },
+                ignore_index=True,
+            )
+    MSimpact1_df = MSimpact1_df.drop_duplicates()
+    st.plotly_chart(
+        gen_px_histogram(
+            MSimpact1_df,
+            x="option",
+            y="count",
+            nbins=None,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[4],
+            },
+            labels={"count": "people who answered 'Yes'"},
+            marginal=None,
+        ),
+        use_container_width=True,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When you think of responses to your articles on intelligence agencies by administrations or policy makers, did your reporting contribute to any of the following forms of political action? `[MSimpact2]`"
+    )
+
+    MSimpact2_df = pd.DataFrame(columns=("option", "count", "country"))
+    options = [
+        "diplomatic_pressure",
+        "civic_action",
+        "conversations_with_government",
+        "official_inquiries",
+        "government_statements",
+        "conversations_with_intelligence",
+        "dont_know",
+        "prefer_not_to_say",
+        "other",
+    ]
+    options_clean = [
+        "My reporting led to<br>diplomatic pressure being exercised",
+        "My reporting spurred<br>civic action",
+        "My reporting led to<br>a conversation with policy makers",
+        "My reporting spurred<br>official inquiries",
+        "My reporting prompted<br>the government to issue a public statement",
+        "My reporting led to<br>a conversation with intelligence practitioners",
+        "I don't know",
+        "I prefer not to say",
+        "Other",
+    ]
+    for option, option_clean in zip(options, options_clean):
+        MSimpact2_data = df[filter]["country"][df[f"MSimpact2[{option}]"] == 1].tolist()
+        for i in MSimpact2_data:
+            MSimpact2_df = MSimpact2_df.append(
+                {
+                    "option": option_clean,
+                    "count": MSimpact2_data.count(i),
+                    "country": i,
+                },
+                ignore_index=True,
+            )
+    MSimpact2_df = MSimpact2_df.drop_duplicates()
+    st.plotly_chart(
+        gen_px_histogram(
+            MSimpact2_df,
+            x="option",
+            y="count",
+            nbins=None,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[4],
+            },
+            labels={"count": "people who answered 'Yes'"},
+            marginal=None,
+            font_size=11,
+        ),
+        use_container_width=True,
     )
 
 # ===========================================================================
@@ -1791,7 +2343,6 @@ if selected_section == "Attitudes":
     st.write(
         "### The following four statements are about **intelligence agencies**. Please select the statement you most agree with, based on your national context."
     )
-
     attitude1_counts = df[filter]["attitude1"].value_counts().sort_index()
     print_total(attitude1_counts.sum())
     st.plotly_chart(
@@ -1817,7 +2368,6 @@ if selected_section == "Attitudes":
     attitude2_counts[
         "A1: Intelligence oversight generally succeeds<br>in uncovering past misconduct and preventing<br>future misconduct"
     ] = 0
-    print(attitude2_counts)
     st.plotly_chart(
         gen_go_pie(
             labels=attitude2_counts.sort_index().index,
