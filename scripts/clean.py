@@ -152,7 +152,6 @@ def construct_cs_df():
             "CSCSfinance2[corporate_sponsorship]",
             "CSCSfinance2[international_public_funds]",
             "CSCSfinance2[other]",
-            "CSfinance3",
             "CSfinance4",
             "CSfoi1",
             "CSfoi2",
