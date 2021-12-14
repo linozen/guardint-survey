@@ -382,7 +382,7 @@ chart_config = {
 # Import data from stored pickle
 # ===========================================================================
 
-df = pd.read_pickle("data/merged.pkl")
+df = pd.read_pickle("data/guarding_survey.pkl.pkl")
 
 # ===========================================================================
 # General configuration
@@ -617,11 +617,11 @@ if selected_section == "Overview":
         [Github](https://github.com/snv-berlin/ioi).
     """
     )
-    with open("data/merged.csv", "rb") as file:
+    with open("data/guarding_survey.csv", "rb") as file:
         st.download_button(
             label="Download data as CSV",
             data=file,
-            file_name="GUARDINT_survey_data_merged.csv",
+            file_name="guardint_survey.csv",
         )
 
     country_counts = df[filter]["country"].value_counts()
