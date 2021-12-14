@@ -22,6 +22,7 @@ colors = [
     "#efefef",
 ]
 
+
 # ===========================================================================
 # Functions to be cached
 # ===========================================================================
@@ -354,17 +355,6 @@ def gen_rank_plt(input_col, options, **kwargs):
     return fig
 
 
-chart_config = {
-    "displaylogo": False,
-    "modeBarButtonsToRemove": ["hoverClosestPie"],
-    "toImageButtonOptions": {
-        "width": 700,
-        "height": 450,
-        "scale": (210 / 25.4) / (700 / 300),
-    },
-}
-
-
 def print_total(number):
     st.write(f"**{number}** respondents answered the question with the current filter")
 
@@ -375,6 +365,17 @@ def answered_by(group):
     else:
         text = "media professionals"
     st.caption(f"This question was only answered by {text}")
+
+
+chart_config = {
+    "displaylogo": False,
+    "modeBarButtonsToRemove": ["hoverClosestPie"],
+    "toImageButtonOptions": {
+        "width": 700,
+        "height": 450,
+        "scale": (210 / 25.4) / (700 / 300),
+    },
+}
 
 
 # ===========================================================================
@@ -405,6 +406,9 @@ sections = [
     "Resources // FOI",
     "Resources // Appreciation",
     "Media Reporting",
+    "Public Campaigning",
+    "Policy Advocacy",
+    "Strategic Litigation",
     "Protection",
     "Constraints",
     "Attitudes",
@@ -652,6 +656,19 @@ if selected_section == "Overview":
         config=chart_config,
     )
 
+    st.write("### Predominant activity of CSO professionals `[CSpreselection]`")
+    CSpreselection_counts = df[filter]["CSpreselection"].value_counts()
+    print_total(CSpreselection_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            df[filter],
+            values=CSpreselection_counts,
+            names=CSpreselection_counts.index,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
     st.write("### Gender `[gender]`")
     gender_counts = df[filter]["gender"].value_counts()
     print_total(gender_counts.sum())
@@ -675,9 +692,8 @@ if selected_section == "Overview":
     # TODO Privacy notice
 
 # ===========================================================================
-# Resources
+# Resources // HR
 # ===========================================================================
-
 
 if selected_section == "Resources // HR":
     st.write("# Resources // HR")
@@ -703,6 +719,7 @@ if selected_section == "Resources // HR":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
         "### How many days per month do you work on surveillance by intelligence agencies? `[hr2]`"
     )
@@ -760,10 +777,11 @@ if selected_section == "Resources // HR":
         config=chart_config,
     )
 
-    st.write("### Which type of medium do you work for? `[hr3ms]`")
-    hr3ms_df = pd.DataFrame(columns=("option", "count", "country"))
+    # =======================================================================
+    st.write("### Which type of medium do you work for? `[MShr3]`")
+    MShr3_df = pd.DataFrame(columns=("option", "count", "country"))
     answered_by("media")
-    hr3ms_options = [
+    MShr3_options = [
         "daily_newspaper",
         "weekly_newspaper",
         "magazine",
@@ -773,7 +791,7 @@ if selected_section == "Resources // HR":
         "online_stand_alone",
         "online_of_offline",
     ]
-    hr3ms_options_clean = [
+    MShr3_options_clean = [
         "Daily newspaper",
         "Weekly newspaper",
         "Magazine",
@@ -783,29 +801,29 @@ if selected_section == "Resources // HR":
         "Online outlet<br>(standalone)",
         "Online outlet<br>(of an offline publication)",
     ]
-    for option, option_clean in zip(hr3ms_options, hr3ms_options_clean):
-        hr3ms_data = df[filter]["country"][df[f"hr3ms[{option}]"] == 1].tolist()
-        for i in hr3ms_data:
-            hr3ms_df = hr3ms_df.append(
-                {"option": option_clean, "count": hr3ms_data.count(i), "country": i},
+    for option, option_clean in zip(MShr3_options, MShr3_options_clean):
+        MShr3_data = df[filter]["country"][df[f"MShr3[{option}]"] == 1].tolist()
+        for i in MShr3_data:
+            MShr3_df = MShr3_df.append(
+                {"option": option_clean, "count": MShr3_data.count(i), "country": i},
                 ignore_index=True,
             )
-    hr3ms_df = hr3ms_df.drop_duplicates()
+    MShr3_df = MShr3_df.drop_duplicates()
 
     if filters["field"] == "CSO Professionals":
         print_total(0)
     else:
         # If one respondent chose at least one medium it counts towards the total
-        hr3ms_col_list = [col for col in df[filter].columns if col.startswith("hr3ms")]
-        hr3ms_df_total = df[filter][hr3ms_col_list]
-        hr3ms_df_total["answered"] = [
-            "Y" if x > 0 else "N" for x in np.sum(hr3ms_df_total.values == True, 1)
+        MShr3_col_list = [col for col in df[filter].columns if col.startswith("MShr3")]
+        MShr3_df_total = df[filter][MShr3_col_list]
+        MShr3_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(MShr3_df_total.values == True, 1)
         ]
-        print_total(hr3ms_df_total["answered"].value_counts().sort_index()[1])
+        print_total(MShr3_df_total["answered"].value_counts().sort_index()[1])
 
     st.plotly_chart(
         gen_px_histogram(
-            hr3ms_df,
+            MShr3_df,
             x="option",
             y="count",
             nbins=None,
@@ -816,24 +834,31 @@ if selected_section == "Resources // HR":
                 "France": colors[4],
             },
             labels={"count": "people who work<br>for this medium"},
+            marginal=None,
         ),
         use_container_width=True,
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### Within the past year, did you have enough time to cover surveillance by intelligence agencies? `[hr4ms]`"
+        "### Within the past year, did you have enough time to cover surveillance by intelligence agencies? `[MShr4]`"
     )
     answered_by("media")
-    hr4ms_counts = df[filter]["hr4ms"].value_counts().sort_index()
+    MShr4_counts = df[filter]["MShr4"].value_counts().sort_index()
+    print_total(MShr4_counts.sum())
     st.plotly_chart(
         gen_go_pie(
-            labels=hr4ms_counts.sort_index().index,
-            values=hr4ms_counts.sort_index().values,
+            labels=MShr4_counts.sort_index().index,
+            values=MShr4_counts.sort_index().values,
         ),
         use_container_width=True,
         config=chart_config,
     )
+
+# ===========================================================================
+# Resources // Expertise
+# ===========================================================================
 
 if selected_section == "Resources // Expertise":
     st.write("# Resources // Expertise")
@@ -860,7 +885,6 @@ if selected_section == "Resources // Expertise":
         use_container_width=True,
         config=chart_config,
     )
-
     st.plotly_chart(
         gen_px_box(
             df=df[filter],
@@ -879,6 +903,7 @@ if selected_section == "Resources // Expertise":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
         "### How do you assess your level of expertise concerning the **legal** aspects of surveillance by intelligence agencies? `[expertise2]`"
     )
@@ -893,6 +918,7 @@ if selected_section == "Resources // Expertise":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
         "### How do you assess your level of expertise concerning the **political** aspects of surveillance by intelligence agencies `[expertise3]`?"
     )
@@ -907,6 +933,7 @@ if selected_section == "Resources // Expertise":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
         "### How do you assess your level of expertise concerning the **technical** aspects of surveillance by intelligence agencies? `[expertise4]`"
     )
@@ -920,6 +947,10 @@ if selected_section == "Resources // Expertise":
         use_container_width=True,
         config=chart_config,
     )
+
+# ===========================================================================
+# Resources // Finance
+# ===========================================================================
 
 if selected_section == "Resources // Finance":
     st.write("# Resources // Finance")
@@ -938,18 +969,19 @@ if selected_section == "Resources // Finance":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend) `[finance2ms]`"
+        "### If you wanted to conduct investigative research into surveillance by intelligence agencies, could you access extra funding for this research? (For example, a special budget or a stipend) `[MSfinance2]`"
     )
-    finance2ms_counts = df[filter]["finance2ms"].value_counts()
+    MSfinance2_counts = df[filter]["MSfinance2"].value_counts()
     answered_by("media")
-    print_total(finance2ms_counts.sum())
+    print_total(MSfinance2_counts.sum())
     st.plotly_chart(
         gen_px_pie(
-            finance2ms_counts,
-            values=finance2ms_counts,
-            names=finance2ms_counts.index,
-            color=finance2ms_counts.index,
+            MSfinance2_counts,
+            values=MSfinance2_counts,
+            names=MSfinance2_counts.index,
+            color=MSfinance2_counts.index,
             color_discrete_map={
                 "No": colors[0],
                 "Yes": colors[2],
@@ -961,10 +993,11 @@ if selected_section == "Resources // Finance":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### How important are the following funding categories for your organisation's work on intelligence-related issues? `[finance2cs]`"
+        "### How important are the following funding categories for your organisation's work on intelligence-related issues? `[CSfinance2]`"
     )
-    finance2cs_options = [
+    CSfinance2_options = [
         "private_foundations",
         "donations",
         "national_public_funds",
@@ -972,7 +1005,7 @@ if selected_section == "Resources // Finance":
         "international_public_funds",
         "other",
     ]
-    finance2cs_options_clean = [
+    CSfinance2_options_clean = [
         "Private foundations",
         "Donations",
         "National public funds",
@@ -980,12 +1013,12 @@ if selected_section == "Resources // Finance":
         "International public funds",
         "Other",
     ]
-    finance2cs_very_important = []
-    finance2cs_somewhat_important = []
-    finance2cs_important = []
-    finance2cs_slightly_important = []
-    finance2cs_not_important = []
-    finance2cs_prefer_not_to_say = []
+    CSfinance2_very_important = []
+    CSfinance2_somewhat_important = []
+    CSfinance2_important = []
+    CSfinance2_slightly_important = []
+    CSfinance2_not_important = []
+    CSfinance2_prefer_not_to_say = []
     for importance in [
         "Very important",
         "Somewhat important",
@@ -994,28 +1027,28 @@ if selected_section == "Resources // Finance":
         "Not important at all",
         "I prefer not to say",
     ]:
-        for option in finance2cs_options:
+        for option in CSfinance2_options:
             try:
-                count = df[filter][f"finance2cs[{option}]"].value_counts()[importance]
+                count = df[filter][f"CSfinance2[{option}]"].value_counts()[importance]
             except KeyError:
                 count = 0
             if importance == "Very important":
-                finance2cs_very_important.append(count)
+                CSfinance2_very_important.append(count)
             elif importance == "Somewhat important":
-                finance2cs_somewhat_important.append(count)
+                CSfinance2_somewhat_important.append(count)
             elif importance == "Important":
-                finance2cs_important.append(count)
+                CSfinance2_important.append(count)
             elif importance == "Slightly important":
-                finance2cs_slightly_important.append(count)
+                CSfinance2_slightly_important.append(count)
             elif importance == "Not important at all":
-                finance2cs_not_important.append(count)
+                CSfinance2_not_important.append(count)
             elif importance == "I prefer not to say":
-                finance2cs_prefer_not_to_say.append(count)
+                CSfinance2_prefer_not_to_say.append(count)
             else:
                 continue
     totals = [
-        df[filter][f"finance2cs[{option}]"].value_counts().sum()
-        for option in finance2cs_options
+        df[filter][f"CSfinance2[{option}]"].value_counts().sum()
+        for option in CSfinance2_options
     ]
     answered_by("cso")
     print_total(max(totals))
@@ -1024,38 +1057,38 @@ if selected_section == "Resources // Finance":
             data=[
                 go.Bar(
                     name="Very important",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_very_important,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_very_important,
                     marker_color=colors[0],
                 ),
                 go.Bar(
                     name="Somewhat important",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_somewhat_important,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_somewhat_important,
                     marker_color=colors[1],
                 ),
                 go.Bar(
                     name="Important",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_important,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_important,
                     marker_color=colors[2],
                 ),
                 go.Bar(
                     name="Slightly important",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_slightly_important,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_slightly_important,
                     marker_color=colors[3],
                 ),
                 go.Bar(
                     name="Not important at all",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_not_important,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_not_important,
                     marker_color=colors[4],
                 ),
                 go.Bar(
                     name="I prefer not to say",
-                    x=finance2cs_options_clean,
-                    y=finance2cs_prefer_not_to_say,
+                    x=CSfinance2_options_clean,
+                    y=CSfinance2_prefer_not_to_say,
                     marker_color=colors[5],
                 ),
             ],
@@ -1067,7 +1100,7 @@ if selected_section == "Resources // FOI":
     st.write("# Resources // FOI")
 
     st.write(
-        "### Have you requested information under the national FOI† law when you worked on intelligence-related issues over the past 5 years?"
+        "### Have you requested information under the national FOI† law when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
     )
     st.caption("†Freedom of Information")
     foi1_counts = df[filter]["foi1"].value_counts()
@@ -1088,8 +1121,9 @@ if selected_section == "Resources // FOI":
         use_container_width=True,
     )
 
-    st.write("### How often did you request information?")
-    foi2_counts = df[filter]["foi3"].value_counts()
+    # =======================================================================
+    st.write("### How often did you request information? `[foi2]`")
+    foi2_counts = df[filter]["foi2"].value_counts()
     print_total(foi2_counts.sum())
     st.plotly_chart(
         gen_px_histogram(
@@ -1107,7 +1141,6 @@ if selected_section == "Resources // FOI":
         ),
         use_container_width=True,
     )
-
     st.plotly_chart(
         gen_px_box(
             df=df[filter],
@@ -1125,8 +1158,9 @@ if selected_section == "Resources // FOI":
         use_container_width=True,
     )
 
+    # =======================================================================
     st.write(
-        "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner?"
+        "### Over the past 5 years, did you receive a response to your FOI request(s) in a timely manner? `[foi3]`"
     )
     foi3_counts = df[filter]["foi3"].value_counts()
     print_total(foi3_counts.sum())
@@ -1139,8 +1173,9 @@ if selected_section == "Resources // FOI":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### How helpful have Freedom of Information requests been for your work on intelligence-related issues?"
+        "### How helpful have Freedom of Information requests been for your work on intelligence-related issues? `[foi4]`"
     )
     foi4_counts = df[filter]["foi4"].value_counts()
     print_total(foi4_counts.sum())
@@ -1153,11 +1188,11 @@ if selected_section == "Resources // FOI":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years?"
+        "### Why haven’t you requested information under the national FOI law when you reported on intelligence-related issues over the past 5 years? `[foi5]`"
     )
     foi5_df = pd.DataFrame(columns=("option", "count", "country"))
-    # TODO Map proper labels
     for option in [
         "not_aware",
         "not_covered",
@@ -1203,6 +1238,7 @@ if selected_section == "Resources // FOI":
                 "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
+            marginal=None,
         ),
         use_container_width=True,
         config=chart_config,
@@ -1277,7 +1313,6 @@ if selected_section == "Media Reporting":
     st.write(
         """### Please estimate: how many journalistic pieces have you produced on intelligence-related topics in the past year? `[MSsoc1]`"""
     )
-
     answered_by("media")
     MSsoc1_df = df[filter][["country", "MSsoc1"]]
     MSsoc1_df = MSsoc1_df.dropna(subset=["MSsoc1"])
@@ -1299,7 +1334,6 @@ if selected_section == "Media Reporting":
         use_container_width=True,
         config=chart_config,
     )
-
     st.plotly_chart(
         gen_px_box(
             df=df[filter],
@@ -1322,7 +1356,6 @@ if selected_section == "Media Reporting":
     st.write(
         "### Please estimate: how many of these pieces focused on surveillance by intelligence agencies? `[MSsoc2]`"
     )
-
     answered_by("media")
     MSsoc2_df = df[filter][["country", "MSsoc2"]]
     MSsoc2_df = MSsoc2_df.dropna(subset=["MSsoc2"])
@@ -1346,7 +1379,6 @@ if selected_section == "Media Reporting":
         use_container_width=True,
         config=chart_config,
     )
-
     st.plotly_chart(
         gen_px_box(
             df=df[filter],
@@ -1415,7 +1447,6 @@ by intelligence agencies given the current filter.
     st.write(
         "### How regularly do you report on surveillance by intelligence agencies? `[MSsoc3]`"
     )
-
     answered_by("media")
     MSsoc3_counts = df[filter]["MSsoc3"].value_counts()
     print_total(MSsoc3_counts.sum())
@@ -1432,8 +1463,6 @@ by intelligence agencies given the current filter.
     st.write(
         "### When covering surveillance by intelligence agencies, which topics usually prompt you to write an article? `[MSsoc4]`"
     )
-
-    answered_by("media")
     MSsoc4_df = pd.DataFrame(columns=("option", "count", "country"))
     MSsoc4_options = [
         "follow_up_on_other_media",
@@ -1455,6 +1484,19 @@ by intelligence agencies given the current filter.
         "I prefer not to say",
         "Other",
     ]
+    answered_by("media")
+    if filters["field"] == "CSO Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        MSsoc4_col_list = [
+            col for col in df[filter].columns if col.startswith("MSsoc4")
+        ]
+        MSsoc4_df_total = df[filter][MSsoc4_col_list]
+        MSsoc4_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(MSsoc4_df_total.values == True, 1)
+        ]
+        print_total(MSsoc4_df_total["answered"].value_counts().sort_index()[1])
     for option, option_clean in zip(MSsoc4_options, MSsoc4_options_clean):
         MSsoc4_data = df[filter]["country"][df[f"MSsoc4[{option}]"] == 1].tolist()
         for i in MSsoc4_data:
@@ -1485,7 +1527,7 @@ by intelligence agencies given the current filter.
     st.write(
         "### When covering surveillance by intelligence agencies, which of the following topics to you report on frequently? `[MSsoc5]`"
     )
-
+    answered_by("media")
     MSsoc5_df = pd.DataFrame(columns=("option", "count", "country"))
     MSsoc5_options = [
         "national_security_risks",
@@ -1512,6 +1554,18 @@ by intelligence agencies given the current filter.
                 {"option": option_clean, "count": MSsoc5_data.count(i), "country": i},
                 ignore_index=True,
             )
+    if filters["field"] == "CSO Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        MSsoc5_col_list = [
+            col for col in df[filter].columns if col.startswith("MSsoc5")
+        ]
+        MSsoc5_df_total = df[filter][MSsoc5_col_list]
+        MSsoc5_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(MSsoc5_df_total.values == True, 1)
+        ]
+        print_total(MSsoc5_df_total["answered"].value_counts().sort_index()[1])
     MSsoc5_df = MSsoc5_df.drop_duplicates()
     st.plotly_chart(
         gen_px_histogram(
@@ -1587,6 +1641,7 @@ by intelligence agencies given the current filter.
             },
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     # =======================================================================
@@ -1619,7 +1674,6 @@ by intelligence agencies given the current filter.
         "I don't know",
         "I prefer not to say",
     ]
-    print(df[filter]["country"][df["MSimpact1[above_avg_comments]"]])
     for option, option_clean in zip(options, options_clean):
         MSimpact1_data = df[filter]["country"][df[f"MSimpact1[{option}]"] == 1].tolist()
         for i in MSimpact1_data:
@@ -1631,6 +1685,19 @@ by intelligence agencies given the current filter.
                 },
                 ignore_index=True,
             )
+    answered_by("media")
+    if filters["field"] == "CSO Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        MSimpact1_col_list = [
+            col for col in df[filter].columns if col.startswith("MSimpact1")
+        ]
+        MSimpact1_df_total = df[filter][MSimpact1_col_list]
+        MSimpact1_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(MSimpact1_df_total.values == True, 1)
+        ]
+        print_total(MSimpact1_df_total["answered"].value_counts().sort_index()[1])
     MSimpact1_df = MSimpact1_df.drop_duplicates()
     st.plotly_chart(
         gen_px_histogram(
@@ -1648,6 +1715,7 @@ by intelligence agencies given the current filter.
             marginal=None,
         ),
         use_container_width=True,
+        config=chart_config,
     )
 
     # =======================================================================
@@ -1689,6 +1757,19 @@ by intelligence agencies given the current filter.
                 },
                 ignore_index=True,
             )
+    answered_by("media")
+    if filters["field"] == "CSO Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        MSimpact1_col_list = [
+            col for col in df[filter].columns if col.startswith("MSimpact1")
+        ]
+        MSimpact1_df_total = df[filter][MSimpact1_col_list]
+        MSimpact1_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(MSimpact1_df_total.values == True, 1)
+        ]
+        print_total(MSimpact1_df_total["answered"].value_counts().sort_index()[1])
     MSimpact2_df = MSimpact2_df.drop_duplicates()
     st.plotly_chart(
         gen_px_histogram(
@@ -1707,6 +1788,853 @@ by intelligence agencies given the current filter.
             font_size=11,
         ),
         use_container_width=True,
+        config=chart_config,
+    )
+
+# ===========================================================================
+# Public Campaigning
+# ===========================================================================
+
+if selected_section == "Public Campaigning":
+    st.caption(
+        "__NB__: All questions in this section have only been presented to civil society professionals."
+    )
+
+    st.write("# Activity")
+
+    st.write(
+        "### How important are the following campaigning tools for your work concerning intelligence-related issues? `[CScampact2]`"
+    )
+    answered_by("cso")
+    options = [
+        "media_contributions",
+        "own_publications",
+        "petitions_open_letters",
+        "public_events",
+        "collaborations",
+        "demonstrations",
+        "social_media",
+        "advertising",
+        "volunteer_activities",
+        "providing_technical_tools",
+        "support_for_eu_campaigns",
+        "other",
+    ]
+    options_clean = [
+        "Media contributions",
+        "Own publications",
+        "Petitions and open letters",
+        "Public events",
+        "Collaborations with celebrities and influencers",
+        "Demonstrations and rallies",
+        "Social media communications",
+        "Advertising",
+        "Volunteer activities",
+        "Providing technical tools",
+        "Support for campaign activities in other countries",
+        "Other",
+    ]
+    CScampact2_very_important = []
+    CScampact2_somewhat_important = []
+    CScampact2_important = []
+    CScampact2_slightly_important = []
+    CScampact2_not_important = []
+    for importance in [
+        "Very important",
+        "Somewhat important",
+        "Important",
+        "Slightly important",
+        "Not important at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CScampact2[{option}]"].value_counts()[importance]
+            except KeyError:
+                count = 0
+            if importance == "Very important":
+                CScampact2_very_important.append(count)
+            elif importance == "Somewhat important":
+                CScampact2_somewhat_important.append(count)
+            elif importance == "Important":
+                CScampact2_important.append(count)
+            elif importance == "Slightly important":
+                CScampact2_slightly_important.append(count)
+            elif importance == "Not important at all":
+                CScampact2_not_important.append(count)
+            else:
+                continue
+
+    if filters["field"] == "Media Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        CScampact2_col_list = [
+            col for col in df[filter].columns if col.startswith("CScampact2")
+        ]
+        CScampact2_df_total = df[filter][CScampact2_col_list]
+        # Make all NaNs numeric zeroes
+        CScampact2_df_total = CScampact2_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in CScampact2_df_total.columns:
+            CScampact2_df_total[col] = (
+                pd.to_numeric(CScampact2_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        CScampact2_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(CScampact2_df_total.values == "Y", 1)
+        ]
+        print_total(CScampact2_df_total["answered"].value_counts().sort_index()[1])
+
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Very important",
+                    x=options_clean,
+                    y=CScampact2_very_important,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Somewhat important",
+                    x=options_clean,
+                    y=CScampact2_somewhat_important,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Important",
+                    x=options_clean,
+                    y=CScampact2_important,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Slightly important",
+                    x=options_clean,
+                    y=CScampact2_slightly_important,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not important at all",
+                    x=options_clean,
+                    y=CScampact2_not_important,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Transnational Scope")
+
+    st.write(
+        "### How frequently do your public campaigns address transnational issues of surveillance by intelligence agencies? `[CScamptrans1]`"
+    )
+    answered_by("cso")
+    CScamptrans1_counts = df[filter]["CScamptrans1"].value_counts()
+    print_total(CScamptrans1_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CScamptrans1_counts.sort_index().index,
+            values=CScamptrans1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When conducting public campaigns on surveillance by intelligence agencies, how often do you collaborate with civil society actors in other countries? `[CScamptrans2]`"
+    )
+    answered_by("cso")
+    CScamptrans2_counts = df[filter]["CScamptrans2"].value_counts()
+    print_total(CScamptrans2_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CScamptrans2_counts.sort_index().index,
+            values=CScamptrans2_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Perceived Impact")
+
+    st.write(
+        "### How much do you agree with the following statements concerning the effectiveness of your campaigning activities regarding intelligence-related issues over the past 5 years? `[CScampimpact1]`"
+    )
+    answered_by("cso")
+    options = [
+        "increased_awareness",
+        "policies_reflect_demands",
+        "created_media_attention",
+        "achieved_goals",
+    ]
+    options_clean = [
+        "Helped increase public awareness",
+        "Our demands have been reflected in politics",
+        "Created media attention",
+        "Achieved defined goals",
+    ]
+    CScampimpact1_agree_completely = []
+    CScampimpact1_agree_to_great_extent = []
+    CScampimpact1_agree_somewhat = []
+    CScampimpact1_agree_slightly = []
+    CScampimpact1_not_agree_at_all = []
+    for agreement in [
+        "Agree completely",
+        "Agree to a great extent",
+        "Agree somewhat",
+        "Agree slightly",
+        "Not agree at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CScampimpact1[{option}]"].value_counts()[agreement]
+            except KeyError:
+                count = 0
+            if agreement == "Agree completely":
+                CScampimpact1_agree_completely.append(count)
+            elif agreement == "Agree to a great extent":
+                CScampimpact1_agree_to_great_extent.append(count)
+            elif agreement == "Agree somewhat":
+                CScampimpact1_agree_somewhat.append(count)
+            elif agreement == "Agree slightly":
+                CScampimpact1_agree_slightly.append(count)
+            elif agreement == "Not agree at all":
+                CScampimpact1_not_agree_at_all.append(count)
+            else:
+                continue
+    if filters["field"] == "Media Professionals":
+        print_total(0)
+    else:
+        # If one respondent chose at least one medium it counts towards the total
+        CScampimpact1_col_list = [
+            col for col in df[filter].columns if col.startswith("CScampimpact1")
+        ]
+        CScampimpact1_df_total = df[filter][CScampimpact1_col_list]
+        # Make all NaNs numeric zeroes
+        CScampimpact1_df_total = CScampimpact1_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in CScampimpact1_df_total.columns:
+            CScampimpact1_df_total[col] = (
+                pd.to_numeric(CScampimpact1_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        CScampimpact1_df_total["answered"] = [
+            "Y" if x > 0 else "N"
+            for x in np.sum(CScampimpact1_df_total.values == "Y", 1)
+        ]
+        print_total(CScampimpact1_df_total["answered"].value_counts().sort_index()[1])
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Agree completely",
+                    x=options_clean,
+                    y=CScampimpact1_agree_completely,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Agree to a great extent",
+                    x=options_clean,
+                    y=CScampimpact1_agree_to_great_extent,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Agree somewhat",
+                    x=options_clean,
+                    y=CScampimpact1_agree_somewhat,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Agree slightly",
+                    x=options_clean,
+                    y=CScampimpact1_agree_slightly,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not agree at all",
+                    x=options_clean,
+                    y=CScampimpact1_not_agree_at_all,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+# ===========================================================================
+# Policy Advocacy
+# ===========================================================================
+
+if selected_section == "Policy Advocacy":
+    st.caption(
+        "__NB__: All questions in this section have only been presented to civil society organisation professionals."
+    )
+    st.write("# Activity")
+
+    st.write(
+        "### How important are the following policy advocacy tools for your work on intelligence-related issues? `[CSadvocact2]`"
+    )
+    answered_by("cso")
+    options = [
+        "research",
+        "consultations",
+        "briefings",
+        "expert_events",
+        "participation_in_fora",
+        "legal_opinions",
+        "informal_encounters",
+        "other",
+    ]
+    options_clean = [
+        "Research & analysis",
+        "Contributing to consultations",
+        "Briefing of policy makers",
+        "Expert events",
+        "Participation in fora or bodies",
+        "Legal opinions",
+        "Informal encounters",
+        "Other",
+    ]
+    CSadvocact2_very_important = []
+    CSadvocact2_somewhat_important = []
+    CSadvocact2_important = []
+    CSadvocact2_slightly_important = []
+    CSadvocact2_not_important = []
+    for importance in [
+        "Very important",
+        "Somewhat important",
+        "Important",
+        "Slightly important",
+        "Not important at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CSadvocact2[{option}]"].value_counts()[importance]
+            except KeyError:
+                count = 0
+            if importance == "Very important":
+                CSadvocact2_very_important.append(count)
+            elif importance == "Somewhat important":
+                CSadvocact2_somewhat_important.append(count)
+            elif importance == "Important":
+                CSadvocact2_important.append(count)
+            elif importance == "Slightly important":
+                CSadvocact2_slightly_important.append(count)
+            elif importance == "Not important at all":
+                CSadvocact2_not_important.append(count)
+            else:
+                continue
+    try:
+        # If one respondent chose at least one medium it counts towards the total
+        CSadvocact2_col_list = [
+            col for col in df[filter].columns if col.startswith("CSadvocact2")
+        ]
+        CSadvocact2_df_total = df[filter][CSadvocact2_col_list]
+        # Make all NaNs numeric zeroes
+        CSadvocact2_df_total = CSadvocact2_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in CSadvocact2_df_total.columns:
+            CSadvocact2_df_total[col] = (
+                pd.to_numeric(CSadvocact2_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        CSadvocact2_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(CSadvocact2_df_total.values == "Y", 1)
+        ]
+        print_total(CSadvocact2_df_total["answered"].value_counts().sort_index()[1])
+    except IndexError:
+        print_total(0)
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Very important",
+                    x=options_clean,
+                    y=CSadvocact2_very_important,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Somewhat important",
+                    x=options_clean,
+                    y=CSadvocact2_somewhat_important,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Important",
+                    x=options_clean,
+                    y=CSadvocact2_important,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Slightly important",
+                    x=options_clean,
+                    y=CSadvocact2_slightly_important,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not important at all",
+                    x=options_clean,
+                    y=CSadvocact2_not_important,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Transnational Scope")
+
+    st.write(
+        "### How frequently does your policy advocacy address transnational issues of surveillance by intelligence agencies? `[CSadvoctrans1]`"
+    )
+    answered_by("cso")
+    CSadvoctrans1_counts = df[filter]["CSadvoctrans1"].value_counts()
+    print_total(CSadvoctrans1_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSadvoctrans1_counts.sort_index().index,
+            values=CSadvoctrans1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When performing policy advocacy concerning surveillance by intelligence agencies, how often do you collaborate with civil society actors in other countries? `[CSadvoctrans2]`"
+    )
+    answered_by("cso")
+    CSadvoctrans2_counts = df[filter]["CSadvoctrans2"].value_counts()
+    print_total(CSadvoctrans2_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSadvoctrans2_counts.sort_index().index,
+            values=CSadvoctrans2_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Perceived Impact")
+
+    st.write(
+        "### How much do you agree with the following statements concerning the effectiveness of your advocacy activities regarding intelligence-related issues over the past 5 years? `[CSadvocimpact1]`"
+    )
+    options = [
+        "increased_awareness",
+        "policies_reflect_recommendations",
+        "more_informed_debates",
+        "achieved_goals",
+    ]
+    options_clean = [
+        "Helped increase public awareness",
+        "Our policy recommendations have been reflected in politics",
+        "Contributed to more informed debate",
+        "Achieved defined goals",
+    ]
+    CSadvocimpact1_agree_completely = []
+    CSadvocimpact1_agree_to_great_extent = []
+    CSadvocimpact1_agree_somewhat = []
+    CSadvocimpact1_agree_slightly = []
+    CSadvocimpact1_not_agree_at_all = []
+    for agreement in [
+        "Agree completely",
+        "Agree to a great extent",
+        "Agree somewhat",
+        "Agree slightly",
+        "Not agree at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CSadvocimpact1[{option}]"].value_counts()[
+                    agreement
+                ]
+            except KeyError:
+                count = 0
+            if agreement == "Agree completely":
+                CSadvocimpact1_agree_completely.append(count)
+            elif agreement == "Agree to a great extent":
+                CSadvocimpact1_agree_to_great_extent.append(count)
+            elif agreement == "Agree somewhat":
+                CSadvocimpact1_agree_somewhat.append(count)
+            elif agreement == "Agree slightly":
+                CSadvocimpact1_agree_slightly.append(count)
+            elif agreement == "Not agree at all":
+                CSadvocimpact1_not_agree_at_all.append(count)
+            else:
+                continue
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Agree completely",
+                    x=options_clean,
+                    y=CSadvocimpact1_agree_completely,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Agree to a great extent",
+                    x=options_clean,
+                    y=CSadvocimpact1_agree_to_great_extent,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Agree somewhat",
+                    x=options_clean,
+                    y=CSadvocimpact1_agree_somewhat,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Agree slightly",
+                    x=options_clean,
+                    y=CSadvocimpact1_agree_slightly,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not agree at all",
+                    x=options_clean,
+                    y=CSadvocimpact1_not_agree_at_all,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+# ===========================================================================
+# Strategic Litigation
+# ===========================================================================
+
+if selected_section == "Strategic Litigation":
+    st.caption(
+        "__NB__: All questions in this section have only been presented to civil society organisation professionals."
+    )
+    st.write("# Activity")
+
+    st.write(
+        "### How important are the following policy litigateacy tools for your work on intelligence-related issues? `[CSlitigateact2]`"
+    )
+    answered_by("cso")
+    options = [
+        "initiating_lawsuit",
+        "initiating_complaint",
+        "supporting_existing_legislation",
+        "other",
+    ]
+    options_clean = [
+        "Initiating and/or coordinating a lawsuit",
+        "Initiating a legal complaint",
+        "Supporting existing legislation",
+        "Other",
+    ]
+    CSlitigateact2_very_important = []
+    CSlitigateact2_somewhat_important = []
+    CSlitigateact2_important = []
+    CSlitigateact2_slightly_important = []
+    CSlitigateact2_not_important = []
+    for importance in [
+        "Very important",
+        "Somewhat important",
+        "Important",
+        "Slightly important",
+        "Not important at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CSlitigateact2[{option}]"].value_counts()[
+                    importance
+                ]
+            except KeyError:
+                count = 0
+            if importance == "Very important":
+                CSlitigateact2_very_important.append(count)
+            elif importance == "Somewhat important":
+                CSlitigateact2_somewhat_important.append(count)
+            elif importance == "Important":
+                CSlitigateact2_important.append(count)
+            elif importance == "Slightly important":
+                CSlitigateact2_slightly_important.append(count)
+            elif importance == "Not important at all":
+                CSlitigateact2_not_important.append(count)
+            else:
+                continue
+    try:
+        # If one respondent chose at least one medium it counts towards the total
+        CSlitigateact2_col_list = [
+            col for col in df[filter].columns if col.startswith("CSlitigateact2")
+        ]
+        CSlitigateact2_df_total = df[filter][CSlitigateact2_col_list]
+        # Make all NaNs numeric zeroes
+        CSlitigateact2_df_total = CSlitigateact2_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in CSlitigateact2_df_total.columns:
+            CSlitigateact2_df_total[col] = (
+                pd.to_numeric(CSlitigateact2_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        CSlitigateact2_df_total["answered"] = [
+            "Y" if x > 0 else "N"
+            for x in np.sum(CSlitigateact2_df_total.values == "Y", 1)
+        ]
+        print_total(CSlitigateact2_df_total["answered"].value_counts().sort_index()[1])
+    except IndexError:
+        print_total(0)
+
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Very important",
+                    x=options_clean,
+                    y=CSlitigateact2_very_important,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Somewhat important",
+                    x=options_clean,
+                    y=CSlitigateact2_somewhat_important,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Important",
+                    x=options_clean,
+                    y=CSlitigateact2_important,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Slightly important",
+                    x=options_clean,
+                    y=CSlitigateact2_slightly_important,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not important at all",
+                    x=options_clean,
+                    y=CSlitigateact2_not_important,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Costs")
+
+    st.write(
+        "### How frequently did the costs (e.g. court fees, loser pays principles, lawyers fees) prevent your organisation from starting a strategic litigation process? `[CSlitigatecost1]`"
+    )
+    answered_by("cso")
+    CSlitigatecost1_counts = df[filter]["CSlitigatecost1"].value_counts().sort_index()
+    print_total(CSlitigatecost1_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSlitigatecost1_counts.sort_index().index,
+            values=CSlitigatecost1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### How frequently did your organisation benefit from pro bono support? `[CSlitigatecost2]`"
+    )
+    answered_by("cso")
+    CSlitigatecost2_counts = df[filter]["CSlitigatecost2"].value_counts()
+    print_total(CSlitigatecost2_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSlitigatecost2_counts.sort_index().index,
+            values=CSlitigatecost2_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Imagine your organisation lost a strategic litigation case concerning surveillance by intelligence agencies. How financially risky would it be for the organisation to be defeated in court? `[CSlitigatecost3]`"
+    )
+    answered_by("cso")
+    CSlitigatecost3_counts = df[filter]["CSlitigatecost3"].value_counts()
+    print_total(CSlitigatecost3_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSlitigatecost3_counts.sort_index().index,
+            values=CSlitigatecost3_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Transnational Scope")
+
+    st.write(
+        "### How frequently do your strategic litigation cases address transnational issues of surveillance by intelligence agencies? `[CSlitigatetrans1]`"
+    )
+    answered_by("cso")
+    CSlitigatetrans1_counts = df[filter]["CSlitigatetrans1"].value_counts()
+    print_total(CSlitigatetrans1_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSlitigatetrans1_counts.sort_index().index,
+            values=CSlitigatetrans1_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### When performing strategic litigation concerning surveillance by intelligence agencies, how often do you collaborate with civil society actors in other countries? `[CSlitigatetrans2]`"
+    )
+    answered_by("cso")
+    CSlitigatetrans2_counts = df[filter]["CSlitigatetrans2"].value_counts()
+    print_total(CSlitigatetrans2_counts.sum())
+    st.plotly_chart(
+        gen_go_pie(
+            labels=CSlitigatetrans2_counts.sort_index().index,
+            values=CSlitigatetrans2_counts.sort_index().values,
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Perceived Impact")
+
+    st.write(
+        "### How much do you agree with the following statements concerning the effectiveness of your strategic litigation activities regarding surveillance by intelligence agencies over the past 5 years? `[CSlitigateimpact1]`"
+    )
+    answered_by("cso")
+    options = [
+        "increased_awareness",
+        "changed_the_law",
+        "amendments_of_the_law",
+        "revealed_new_information",
+        "achieved_goals",
+    ]
+    options_clean = [
+        "Helped increase public awareness",
+        "Changed the prevalent case law",
+        "Led to amendments in legislation",
+        "Revealed new information",
+        "Achieved defined goals",
+    ]
+    CSlitigateimpact1_agree_completely = []
+    CSlitigateimpact1_agree_to_great_extent = []
+    CSlitigateimpact1_agree_somewhat = []
+    CSlitigateimpact1_agree_slightly = []
+    CSlitigateimpact1_not_agree_at_all = []
+    for agreement in [
+        "Agree completely",
+        "Agree to a great extent",
+        "Agree somewhat",
+        "Agree slightly",
+        "Not agree at all",
+    ]:
+        for option in options:
+            try:
+                count = df[filter][f"CSlitigateimpact1[{option}]"].value_counts()[
+                    agreement
+                ]
+            except KeyError:
+                count = 0
+            if agreement == "Agree completely":
+                CSlitigateimpact1_agree_completely.append(count)
+            elif agreement == "Agree to a great extent":
+                CSlitigateimpact1_agree_to_great_extent.append(count)
+            elif agreement == "Agree somewhat":
+                CSlitigateimpact1_agree_somewhat.append(count)
+            elif agreement == "Agree slightly":
+                CSlitigateimpact1_agree_slightly.append(count)
+            elif agreement == "Not agree at all":
+                CSlitigateimpact1_not_agree_at_all.append(count)
+            else:
+                continue
+    try:
+        # If one respondent chose at least one medium it counts towards the total
+        CSlitigateimpact1_col_list = [
+            col for col in df[filter].columns if col.startswith("CSlitigateimpact1")
+        ]
+        CSlitigateimpact1_df_total = df[filter][CSlitigateimpact1_col_list]
+        # Make all NaNs numeric zeroes
+        CSlitigateimpact1_df_total = CSlitigateimpact1_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in CSlitigateimpact1_df_total.columns:
+            CSlitigateimpact1_df_total[col] = (
+                pd.to_numeric(CSlitigateimpact1_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        CSlitigateimpact1_df_total["answered"] = [
+            "Y" if x > 0 else "N"
+            for x in np.sum(CSlitigateimpact1_df_total.values == "Y", 1)
+        ]
+        print_total(
+            CSlitigateimpact1_df_total["answered"].value_counts().sort_index()[1]
+        )
+    except IndexError:
+        print_total(0)
+
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Agree completely",
+                    x=options_clean,
+                    y=CSlitigateimpact1_agree_completely,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="Agree to a great extent",
+                    x=options_clean,
+                    y=CSlitigateimpact1_agree_to_great_extent,
+                    marker_color=colors[1],
+                ),
+                go.Bar(
+                    name="Agree somewhat",
+                    x=options_clean,
+                    y=CSlitigateimpact1_agree_somewhat,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="Agree slightly",
+                    x=options_clean,
+                    y=CSlitigateimpact1_agree_slightly,
+                    marker_color=colors[3],
+                ),
+                go.Bar(
+                    name="Not agree at all",
+                    x=options_clean,
+                    y=CSlitigateimpact1_not_agree_at_all,
+                    marker_color=colors[5],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
     )
 
 # ===========================================================================

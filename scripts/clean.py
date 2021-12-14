@@ -21,12 +21,12 @@ def construct_cs_df():
         columns={
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
-            "CSfinance2[SQ01]": "CSfinance2cs[private_foundations]",
-            "CSfinance2[SQ02]": "CSfinance2cs[donations]",
-            "CSfinance2[SQ03]": "CSfinance2cs[national_public_funds]",
-            "CSfinance2[SQ04]": "CSfinance2cs[corporate_sponsorship]",
-            "CSfinance2[SQ05]": "CSfinance2cs[international_public_funds]",
-            "CSfinance2[SQ06]": "CSfinance2cs[other]",
+            "CSfinance2[SQ01]": "CSCSfinance2[private_foundations]",
+            "CSfinance2[SQ02]": "CSCSfinance2[donations]",
+            "CSfinance2[SQ03]": "CSCSfinance2[national_public_funds]",
+            "CSfinance2[SQ04]": "CSCSfinance2[corporate_sponsorship]",
+            "CSfinance2[SQ05]": "CSCSfinance2[international_public_funds]",
+            "CSfinance2[SQ06]": "CSCSfinance2[other]",
             "CSfoi5[SQ01]": "CSfoi5[not_aware]",
             "CSfoi5[SQ02]": "CSfoi5[not_covered]",
             "CSfoi5[SQ03]": "CSfoi5[too_expensive]",
@@ -36,6 +36,55 @@ def construct_cs_df():
             "CSfoi5[SQ07]": "CSfoi5[other]",
             "CSfoi5[SQ08]": "CSfoi5[dont_know]",
             "CSfoi5[SQ09]": "CSfoi5[prefer_not_to_say]",
+            "CSpreselection": "CSCSpreselection",
+            "CScampact2[SQ01]": "CSCScampact2[media_contributions]",
+            "CScampact2[SQ02]": "CSCScampact2[own_publications]",
+            "CScampact2[SQ03]": "CSCScampact2[petitions_open_letters]",
+            "CScampact2[SQ04]": "CSCScampact2[public_events]",
+            "CScampact2[SQ05]": "CSCScampact2[collaborations]",
+            "CScampact2[SQ06]": "CSCScampact2[demonstrations]",
+            "CScampact2[SQ07]": "CSCScampact2[social_media]",
+            "CScampact2[SQ08]": "CSCScampact2[advertising]",
+            "CScampact2[SQ09]": "CSCScampact2[volunteer_activities]",
+            "CScampact2[SQ10]": "CSCScampact2[providing_technical_tools]",
+            "CScampact2[SQ11]": "CSCScampact2[support_for_eu_campaigns]",
+            "CScampact2[SQ12]": "CSCScampact2[other]",
+            "CScampimpact1[SQ01]": "CSCScampimpact1[increased_awareness]",
+            "CScampimpact1[SQ02]": "CSCScampimpact1[policies_reflect_demands]",
+            "CScampimpact1[SQ03]": "CSCScampimpact1[created_media_attention]",
+            "CScampimpact1[SQ04]": "CSCScampimpact1[achieved_goals]",
+            "CScampimpact2": "CSCScampimpact2",
+            "CScamptrans1": "CSCScamptrans1",
+            "CScamptrans2": "CSCScamptrans2",
+            "CSadvocact2[SQ01]": "CSCSadvocact2[research]",
+            "CSadvocact2[SQ02]": "CSCSadvocact2[consultations]",
+            "CSadvocact2[SQ03]": "CSCSadvocact2[briefings]",
+            "CSadvocact2[SQ04]": "CSCSadvocact2[expert_events]",
+            "CSadvocact2[SQ05]": "CSCSadvocact2[participation_in_fora]",
+            "CSadvocact2[SQ06]": "CSCSadvocact2[legal_opinions]",
+            "CSadvocact2[SQ07]": "CSCSadvocact2[informal_encounters]",
+            "CSadvocact2[SQ08]": "CSCSadvocact2[other]",
+            "CSadvoctrans1": "CSCSadvoctrans1",
+            "CSadvoctrans2": "CSCSadvoctrans2",
+            "CSadvocimpact1[SQ01]": "CSCSadvocimpact1[increased_awareness]",
+            "CSadvocimpact1[SQ02]": "CSCSadvocimpact1[policies_reflect_recommendations]",
+            "CSadvocimpact1[SQ03]": "CSCSadvocimpact1[more_informed_debates]",
+            "CSadvocimpact1[SQ04]": "CSCSadvocimpact1[achieved_goals]",
+            "CSlitigateact2[SQ01]": "CSCSlitigateact2[initiating_lawsuit]",
+            "CSlitigateact2[SQ02]": "CSCSlitigateact2[initiating_complaint]",
+            "CSlitigateact2[SQ03]": "CSCSlitigateact2[supporting_existing_legislation]",
+            "CSlitigateact2[SQ04]": "CSCSlitigateact2[other]",
+            "CSlitigateimpact1[SQ01]": "CSCSlitigateimpact1[increased_awareness]",
+            "CSlitigateimpact1[SQ02]": "CSCSlitigateimpact1[changed_the_law]",
+            "CSlitigateimpact1[SQ03]": "CSCSlitigateimpact1[amendments_of_the_law]",
+            "CSlitigateimpact1[SQ04]": "CSCSlitigateimpact1[revealed_new_information]",
+            "CSlitigateimpact1[SQ05]": "CSCSlitigateimpact1[achieved_goals]",
+            "CSlitigateimpact2": "CSCSlitigateimpact2",
+            "CSlitigatecost1": "CSCSlitigatecost1",
+            "CSlitigatecost2": "CSCSlitigatecost2",
+            "CSlitigatecost3": "CSCSlitigatecost3",
+            "CSlitigatetrans1": "CSCSlitigatetrans1",
+            "CSlitigatetrans2": "CSCSlitigatetrans2",
             "CSprotectops1[SQ01]": "CSprotectops1[sectraining]",
             "CSprotectops1[SQ02]": "CSprotectops1[e2e]",
             "CSprotectops3[SQ01]": "CSprotectops3[encrypted_email]",
@@ -62,14 +111,12 @@ def construct_cs_df():
             "CSconstraintinter5[SQ01]": "CSconstraintinter5[unsolicited_information]",
             "CSconstraintinter5[SQ02]": "CSconstraintinter5[invitations]",
             "CSconstraintinter5[SQ03]": "CSconstraintinter5[other]",
-            # "CSconstraintinter5ot": "CSconstraintinter5other",
             "CSconstraintinter6[SQ01]": "CSconstraintinter6[gender]",
             "CSconstraintinter6[SQ02]": "CSconstraintinter6[ethnicity]",
             "CSconstraintinter6[SQ03]": "CSconstraintinter6[political]",
             "CSconstraintinter6[SQ04]": "CSconstraintinter6[sexual]",
             "CSconstraintinter6[SQ05]": "CSconstraintinter6[religious]",
             "CSconstraintinter6[SQ06]": "CSconstraintinter6[other]",
-            # "CSconstraintinter6ot": "CSconstraintinter6other",
             "CSattitude3[SQ01]": "CSattitude3[rule_of_law]",
             "CSattitude3[SQ02]": "CSattitude3[civil_liberties]",
             "CSattitude3[SQ03]": "CSattitude3[effectiveness_of_intel]",
@@ -99,13 +146,12 @@ def construct_cs_df():
             "CSexpertise3",
             "CSexpertise4",
             "CSfinance1",
-            "CSfinance2cs[private_foundations]",
-            "CSfinance2cs[donations]",
-            "CSfinance2cs[national_public_funds]",
-            "CSfinance2cs[corporate_sponsorship]",
-            "CSfinance2cs[international_public_funds]",
-            "CSfinance2cs[other]",
-            # "CSfinance2other",
+            "CSCSfinance2[private_foundations]",
+            "CSCSfinance2[donations]",
+            "CSCSfinance2[national_public_funds]",
+            "CSCSfinance2[corporate_sponsorship]",
+            "CSCSfinance2[international_public_funds]",
+            "CSCSfinance2[other]",
             "CSfinance3",
             "CSfinance4",
             "CSfoi1",
@@ -121,7 +167,54 @@ def construct_cs_df():
             "CSfoi5[other]",
             "CSfoi5[dont_know]",
             "CSfoi5[prefer_not_to_say]",
-            # "CSfoi5other",
+            "CSCSpreselection",
+            "CSCScampact2[media_contributions]",
+            "CSCScampact2[own_publications]",
+            "CSCScampact2[petitions_open_letters]",
+            "CSCScampact2[public_events]",
+            "CSCScampact2[collaborations]",
+            "CSCScampact2[demonstrations]",
+            "CSCScampact2[social_media]",
+            "CSCScampact2[advertising]",
+            "CSCScampact2[volunteer_activities]",
+            "CSCScampact2[providing_technical_tools]",
+            "CSCScampact2[support_for_eu_campaigns]",
+            "CSCScampact2[other]",
+            "CSCScamptrans1",
+            "CSCScamptrans2",
+            "CSCScampimpact1[increased_awareness]",
+            "CSCScampimpact1[policies_reflect_demands]",
+            "CSCScampimpact1[created_media_attention]",
+            "CSCScampimpact1[achieved_goals]",
+            "CSCSadvoctrans1",
+            "CSCSadvoctrans2",
+            "CSCSadvocact2[research]",
+            "CSCSadvocact2[consultations]",
+            "CSCSadvocact2[briefings]",
+            "CSCSadvocact2[expert_events]",
+            "CSCSadvocact2[participation_in_fora]",
+            "CSCSadvocact2[legal_opinions]",
+            "CSCSadvocact2[informal_encounters]",
+            "CSCSadvocact2[other]",
+            "CSCSadvocimpact1[increased_awareness]",
+            "CSCSadvocimpact1[policies_reflect_recommendations]",
+            "CSCSadvocimpact1[more_informed_debates]",
+            "CSCSadvocimpact1[achieved_goals]",
+            "CSCSlitigateact2[initiating_lawsuit]",
+            "CSCSlitigateact2[initiating_complaint]",
+            "CSCSlitigateact2[supporting_existing_legislation]",
+            "CSCSlitigateact2[other]",
+            "CSCSlitigatecost1",
+            "CSCSlitigatecost2",
+            "CSCSlitigatecost3",
+            "CSCSlitigatetrans1",
+            "CSCSlitigatetrans2",
+            "CSCSlitigateimpact1[increased_awareness]",
+            "CSCSlitigateimpact1[changed_the_law]",
+            "CSCSlitigateimpact1[amendments_of_the_law]",
+            "CSCSlitigateimpact1[revealed_new_information]",
+            "CSCSlitigateimpact1[achieved_goals]",
+            "CSCSlitigateimpact2",
             "CSprotectops1[sectraining]",
             "CSprotectops1[e2e]",
             "CSprotectops2",
@@ -132,15 +225,12 @@ def construct_cs_df():
             "CSprotectops3[encrypted_hardware]",
             "CSprotectops3[2fa]",
             "CSprotectops3[other]",
-            # "CSprotectops3other",
             "CSprotectops4",
             "CSprotectleg1",
             "CSprotectleg2",
-            # "CSprotectleg2no",
             "CSprotectleg3[free_counsel]",
             "CSprotectleg3[cost_insurance]",
             "CSprotectleg3[other]",
-            # "CSprotectleg3other",
             "CSconstraintinter1",
             "CSconstraintinter2",
             "CSconstraintinter3",
@@ -158,14 +248,12 @@ def construct_cs_df():
             "CSconstraintinter5[unsolicited_information]",
             "CSconstraintinter5[invitations]",
             "CSconstraintinter5[other]",
-            # "CSconstraintinter5other",
             "CSconstraintinter6[gender]",
             "CSconstraintinter6[ethnicity]",
             "CSconstraintinter6[political]",
             "CSconstraintinter6[sexual]",
             "CSconstraintinter6[religious]",
             "CSconstraintinter6[other]",
-            # "CSconstraintinter6other",
             "CSattitude1",
             "CSattitude2",
             "CSattitude3[rule_of_law]",
@@ -221,17 +309,17 @@ def construct_ms_df():
         columns={
             "startlanguage": "XXcountry",
             "lastpage": "XXlastpage",
-            "MSfinance2": "MSfinance2ms",
+            "MSfinance2": "MSMSfinance2",
             "MFfoi2": "MSfoi2",
-            "MShr3[SQ01]": "MShr3ms[daily_newspaper]",
-            "MShr3[SQ02]": "MShr3ms[weekly_newspaper]",
-            "MShr3[SQ03]": "MShr3ms[magazine]",
-            "MShr3[SQ04]": "MShr3ms[tv]",
-            "MShr3[SQ05]": "MShr3ms[radio]",
-            "MShr3[SQ06]": "MShr3ms[news_agency]",
-            "MShr3[SQ07]": "MShr3ms[online_stand_alone]",
-            "MShr3[SQ08]": "MShr3ms[online_of_offline]",
-            "MShr4": "MShr4ms",
+            "MShr3[SQ01]": "MSMShr3[daily_newspaper]",
+            "MShr3[SQ02]": "MSMShr3[weekly_newspaper]",
+            "MShr3[SQ03]": "MSMShr3[magazine]",
+            "MShr3[SQ04]": "MSMShr3[tv]",
+            "MShr3[SQ05]": "MSMShr3[radio]",
+            "MShr3[SQ06]": "MSMShr3[news_agency]",
+            "MShr3[SQ07]": "MSMShr3[online_stand_alone]",
+            "MShr3[SQ08]": "MSMShr3[online_of_offline]",
+            "MShr4": "MSMShr4",
             "MSfoi5[SQ01]": "MSfoi5[not_aware]",
             "MSfoi5[SQ02]": "MSfoi5[not_covered]",
             "MSfoi5[SQ03]": "MSfoi5[too_expensive]",
@@ -340,22 +428,22 @@ def construct_ms_df():
             "XXlastpage",
             "MShr1",
             "MShr2",
-            "MShr3ms[daily_newspaper]",
-            "MShr3ms[weekly_newspaper]",
-            "MShr3ms[magazine]",
-            "MShr3ms[tv]",
-            "MShr3ms[radio]",
-            "MShr3ms[news_agency]",
-            "MShr3ms[online_stand_alone]",
-            "MShr3ms[online_of_offline]",
-            "MShr4ms",
+            "MSMShr3[daily_newspaper]",
+            "MSMShr3[weekly_newspaper]",
+            "MSMShr3[magazine]",
+            "MSMShr3[tv]",
+            "MSMShr3[radio]",
+            "MSMShr3[news_agency]",
+            "MSMShr3[online_stand_alone]",
+            "MSMShr3[online_of_offline]",
+            "MSMShr4",
             "MSgender",
             "MSexpertise1",
             "MSexpertise2",
             "MSexpertise3",
             "MSexpertise4",
             "MSfinance1",
-            "MSfinance2ms",
+            "MSMSfinance2",
             "MSfoi1",
             "MSfoi2",
             "MSfoi3",
@@ -532,7 +620,7 @@ df.loc[is_media, "hr1"] = df["hr1"].replace(
     }
 )
 
-df["hr4ms"] = df["hr4ms"].replace(
+df["MShr4"] = df["MShr4"].replace(
     {
         "AO01": "A1: I had enough time",
         "AO02": "A2: I had some time",
@@ -602,7 +690,7 @@ df["finance1"] = df["finance1"].replace(
     }
 )
 
-df["finance2ms"] = df["finance2ms"].replace(
+df["MSfinance2"] = df["MSfinance2"].replace(
     {
         "AO01": "Yes",
         "AO02": "No",
@@ -611,7 +699,7 @@ df["finance2ms"] = df["finance2ms"].replace(
     }
 )
 
-finance2cs_options = [
+CSfinance2_options = [
     "private_foundations",
     "donations",
     "national_public_funds",
@@ -619,8 +707,8 @@ finance2cs_options = [
     "international_public_funds",
     "other",
 ]
-for label in finance2cs_options:
-    df[f"finance2cs[{label}]"] = df[f"finance2cs[{label}]"].replace(
+for label in CSfinance2_options:
+    df[f"CSfinance2[{label}]"] = df[f"CSfinance2[{label}]"].replace(
         {
             "AO01": "Very important",
             "AO02": "Important",
@@ -731,6 +819,275 @@ df["MStrans3"] = df["MStrans3"].replace(
         "AO04": "I prefer not to say",
     }
 )
+
+df["CSpreselection"] = df["CSpreselection"].replace(
+    {
+        "AO01": "Public Campaigning",
+        "AO02": "Policy Advocacy",
+        "AO03": "Strategic Litigation",
+    }
+)
+
+CScampact2_options = [
+    "media_contributions",
+    "own_publications",
+    "petitions_open_letters",
+    "public_events",
+    "collaborations",
+    "demonstrations",
+    "social_media",
+    "advertising",
+    "volunteer_activities",
+    "providing_technical_tools",
+    "support_for_eu_campaigns",
+    "other",
+]
+for label in CScampact2_options:
+    df[f"CScampact2[{label}]"] = df[f"CScampact2[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+df["CScamptrans1"] = df["CScamptrans1"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+df["CScamptrans2"] = df["CScamptrans2"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+CScampimpact1_options = [
+    "increased_awareness",
+    "policies_reflect_demands",
+    "created_media_attention",
+    "achieved_goals",
+]
+for label in CScampimpact1_options:
+    df[f"CScampimpact1[{label}]"] = df[f"CScampimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO02": "Agree to a great extent",
+            "AO03": "Agree somewhat",
+            "AO04": "Agree sligthly",
+            "AO05": "Not agree at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+CSadvocact2_options = [
+    "research",
+    "consultations",
+    "briefings",
+    "expert_events",
+    "participation_in_fora",
+    "legal_opinions",
+    "informal_encounters",
+    "other",
+]
+for label in CSadvocact2_options:
+    df[f"CSadvocact2[{label}]"] = df[f"CSadvocact2[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO07": "Not important at all",
+            "AO09": "I don't know",
+            "AO11": "I prefer not to say",
+        }
+    )
+    # Coding in LimeSurvey differs for UK
+    df.loc[is_uk, f"CSadvocact2[{label}]"] = df[f"CSadvocact2[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+
+df["CSadvoctrans1"] = df["CSadvoctrans1"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+df["CSadvoctrans2"] = df["CSadvoctrans2"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+CSadvocimpact1_options = [
+    "increased_awareness",
+    "policies_reflect_recommendations",
+    "more_informed_debates",
+    "achieved_goals",
+]
+for label in CSadvocimpact1_options:
+    df[f"CSadvocimpact1[{label}]"] = df[f"CSadvocimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO42": "Agree to a great extent",
+            "AO43": "Agree somewhat",
+            "AO44": "Agree sligthly",
+            "AO45": "Not agree at all",
+            "AO46": "I don't know",
+            "AO47": "I prefer not to say",
+        }
+    )
+    # Here only DE survey is differenlty coded
+    df.loc[is_de, f"CSadvocimpact1[{label}]"] = df[f"CSadvocimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO02": "Agree to a great extent",
+            "AO03": "Agree somewhat",
+            "AO04": "Agree sligthly",
+            "AO05": "Not agree at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+CSlitigateact2_options = [
+    "initiating_lawsuit",
+    "initiating_complaint",
+    "supporting_existing_legislation",
+    "other",
+]
+for label in CSlitigateact2_options:
+    df[f"CSlitigateact2[{label}]"] = df[f"CSlitigateact2[{label}]"].replace(
+        {
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+df["CSlitigatetrans1"] = df["CSlitigatetrans1"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+df["CSlitigatetrans2"] = df["CSlitigatetrans2"].replace(
+    {
+        "AO01": "A1: Always",
+        "AO02": "A2: Often (75% of the time)",
+        "AO03": "A3: Sometimes (50% of the time)",
+        "AO04": "A4: Rarely (25% of the time)",
+        "AO05": "A5: Never",
+        "AO06": "A6: I don't know",
+        "AO07": "A7: I prefer not to say",
+    }
+)
+
+CSlitigateimpact1_options = [
+    "increased_awareness",
+    "changed_the_law",
+    "amendments_of_the_law",
+    "revealed_new_information",
+    "achieved_goals",
+]
+for label in CSlitigateimpact1_options:
+    df[f"CSlitigateimpact1[{label}]"] = df[f"CSlitigateimpact1[{label}]"].replace(
+        {
+            "AO01": "Agree completely",
+            "AO42": "Agree to a great extent",
+            "AO43": "Agree somewhat",
+            "AO44": "Agree sligthly",
+            "AO45": "Not agree at all",
+            "AO46": "I don't know",
+            "AO47": "I prefer not to say",
+        }
+    )
+
+    df.loc[is_de, f"CSlitigateimpact1[{label}]"] = df[
+        f"CSlitigateimpact1[{label}]"
+    ].replace(
+        {
+            "AO01": "Agree completely",
+            "AO02": "Agree to a great extent",
+            "AO03": "Agree somewhat",
+            "AO04": "Agree sligthly",
+            "AO05": "Not agree at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
+        }
+    )
+
+for i in range(1, 3):
+    df[f"CSlitigatecost{i}"] = df[f"CSlitigatecost{i}"].replace(
+        {
+            "AO01": "A1: Always or very often",
+            "AO02": "A2: Often (75% of the time)",
+            "AO03": "A3: Sometimes (50% of the time)",
+            "AO04": "A4: Rarely (25% of the time)",
+            "AO05": "A5: Never or rarely",
+            "AO06": "A6: I don't know",
+            "AO07": "A7: I prefer not to say",
+        }
+    )
+
+df["CSlitigatecost3"] = df["CSlitigatecost3"].replace(
+    {
+        "AO01": "A1: Not risky at all",
+        "AO02": "A2: Somewaht risky",
+        "AO03": "A3: Very risky",
+        "AO04": "A4: I don't know",
+        "AO05": "A5: I prefer not to say",
+    }
+)
 df["protectops1[sectraining]"] = df["protectops1[sectraining]"].replace(
     {
         "AO01": "Yes",
@@ -770,13 +1127,13 @@ protectops3_options = [
 for label in protectops3_options:
     df[f"protectops3[{label}]"] = df[f"protectops3[{label}]"].replace(
         {
-            "AO01": "Very important",
-            "AO02": "Important",
-            "AO03": "Somewhat important",
-            "AO04": "Slightly important",
-            "AO05": "Not important at all",
-            "AO06": "I don't know",
-            "AO07": "I prefer not to say",
+            "AO01": "A1: Very important",
+            "AO02": "A2: Important",
+            "AO03": "A3: Somewhat important",
+            "AO04": "A4: Slightly important",
+            "AO05": "A5: Not important at all",
+            "AO06": "A6: I don't know",
+            "AO07": "A7: I prefer not to say",
         }
     )
 # this was hard to spot. Only the CS survey for DE was coded as below
@@ -785,14 +1142,14 @@ for label in protectops3_options:
         f"protectops3[{label}]"
     ].replace(
         {
-            "AO01": "Very important",
-            "AO02": "Important",
-            "AO03": "Somewhat important",
-            "AO04": "Slightly important",
-            "AO05": "Not important at all",
+            "AO01": "A1: Very important",
+            "AO02": "A2: Important",
+            "AO03": "A3: Somewhat important",
+            "AO04": "A4: Slightly important",
+            "AO05": "A5: Not important at all",
             # notice the AO09 instead of AO06 as above
-            "AO09": "I don't know",
-            "AO11": "I prefer not to say",
+            "AO09": "A6: I don't know",
+            "AO11": "A7: I prefer not to say",
         }
     )
 
@@ -980,7 +1337,7 @@ for col in df:
     if (
         col.startswith("foi5[")
         or col.startswith("attitude3")
-        or col.startswith("hr3")
+        or col.startswith("MShr3")
         or col.startswith("MSsoc4")
         or col.startswith("MSsoc5")
         or col.startswith("MSimpact1")
