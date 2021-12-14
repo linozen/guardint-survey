@@ -27,6 +27,8 @@ colors = [
 # Functions to be cached
 # ===========================================================================
 
+asset_url = "https://guardint-assets.sehn.dev"
+
 
 @st.cache
 def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
@@ -67,7 +69,7 @@ def gen_px_pie(df, values, names, color_discrete_sequence=colors, **kwargs):
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source=f"{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.00,
@@ -118,7 +120,7 @@ def gen_go_pie(labels, values, marker_colors=colors, **kwargs):
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source=f"{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.00,
@@ -161,7 +163,7 @@ def gen_px_histogram(
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source="{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.18,
@@ -205,7 +207,7 @@ def gen_go_histogram_overlaid(traces, names, colors, **kwargs):
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source="{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.18,
@@ -245,7 +247,7 @@ def gen_px_box(df, x, y, points, color, labels, color_discrete_map=colors, **kwa
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source="{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.18,
@@ -278,7 +280,7 @@ def gen_go_bar_stack(data, **kwargs):
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source="{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.18,
@@ -341,7 +343,7 @@ def gen_rank_plt(input_col, options, **kwargs):
     # Add logo
     fig.add_layout_image(
         dict(
-            source="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_logo.png",
+            source="{asset_url}/guardint_logo.png",
             xref="paper",
             yref="paper",
             x=1.0,
@@ -390,7 +392,7 @@ df = pd.read_pickle("data/guardint_survey.pkl")
 
 st.set_page_config(
     page_title="IOI Survey Data Explorer",
-    page_icon="https://raw.githubusercontent.com/snv-berlin/ioi/master/guardint_favicon.png",
+    page_icon=f"{asset_url}/guardint_favicon.png",
 )
 
 
@@ -476,7 +478,7 @@ st.markdown(
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url(https://raw.githubusercontent.com/snv-berlin/ioi/master/roboto_mono.woff2) format('woff2');
+        src: url(https://guardint-assets.sehn.dev/roboto_mono.woff2) format('woff2');
         unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
