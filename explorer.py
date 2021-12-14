@@ -382,7 +382,7 @@ chart_config = {
 # Import data from stored pickle
 # ===========================================================================
 
-df = pd.read_pickle("data/guarding_survey.pkl")
+df = pd.read_pickle("data/guardint_survey.pkl")
 
 # ===========================================================================
 # General configuration
@@ -617,7 +617,7 @@ if selected_section == "Overview":
         [Github](https://github.com/snv-berlin/ioi).
     """
     )
-    with open("data/guarding_survey.csv", "rb") as file:
+    with open("data/guardint_survey.csv", "rb") as file:
         st.download_button(
             label="Download data as CSV",
             data=file,
