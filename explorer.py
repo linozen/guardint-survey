@@ -382,7 +382,7 @@ chart_config = {
 # Import data from stored pickle
 # ===========================================================================
 
-df = pd.read_pickle("data/guarding_survey.pkl.pkl")
+df = pd.read_pickle("data/guarding_survey.pkl")
 
 # ===========================================================================
 # General configuration
