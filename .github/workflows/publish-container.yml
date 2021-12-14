@@ -33,13 +33,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.REGISTRY }}/snv-berlin/streamlit-guardint
+          images: ${{ env.REGISTRY }}/snv-berlin/streamlit
           tags: |
             type=sha
             type=ref,event=branch
             type=schedule,pattern={{date 'YYYYMMDD'}}
 
-      - name: Build and push Docker image for front
+      - name: Build and push Docker image for streamlit
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
