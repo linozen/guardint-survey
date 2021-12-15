@@ -1,3 +1,7 @@
+Dockerfile
+/assets
+/legacy
+README.md
 .ipynb_checkpoints
 profiles/
 publication/

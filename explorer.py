@@ -4,13 +4,13 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-
+from string import Template
 
 # ===========================================================================
-# GUARDINT color scheme
+# GUARDINT asset URL and color scheme
 # ===========================================================================
 
-
+asset_url = "https://guardint-assets.sehn.dev"
 colors = [
     "#600b0c",
     "#C01518",
@@ -22,12 +22,9 @@ colors = [
     "#efefef",
 ]
 
-
 # ===========================================================================
-# Functions to be cached
+# Utility Functions to be cached
 # ===========================================================================
-
-asset_url = "https://guardint-assets.sehn.dev"
 
 
 @st.cache
@@ -379,7 +376,6 @@ chart_config = {
     },
 }
 
-
 # ===========================================================================
 # Import data from stored pickle
 # ===========================================================================
@@ -455,9 +451,9 @@ for column_name, selectbox in filters.items():
     else:
         filter = filter & (df[column_name] == selectbox)
 
-###############################################################################
+# ===========================================================================
 # Custom JS/CSS
-###############################################################################
+# ===========================================================================
 
 # This causes the page to scroll to top when section is changed
 components.html(
@@ -471,44 +467,39 @@ components.html(
 )
 
 # Here, a custom font is loaded from the GitHub repo
-st.markdown(
+css = Template(
     """ <style>
     @font-face {
         font-family: 'Roboto Mono';
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url(https://guardint-assets.sehn.dev/roboto_mono.woff2) format('woff2');
+        src: url($asset_url/roboto_mono.woff2) format('woff2');
         unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
-
     html, body, [class*="css"]  {
-    font-family: 'Roboto Mono';
-
+        font-family: 'Roboto Mono';
     }
-
     .st-bx {
         font-family: 'Roboto Mono' !important;
     }
-
     .st-ae {
         font-family: 'Roboto Mono' !important;
     }
-
     .css-1rh8hwn {
         font-size: 0.8rem;
     }
-
     button {
         border-width: 3px 3px 3px 3px !important;
         border-radius: 0 !important;
     }
-
     h3 {line-height: 1.3}
-
-    footer {visibility: hidden;}
-    .e8zbici2 {visibility: hidden;}
-
+    footer {
+        visibility: hidden;
+    }
+    .e8zbici2 {
+        visibility: hidden;
+    }
     .custom-footer {
         display: block;
         padding-top: 150px;
@@ -519,34 +510,29 @@ st.markdown(
         max-width: 730px;
         width: 100%;
     }
-
     strong {
         font-style: bold;
         font-weight: 700;
         color: #000;
     }
-
     code {
         color: #ff1c1f;
     }
-
     a {
         color: #ff1c1f !important;
     }
-
     a:hover {
         color: #ff5557 !important;
     }
-
     a:visited {
         color: #600b0c !important;
     }
-
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
 )
 
+css = css.substitute({"asset_url": asset_url})
+st.markdown(css, unsafe_allow_html=True)
 
 # ===========================================================================
 # Overview
@@ -833,7 +819,7 @@ if selected_section == "Resources // HR":
             color_discrete_map={
                 "Germany": colors[0],
                 "United Kingdom": colors[2],
-                "France": colors[4],
+                "France": colors[5],
             },
             labels={"count": "people who work<br>for this medium"},
             marginal=None,
@@ -1437,7 +1423,7 @@ by intelligence agencies given the current filter.
             color_discrete_map={
                 "Germany": colors[0],
                 "France": colors[2],
-                "United Kingdom": colors[4],
+                "United Kingdom": colors[5],
             },
             labels={"pieces": "journalistic pieces"},
         ),
@@ -1517,7 +1503,7 @@ by intelligence agencies given the current filter.
             color_discrete_map={
                 "Germany": colors[0],
                 "France": colors[2],
-                "United Kingdom": colors[4],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
             marginal=None,
@@ -1579,7 +1565,7 @@ by intelligence agencies given the current filter.
             color_discrete_map={
                 "Germany": colors[0],
                 "France": colors[2],
-                "United Kingdom": colors[4],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
             marginal=None,
@@ -1711,7 +1697,7 @@ by intelligence agencies given the current filter.
             color_discrete_map={
                 "Germany": colors[0],
                 "France": colors[2],
-                "United Kingdom": colors[4],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
             marginal=None,
@@ -1783,7 +1769,7 @@ by intelligence agencies given the current filter.
             color_discrete_map={
                 "Germany": colors[0],
                 "France": colors[2],
-                "United Kingdom": colors[4],
+                "United Kingdom": colors[5],
             },
             labels={"count": "people who answered 'Yes'"},
             marginal=None,
@@ -2644,14 +2630,12 @@ if selected_section == "Strategic Litigation":
 # ===========================================================================
 
 if selected_section == "Protection":
-    st.write("# Protection")
-
     st.write("## Operational Protection")
 
     st.write(
-        "### Have you taken any of the following measures to protect your datas from attacks and surveillance?"
+        "### Have you taken any of the following measures to protect your datas from attacks and surveillance? `[protectops1]`"
     )
-    protectops1_options = [
+    options_clean = [
         "Participation in<br>digital security training",
         "Use of E2E encrypted<br>communication channels",
     ]
@@ -2691,25 +2675,25 @@ if selected_section == "Protection":
             data=[
                 go.Bar(
                     name="Yes",
-                    x=protectops1_options,
+                    x=options_clean,
                     y=protectops1_yes,
-                    marker_color=colors[1],
+                    marker_color=colors[2],
                 ),
                 go.Bar(
                     name="No",
-                    x=protectops1_options,
+                    x=options_clean,
                     y=protectops1_no,
                     marker_color=colors[0],
                 ),
                 go.Bar(
                     name="I don't know",
-                    x=protectops1_options,
+                    x=options_clean,
                     y=protectops1_dont_know,
                     marker_color=colors[4],
                 ),
                 go.Bar(
                     name="I prefer not to say",
-                    x=protectops1_options,
+                    x=options_clean,
                     y=protectops1_prefer_not_to_say,
                     marker_color=colors[5],
                 ),
@@ -2719,7 +2703,10 @@ if selected_section == "Protection":
         config=chart_config,
     )
 
-    st.write("### Were any of these measures provided by your employer?")
+    # =======================================================================
+    st.write(
+        "### Were any of these measures provided by your employer? `[protectops2]`"
+    )
     protectops2_counts = df[filter]["protectops2"].value_counts()
     print_total(protectops2_counts.sum())
     st.plotly_chart(
@@ -2740,8 +2727,9 @@ if selected_section == "Protection":
         config=chart_config,
     )
 
+    # =======================================================================
     st.write(
-        "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle?"
+        "### How important is the use of the following technical tools for you to protect your communications, your online activities and the data you handle? `[protectops3]`"
     )
     protectops3_options = [
         "Encrypted Email",
@@ -2750,6 +2738,7 @@ if selected_section == "Protection":
         "E2E Messengers",
         "Encrpyted hardware",
         "Two-Factor authentication",
+        "Secure Drop †",
         "Other",
     ]
 
@@ -2772,6 +2761,7 @@ if selected_section == "Protection":
             "e2e_chat",
             "encrypted_hardware",
             "2fa",
+            "secure_drop",
             "other",
         ]:
             try:
@@ -2790,7 +2780,6 @@ if selected_section == "Protection":
                 protectops3_not_important.append(count)
             else:
                 continue
-
     totals = [
         df[filter]["protectops3[encrypted_email]"].value_counts().sum(),
         df[filter]["protectops3[vpn]"].value_counts().sum(),
@@ -2838,9 +2827,11 @@ if selected_section == "Protection":
         ),
         use_container_width=True,
     )
+    st.caption("† The option'Secure Drop' was only available to media professionals")
 
+    # =======================================================================
     st.write(
-        "### Which of the following statements best describes your level of confidence in the protection offered by technological tools?"
+        "### Which of the following statements best describes your level of confidence in the protection offered by technological tools? `[protectops4]`"
     )
     protectops4_counts = df[filter]["protectops4"].value_counts()
     print_total(protectops4_counts.sum())
@@ -2858,10 +2849,11 @@ if selected_section == "Protection":
         config=chart_config,
     )
 
-    st.write("## Legal Protection")
+    # =======================================================================
+    st.write("# Legal Protection")
 
     st.write(
-        """### When working on intelligence-related issues, do you feel you have reason to be concerned about...
+        """### When working on intelligence-related issues, do you feel you have reason to be concerned about... `[protectleg1]`
 
 - surveillance of your activities (CSO professionals)
 - regarding the protection of your sources (media professionals)"""
@@ -2902,7 +2894,7 @@ if selected_section == "Protection":
     )
 
     st.write(
-        "### Are any of the following forms of institutional support readily available to you?"
+        "### Are any of the following forms of institutional support readily available to you? `[protectleg3]`"
     )
     protectleg3_options = ["Free legal counsel", "Legal cost insurance", "Other"]
     protectleg3_yes = []
@@ -2925,6 +2917,28 @@ if selected_section == "Protection":
                 protectleg3_prefer_not_to_say.append(count)
             else:
                 continue
+    try:
+        # If one respondent chose at least one medium it counts towards the total
+        protectleg3_col_list = [
+            col for col in df[filter].columns if col.startswith("protectleg3")
+        ]
+        protectleg3_df_total = df[filter][protectleg3_col_list]
+        # Make all NaNs numeric zeroes
+        protectleg3_df_total = protectleg3_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in protectleg3_df_total.columns:
+            protectleg3_df_total[col] = (
+                pd.to_numeric(protectleg3_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        protectleg3_df_total["answered"] = [
+            "Y" if x > 0 else "N" for x in np.sum(protectleg3_df_total.values == "Y", 1)
+        ]
+        print_total(protectleg3_df_total["answered"].value_counts().sort_index()[1])
+    except IndexError:
+        print_total(0)
     st.plotly_chart(
         gen_go_bar_stack(
             data=[
@@ -2959,14 +2973,285 @@ if selected_section == "Protection":
         use_container_width=True,
     )
 
+    # =======================================================================
+    st.write("# Rights to Access")
+
+    st.write(
+        "### As a journalist in the country you primarily work in, do you have a special right to know if you have been subjected to surveillance in the past? `[MSprotectrta1]`"
+    )
+    answered_by("media")
+    MSprotectrta1_counts = df[filter]["MSprotectrta1"].value_counts()
+    print_total(MSprotectrta1_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta1_counts,
+            values=MSprotectrta1_counts,
+            names=MSprotectrta1_counts.index,
+            color=MSprotectrta1_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("### Have you ever made use of this right? `[MSprotectrta2]`")
+    answered_by("media")
+    MSprotectrta2_counts = df[filter]["MSprotectrta2"].value_counts()
+    print_total(MSprotectrta2_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta2_counts,
+            values=MSprotectrta2_counts,
+            names=MSprotectrta2_counts.index,
+            color=MSprotectrta2_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Is this right available to all journalists, even non-citizens? `[MSprotectrta3]`"
+    )
+    answered_by("media")
+    MSprotectrta3_counts = df[filter]["MSprotectrta3"].value_counts()
+    print_total(MSprotectrta3_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta3_counts,
+            values=MSprotectrta3_counts,
+            names=MSprotectrta3_counts.index,
+            color=MSprotectrta3_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Have you ever submitted a data subject access request (based on your right to access as defined in the GDPR) related to surveillance by intelligence agencies? `[MSprotectrta4]`"
+    )
+    answered_by("media")
+    MSprotectrta4_counts = df[filter]["MSprotectrta4"].value_counts()
+    print_total(MSprotectrta4_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta4_counts,
+            values=MSprotectrta4_counts,
+            names=MSprotectrta4_counts.index,
+            color=MSprotectrta4_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Over the past 5 years, have you received responses to your data subject access request(s) in a timely manner? `[MSprotectrta5]`"
+    )
+    answered_by("media")
+    MSprotectrta5_counts = df[filter]["MSprotectrta5"].value_counts()
+    print_total(MSprotectrta5_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta5_counts,
+            values=MSprotectrta5_counts,
+            names=MSprotectrta5_counts.index,
+            color=MSprotectrta5_counts.index,
+            color_discrete_map={
+                "Never": colors[0],
+                "No, usually longer than 30 days": colors[1],
+                "Yes, within 30 days": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### If you received a response to a data subject access request, was the information provided helpful? `[MSprotectrta6]`"
+    )
+    answered_by("media")
+    MSprotectrta6_counts = df[filter]["MSprotectrta6"].value_counts()
+    print_total(MSprotectrta6_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSprotectrta6_counts,
+            values=MSprotectrta6_counts,
+            names=MSprotectrta6_counts.index,
+            color=MSprotectrta6_counts.index,
+            color_discrete_map={
+                "Yes, the information provided was helpful": colors[2],
+                "Partly, the information provided was somewhat <br>helpful but contained omissions": colors[
+                    1
+                ],
+                "No, the information provided was not at all helpful": colors[0],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
 # ===========================================================================
 # Constraints
 # ===========================================================================
 
 if selected_section == "Constraints":
-    st.write("# Constraints")
 
-    st.write("## Interference by state authorities")
+    st.write("# Censorship")
+
+    st.write(
+        "### When covering intelligence related issues, have you consulted state bodies or officials prior to the publication of the story due to the sensitivity of information? `[MSconstraintcen1]`"
+    )
+    answered_by("media")
+    MSconstraintcen1_counts = df[filter]["MSconstraintcen1"].value_counts()
+    print_total(MSconstraintcen1_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSconstraintcen1_counts,
+            values=MSconstraintcen1_counts,
+            names=MSconstraintcen1_counts.index,
+            color=MSconstraintcen1_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Is there an institutional setting that advises journalists to engage in a consultation process prior to the publication of sensitive information (i.e. a code of conduct or a committee)? `[MSconstraintcen2]`"
+    )
+    answered_by("media")
+    MSconstraintcen2_counts = df[filter]["MSconstraintcen2"].value_counts()
+    print_total(MSconstraintcen2_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSconstraintcen2_counts,
+            values=MSconstraintcen2_counts,
+            names=MSconstraintcen2_counts.index,
+            color=MSconstraintcen2_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Please estimate: How often have you consulted state bodies or officials prior to publishing  intelligence-related stories in the past 5 years? `[MSconstraintcen3]`"
+    )
+    answered_by("media")
+    MSconstraintcen3_df = df[filter][["country", "MSconstraintcen3"]]
+    MSconstraintcen3_df = MSconstraintcen3_df.dropna(subset=["MSconstraintcen3"])
+    print_total(MSconstraintcen3_df["MSconstraintcen3"].value_counts().sum())
+    st.plotly_chart(
+        gen_px_histogram(
+            df=df[filter],
+            x="MSconstraintcen3",
+            y=None,
+            nbins=10,
+            color="country",
+            color_discrete_map={
+                "Germany": colors[0],
+                "France": colors[2],
+                "United Kingdom": colors[5],
+            },
+            labels={"MSconstraintcen3": "times"},
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Has this consultation process prevented a publication of yours from appearing? `[MSconstraintcen4]`"
+    )
+    answered_by("media")
+    MSconstraintcen4_counts = df[filter]["MSconstraintcen4"].value_counts()
+    print_total(MSconstraintcen4_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSconstraintcen4_counts,
+            values=MSconstraintcen4_counts,
+            names=MSconstraintcen4_counts.index,
+            color=MSconstraintcen4_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Have you been required to make edits as part of this consultation process? `[MSconstraintcen5]`"
+    )
+    answered_by("media")
+    MSconstraintcen5_counts = df[filter]["MSconstraintcen5"].value_counts()
+    print_total(MSconstraintcen5_counts.sum())
+    st.plotly_chart(
+        gen_px_pie(
+            MSconstraintcen5_counts,
+            values=MSconstraintcen5_counts,
+            names=MSconstraintcen5_counts.index,
+            color=MSconstraintcen5_counts.index,
+            color_discrete_map={
+                "No": colors[0],
+                "Yes": colors[2],
+                "I don't know": colors[5],
+                "I prefer not to say": colors[4],
+            },
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Interference")
 
     st.write(
         "### Has your institution or have you yourself been subjected to surveillance by intelligence agencies in the past five years? `[constraintinter1]`"
@@ -3256,6 +3541,181 @@ if selected_section == "Constraints":
                     y=constraintinter6_prefer_not_to_say,
                     marker_color=colors[5],
                     opacity=0.8,
+                ),
+            ],
+        ),
+        use_container_width=True,
+        config=chart_config,
+    )
+
+    # =======================================================================
+    st.write("# Self Censorship")
+    st.write(
+        "### Which of the following behaviours have you experienced or observed in your professional environment related to covering intelligence-related topics? `[MSconstraintself1]`"
+    )
+    answered_by("media")
+    options = [
+        "avoid",
+        "change_focus",
+        "change_timeline",
+        "abandon",
+        "leave_profession",
+        "other",
+    ]
+    options_clean = [
+        "Avoided sensitive issues in<br>a story related to intelligence",
+        "Changed the focus of a story<br>related to intelligence",
+        "Changed the timeline for publication",
+        "Abandoned a story related to<br>intelligence",
+        "Considered leaving the profession<br>altogether",
+        "Other",
+    ]
+    MSconstraintself1_yes = []
+    MSconstraintself1_no = []
+    MSconstraintself1_dont_know = []
+    MSconstraintself1_prefer_not_to_say = []
+    for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
+        for option in options:
+            try:
+                count = df[filter][f"MSconstraintself1[{option}]"].value_counts()[
+                    answer
+                ]
+            except KeyError:
+                count = 0
+            if answer == "Yes":
+                MSconstraintself1_yes.append(count)
+            elif answer == "No":
+                MSconstraintself1_no.append(count)
+            elif answer == "I don't know":
+                MSconstraintself1_dont_know.append(count)
+            elif answer == "I prefer not to say":
+                MSconstraintself1_prefer_not_to_say.append(count)
+            else:
+                continue
+    try:
+        # If one respondent chose at least one medium it counts towards the total
+        MSconstraintself1_col_list = [
+            col for col in df[filter].columns if col.startswith("MSconstraintself1")
+        ]
+        MSconstraintself1_df_total = df[filter][MSconstraintself1_col_list]
+        # Make all NaNs numeric zeroes
+        MSconstraintself1_df_total = MSconstraintself1_df_total.fillna(0)
+        # Now replace everything that is not a number with "Y"
+        for col in MSconstraintself1_df_total.columns:
+            MSconstraintself1_df_total[col] = (
+                pd.to_numeric(MSconstraintself1_df_total[col], errors="coerce")
+                .fillna("Y")
+                .astype("string")
+            )
+        # Make a column to count "Y"
+        MSconstraintself1_df_total["answered"] = [
+            "Y" if x > 0 else "N"
+            for x in np.sum(MSconstraintself1_df_total.values == "Y", 1)
+        ]
+        print_total(
+            MSconstraintself1_df_total["answered"].value_counts().sort_index()[1]
+        )
+    except IndexError:
+        print_total(0)
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Yes",
+                    x=options_clean,
+                    y=MSconstraintself1_yes,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="No",
+                    x=options_clean,
+                    y=MSconstraintself1_no,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="I don't know",
+                    x=options_clean,
+                    y=MSconstraintself1_dont_know,
+                    marker_color=colors[5],
+                ),
+                go.Bar(
+                    name="I prefer not to say",
+                    x=options_clean,
+                    y=MSconstraintself1_prefer_not_to_say,
+                    marker_color=colors[4],
+                ),
+            ],
+        ),
+        use_container_width=True,
+        confif=chart_config,
+    )
+
+    # =======================================================================
+    st.write(
+        "### Which of the following behaviours have you experienced or observed in your professional environment related to your work on intelligence-related topics? `[CSconstraintself1]`"
+    )
+    options = [
+        "avoid",
+        "cancelled_campaign",
+        "withdrew_litigation",
+        "leave_profession",
+        "other",
+    ]
+    options_clean = [
+        "Avoided advocating for<br>contentious policy changes",
+        "Canceled a public campaign",
+        "Withdrew litigation case",
+        "Quit working on<br>intelligence-related issues",
+        "Other",
+    ]
+    CSconstraintself1_yes = []
+    CSconstraintself1_no = []
+    CSconstraintself1_dont_know = []
+    CSconstraintself1_prefer_not_to_say = []
+    for answer in ["Yes", "No", "I don't know", "I prefer not to say"]:
+        for option in options:
+            try:
+                count = df[filter][f"CSconstraintself1[{option}]"].value_counts()[
+                    answer
+                ]
+            except KeyError:
+                count = 0
+            if answer == "Yes":
+                CSconstraintself1_yes.append(count)
+            elif answer == "No":
+                CSconstraintself1_no.append(count)
+            elif answer == "I don't know":
+                CSconstraintself1_dont_know.append(count)
+            elif answer == "I prefer not to say":
+                CSconstraintself1_prefer_not_to_say.append(count)
+            else:
+                continue
+    st.plotly_chart(
+        gen_go_bar_stack(
+            data=[
+                go.Bar(
+                    name="Yes",
+                    x=options_clean,
+                    y=CSconstraintself1_yes,
+                    marker_color=colors[2],
+                ),
+                go.Bar(
+                    name="No",
+                    x=options_clean,
+                    y=CSconstraintself1_no,
+                    marker_color=colors[0],
+                ),
+                go.Bar(
+                    name="I don't know",
+                    x=options_clean,
+                    y=CSconstraintself1_dont_know,
+                    marker_color=colors[5],
+                ),
+                go.Bar(
+                    name="I prefer not to say",
+                    x=options_clean,
+                    y=CSconstraintself1_prefer_not_to_say,
+                    marker_color=colors[4],
                 ),
             ],
         ),

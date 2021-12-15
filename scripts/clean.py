@@ -117,6 +117,11 @@ def construct_cs_df():
             "CSconstraintinter6[SQ04]": "CSconstraintinter6[sexual]",
             "CSconstraintinter6[SQ05]": "CSconstraintinter6[religious]",
             "CSconstraintinter6[SQ06]": "CSconstraintinter6[other]",
+            "CSconstraintself1[SQ01]": "CSCSconstraintself1[avoid]",
+            "CSconstraintself1[SQ02]": "CSCSconstraintself1[cancelled_campaign]",
+            "CSconstraintself1[SQ03]": "CSCSconstraintself1[withdrew_litigation]",
+            "CSconstraintself1[SQ04]": "CSCSconstraintself1[leave_profession]",
+            "CSconstraintself1[SQ05]": "CSCSconstraintself1[other]",
             "CSattitude3[SQ01]": "CSattitude3[rule_of_law]",
             "CSattitude3[SQ02]": "CSattitude3[civil_liberties]",
             "CSattitude3[SQ03]": "CSattitude3[effectiveness_of_intel]",
@@ -253,6 +258,11 @@ def construct_cs_df():
             "CSconstraintinter6[sexual]",
             "CSconstraintinter6[religious]",
             "CSconstraintinter6[other]",
+            "CSCSconstraintself1[avoid]",
+            "CSCSconstraintself1[cancelled_campaign]",
+            "CSCSconstraintself1[withdrew_litigation]",
+            "CSCSconstraintself1[leave_profession]",
+            "CSCSconstraintself1[other]",
             "CSattitude1",
             "CSattitude2",
             "CSattitude3[rule_of_law]",
@@ -380,10 +390,22 @@ def construct_ms_df():
             "MSprotectops3[SQ04]": "MSprotectops3[e2e_chat]",
             "MSprotectops3[SQ05]": "MSprotectops3[encrypted_hardware]",
             "MSprotectops3[SQ06]": "MSprotectops3[2fa]",
+            "MSprotectops3[SQ07]": "MSprotectops3[secure_drop]",
             "MSprotectops3[SQ08]": "MSprotectops3[other]",
             "MSprotectleg3[SQ01]": "MSprotectleg3[free_counsel]",
             "MSprotectleg3[SQ02]": "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[SQ03]": "MSprotectleg3[other]",
+            "MSprotectrta1": "MSMSprotectrta1",
+            "MSprotectrta2": "MSMSprotectrta2",
+            "MSprotectrta3": "MSMSprotectrta3",
+            "MSprotectrta4": "MSMSprotectrta4",
+            "MSprotectrta5": "MSMSprotectrta5",
+            "MSprotectrta6": "MSMSprotectrta6",
+            "MSconstraintcen1": "MSMSconstraintcen1",
+            "MSconstraintcen2": "MSMSconstraintcen2",
+            "MSconstraintcen3": "MSMSconstraintcen3",
+            "MSconstraintcen4": "MSMSconstraintcen4",
+            "MSconstraintcen5": "MSMSconstraintcen5",
             "MSconstraintinter4[SQ01]": "MSconstraintinter4[police_search]",
             "MSconstraintinter4[SQ02]": "MSconstraintinter4[seizure]",
             "MSconstraintinter4[SQ03]": "MSconstraintinter4[extortion]",
@@ -404,6 +426,12 @@ def construct_ms_df():
             "MSconstraintinter6[SQ04]": "MSconstraintinter6[sexual]",
             "MSconstraintinter6[SQ05]": "MSconstraintinter6[religious]",
             "MSconstraintinter6[SQ06]": "MSconstraintinter6[other]",
+            "MSconstraintself1[SQ01]": "MSMSconstraintself1[avoid]",
+            "MSconstraintself1[SQ02]": "MSMSconstraintself1[change_focus]",
+            "MSconstraintself1[SQ03]": "MSMSconstraintself1[change_timeline]",
+            "MSconstraintself1[SQ04]": "MSMSconstraintself1[abandon]",
+            "MSconstraintself1[SQ05]": "MSMSconstraintself1[leave_profession]",
+            "MSconstraintself1[SQ06]": "MSMSconstraintself1[other]",
             "MSattitude3[SQ01]": "MSattitude3[rule_of_law]",
             "MSattitude3[SQ02]": "MSattitude3[civil_liberties]",
             "MSattitude3[SQ03]": "MSattitude3[effectiveness_of_intel]",
@@ -506,16 +534,25 @@ def construct_ms_df():
             "MSprotectops3[e2e_chat]",
             "MSprotectops3[encrypted_hardware]",
             "MSprotectops3[2fa]",
+            "MSprotectops3[secure_drop]",
             "MSprotectops3[other]",
-            # "MSprotectops3other",
             "MSprotectops4",
             "MSprotectleg1",
             "MSprotectleg2",
-            # "MSprotectleg2no",
             "MSprotectleg3[free_counsel]",
             "MSprotectleg3[cost_insurance]",
             "MSprotectleg3[other]",
-            # "MSprotectleg3other",
+            "MSMSprotectrta1",
+            "MSMSprotectrta2",
+            "MSMSprotectrta3",
+            "MSMSprotectrta4",
+            "MSMSprotectrta5",
+            "MSMSprotectrta6",
+            "MSMSconstraintcen1",
+            "MSMSconstraintcen2",
+            "MSMSconstraintcen3",
+            "MSMSconstraintcen4",
+            "MSMSconstraintcen5",
             "MSconstraintinter1",
             "MSconstraintinter2",
             "MSconstraintinter3",
@@ -533,14 +570,18 @@ def construct_ms_df():
             "MSconstraintinter5[unsolicited_information]",
             "MSconstraintinter5[invitations]",
             "MSconstraintinter5[other]",
-            # "MSconstraintinter5other",
             "MSconstraintinter6[gender]",
             "MSconstraintinter6[ethnicity]",
             "MSconstraintinter6[political]",
             "MSconstraintinter6[sexual]",
             "MSconstraintinter6[religious]",
             "MSconstraintinter6[other]",
-            # "MSconstraintinter6other",
+            "MSMSconstraintself1[avoid]",
+            "MSMSconstraintself1[change_focus]",
+            "MSMSconstraintself1[change_timeline]",
+            "MSMSconstraintself1[abandon]",
+            "MSMSconstraintself1[leave_profession]",
+            "MSMSconstraintself1[other]",
             "MSattitude1",
             "MSattitude2",
             "MSattitude3[rule_of_law]",
@@ -1121,18 +1162,19 @@ protectops3_options = [
     "e2e_chat",
     "encrypted_hardware",
     "2fa",
+    "secure_drop",
     "other",
 ]
 for label in protectops3_options:
     df[f"protectops3[{label}]"] = df[f"protectops3[{label}]"].replace(
         {
-            "AO01": "A1: Very important",
-            "AO02": "A2: Important",
-            "AO03": "A3: Somewhat important",
-            "AO04": "A4: Slightly important",
-            "AO05": "A5: Not important at all",
-            "AO06": "A6: I don't know",
-            "AO07": "A7: I prefer not to say",
+            "AO01": "Very important",
+            "AO02": "Important",
+            "AO03": "Somewhat important",
+            "AO04": "Slightly important",
+            "AO05": "Not important at all",
+            "AO06": "I don't know",
+            "AO07": "I prefer not to say",
         }
     )
 # this was hard to spot. Only the CS survey for DE was coded as below
@@ -1194,6 +1236,69 @@ for label in ["free_counsel", "cost_insurance", "other"]:
             "AO04": "I prefer not to say",
         }
     )
+
+for i in range(1, 5):
+    df[f"MSprotectrta{i}"] = df[f"MSprotectrta{i}"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+df["MSprotectrta5"] = df["MSprotectrta5"].replace(
+    {
+        "AO01": "Yes, within 30 days",
+        "AO02": "No, usually longer than 30 days",
+        "AO03": "Never",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+df["MSprotectrta6"] = df["MSprotectrta6"].replace(
+    {
+        "AO01": "Yes, the information provided was helpful",
+        "AO02": "Partly, the information provided was somewhat <br>helpful but contained omissions",
+        "AO03": "No, the information provided was not at all helpful",
+        "AO04": "I don't know",
+        "AO05": "I prefer not to say",
+    }
+)
+
+for i in [1, 2, 4, 5]:
+    df[f"MSconstraintcen{i}"] = df[f"MSconstraintcen{i}"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+# MSconstraintcen3 was marred by answers that didn't really answer the question.
+# Below, I try to clean the responses as best as possible
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    {
+        "10 fois.": 10.0,
+    }
+)
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^Maybe once or twice",
+    value=2.0,
+    regex=True,
+)
+# I removed this answer as it does not really answer the question
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^every time you publish a story you contact the subject",
+    value=np.nan,
+    regex=True,
+)
+df["MSconstraintcen3"] = df["MSconstraintcen3"].replace(
+    to_replace=r"^moins de 5", value=4.0, regex=True
+)
+df["MSconstraintcen3"] = pd.to_numeric(df["MSconstraintcen3"], errors="coerce")
 
 df["constraintinter1"] = df["constraintinter1"].replace(
     {
@@ -1260,6 +1365,41 @@ for label in ["unsolicited_information", "invitations", "other"]:
 
 for label in ["gender", "ethnicity", "political", "sexual", "religious", "other"]:
     df[f"constraintinter6[{label}]"] = df[f"constraintinter6[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+MSconstraintself1_options = [
+    "avoid",
+    "change_focus",
+    "change_timeline",
+    "abandon",
+    "leave_profession",
+    "other",
+]
+for label in MSconstraintself1_options:
+    df[f"MSconstraintself1[{label}]"] = df[f"MSconstraintself1[{label}]"].replace(
+        {
+            "AO01": "Yes",
+            "AO02": "No",
+            "AO03": "I don't know",
+            "AO04": "I prefer not to say",
+        }
+    )
+
+CSconstraintself1_options = [
+    "avoid",
+    "cancelled_campaign",
+    "withdrew_litigation",
+    "leave_profession",
+    "other",
+]
+for label in CSconstraintself1_options:
+    df[f"CSconstraintself1[{label}]"] = df[f"CSconstraintself1[{label}]"].replace(
         {
             "AO01": "Yes",
             "AO02": "No",
