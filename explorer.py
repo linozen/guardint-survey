@@ -362,7 +362,7 @@ def answered_by(group):
     if group == "cso":
         text = "CSO professionals"
     else:
-        text = "media professionals"
+        text = "journalists"
     st.caption(f"This question was only answered by {text}")
 
 
@@ -387,7 +387,7 @@ df = pd.read_pickle("data/guardint_survey.pkl")
 # ===========================================================================
 
 st.set_page_config(
-    page_title="IOI Survey Data Explorer",
+    page_title="GUARDINT Survey Data Explorer",
     page_icon=f"{asset_url}/guardint_favicon.png",
 )
 
@@ -398,11 +398,11 @@ def callback():
 
 sections = [
     "Overview",
-    "Resources // HR",
-    "Resources // Expertise",
-    "Resources // Finance",
-    "Resources // FOI",
-    "Resources // Appreciation",
+    "Resources > HR",
+    "Resources > Expertise",
+    "Resources > Finance",
+    "Resources > FOI",
+    "Resources > Appreciation",
     "Media Reporting",
     "Public Campaigning",
     "Policy Advocacy",
@@ -433,15 +433,13 @@ selected_section = st.sidebar.radio(
     on_change=callback,
 )
 
-st.caption("GUARDINT Survey // " + selected_section)
+st.caption("GUARD//INT Survey > " + selected_section)
 
 filters = {
     "country": st.sidebar.selectbox(
         "Country", ["All", "United Kingdom", "Germany", "France"]
     ),
-    "field": st.sidebar.selectbox(
-        "Field", ["All", "CSO Professionals", "Media Professionals"]
-    ),
+    "field": st.sidebar.selectbox("Field", ["All", "CSO Professionals", "Journalists"]),
 }
 
 filter = np.full(len(df.index), True)
@@ -493,6 +491,9 @@ css = Template(
         border-width: 3px 3px 3px 3px !important;
         border-radius: 0 !important;
     }
+    h1 {
+        margin-top: -1em;
+    }
     h3 {line-height: 1.3}
     footer {
         visibility: hidden;
@@ -540,24 +541,25 @@ st.markdown(css, unsafe_allow_html=True)
 
 
 if selected_section == "Overview":
-    st.write("# Overview")
+    st.write("# Civic Intelligence Oversight Survey Data Explorer")
+    st.write("## The Project")
 
-    # TODO Add correct links
     st.write(
         """
-        This is the _merged_ data containing the responses to the questions
-        from both the Civil Society Scrutiny questionnaire and the Media
-        Scrutiny questionnaire. Since only some questions were asked in both
-        questionnaires, this _merged_ data represents a subset of all the
-        questions that were asked in both surveys individually.
+        A better understanding of the democratic governance of intelligence
+        requires more detailed information about an increasingly important group
+        of actors outside the traditional corridors of power: Civic intelligence
+        oversight practitioners. As part of the GUARD//INT research project, we
+        conducted online surveys with representatives of civil society
+        organisations (CSOs) and journalists in France, Germany and the United
+        Kingdom.
 
-        To see all answers given by members of civil society organisations,
-        click [here](https://ioi.civsoc.sehn.dev). To see all answers given
-        by members of media organisations, click
-        [here](https://ioi.media.sehn.dev). Use the sidebar on the left to
-        choose the section of the survey that is relevant for you and use
-        the drop-down menus to filter by country or survey type.
-
+        This site provides open access to the anonymized data we gathered. It visualises
+        the first empirical investigation of the perceptions of media and CSO
+        professionals specialised in intelligence and surveillance. The data enables us
+        to better understand the potential and limitations of civic intelligence
+        oversight as an increasingly important part of how democratic societies respond
+        to and oversee digital surveillance.
         """
     )
 
@@ -580,8 +582,8 @@ if selected_section == "Overview":
 
     col1, col2 = st.columns(2)
     col1.metric(
-        "Media professionals",
-        len(df[filter & (df.field == "Media Professionals")].index),
+        "Journalists",
+        len(df[filter & (df.field == "Journalists")].index),
     )
     col2.metric(
         "Civil Society Organisation professionals",
@@ -589,29 +591,107 @@ if selected_section == "Overview":
     )
 
     st.caption(
-        """†For the calculation of the mean, only valid numerical answers were
-        counted. This is why the number might differ from the number one gets
-        when simply dividing e.g. the cumulative years spent working on SBIA
-        by the overall number of respondents (including those who haven't
-        specified their experience in years).
+        """† For the calculation of the mean only valid numerical answers were
+        counted, excluding those who haven't specified their experience in years.
         """
     )
 
-    st.write("## Open Data")
+    st.write("## Understanding the data")
     st.write(
-        """We cleaned and anonymised the data so you can take look at it yourself.
-        Using the buttons below, you can download the entire dataset. If you want
-        to find out how this page was created, you can take a look at the code on
-        [Github](https://github.com/snv-berlin/ioi).
+        """The individuals we surveyed mostly engage in civic oversight
+        practices in their professional capacity and were invited to complete
+        the survey based on their experience in working on surveillance by
+        intelligence agencies. We designed two different but overlapping
+        surveys: One for journalists and one for CSO professionals. When we
+        posed a question only to journalists, the question code is prepended
+        with `MS` (media scrutiny). When we put the question only to CSO
+        professionals, the code is prepended with `CS` (civil society scrutiny).
+        If the question was put to both groups, the prefix was removed.
     """
+    )
+    st.write(
+        """The questions and response options are structured in different
+        sections ranging from different kinds of resources (human resources,
+        expertise, use of freedom of information rights, financial resources,
+        journalistic appreciation) to different civic oversight activities
+        (media reporting, public campaigning, policy advocacy, strategic
+        litigation) as well as protections, constraints and attitudes. A
+        comprehensive overview of all questions and answer options can be found
+        in our two codebooks:
+    """
+    )
+    with open("codebooks/guardint_survey_codebook_media.pdf", "rb") as file:
+        st.download_button(
+            label="Codebook Media Scrutiny (PDF)",
+            data=file,
+            file_name="guardint_survey_codebook_media.pdf",
+        )
+    with open("codebooks/guardint_survey_codebook_civil_society.pdf", "rb") as file:
+        st.download_button(
+            label="Codebook Civil Society Scrutiny (PDF)",
+            data=file,
+            file_name="guardint_survey_codebook_civil_society.pdf",
+        )
+    st.write(
+        """If you want to have a look at the data yourself, you can also
+        download the entire dataset that this website is built on
+        below:
+        """
     )
     with open("data/guardint_survey.csv", "rb") as file:
         st.download_button(
-            label="Download data as CSV",
+            label="Survey data (CSV)", data=file, file_name="guardint_survey_data.csv"
+        )
+    with open("data/guardint_survey.xlsx", "rb") as file:
+        st.download_button(
+            label="Survey data (Excel)",
             data=file,
-            file_name="guardint_survey.csv",
+            file_name="guardint_survey_data.xlsx",
         )
 
+    st.write("## About this website")
+    st.write(
+        """We initially built this website to give ourselves an easy way to
+        peruse and analyse the data. Since we found it helpful, we thought you
+        might find it helpful, too. Using the controls located in the sidebar on
+        the left you can filter by country  (United Kingdom, France or Germany)
+        and by field (Journalists, CSO Professionals). For every question, the
+        data explorer indicates the total number of responses according to the
+        currently applied filter. By hoovering over the charts, further details
+        on the respective answer option appear. All charts can be downloaded as
+        .png files.
+        """
+    )
+    st.write(
+        """This website would not be remotely possible without the great
+        open-source software it's built with. We extend a big thank you to the
+        creators of the Streamlit library and all the other software libraries
+        that enable the functionality of this website. The code for this website
+        is freely available under a permissive license. If you find any errors
+        or room for improvement, don't hesitate to let us know.
+        """
+    )
+
+    st.write("## Get in touch")
+
+    st.write(
+        """If you have questions or comments about our research or the data
+        provided, you can contact the research team at the [Berlin Social Science
+        Center
+        (WZB)](https://www.wzb.eu/en/research/digitalization-and-societal-transformation/politics-of-digitalization/projects/oversight-and-intelligence-networks-who-guards-the-guardians-guardint)
+        and [Stiftung Neue Verantwortung (SNV)](https://www.stiftung-nv.de/en/project/digital-rights-surveillance-and-democracy) via email to
+        [contact@guardint.org](mailto:contact@guardint.org). You can also reach
+        out on Twitter [@guard_int](https://twitter.com/guard_int).
+        """
+    )
+
+    st.write("## Summary statistics")
+    st.write(
+        """Below you find some summary statistics, such as which countries the
+        respondents are primarily working in. You can always jump to a section
+        that interests you by using the outline in the left sidebar.
+    """
+    )
     country_counts = df[filter]["country"].value_counts()
     st.write("### Country `[country]`")
     print_total(country_counts.sum())
@@ -680,11 +760,11 @@ if selected_section == "Overview":
     # TODO Privacy notice
 
 # ===========================================================================
-# Resources // HR
+# Resources > HR
 # ===========================================================================
 
-if selected_section == "Resources // HR":
-    st.write("# Resources // HR")
+if selected_section == "Resources > HR":
+    st.write("# Resources > HR")
 
     st.write("### What is your employment status? `[hr1]`")
     hr1_counts = df[filter]["hr1"].value_counts()
@@ -845,11 +925,11 @@ if selected_section == "Resources // HR":
     )
 
 # ===========================================================================
-# Resources // Expertise
+# Resources > Expertise
 # ===========================================================================
 
-if selected_section == "Resources // Expertise":
-    st.write("# Resources // Expertise")
+if selected_section == "Resources > Expertise":
+    st.write("# Resources > Expertise")
 
     st.write(
         "### How many years have you spent working on surveillance by intelligence agencies? `[expertise1]`"
@@ -937,11 +1017,11 @@ if selected_section == "Resources // Expertise":
     )
 
 # ===========================================================================
-# Resources // Finance
+# Resources > Finance
 # ===========================================================================
 
-if selected_section == "Resources // Finance":
-    st.write("# Resources // Finance")
+if selected_section == "Resources > Finance":
+    st.write("# Resources > Finance")
 
     st.write(
         "### How do you assess the financial resources that have been available for your work on intelligence over the past 5 years? `[finance1]`"
@@ -1084,8 +1164,8 @@ if selected_section == "Resources // Finance":
         use_container_width=True,
     )
 
-if selected_section == "Resources // FOI":
-    st.write("# Resources // FOI")
+if selected_section == "Resources > FOI":
+    st.write("# Resources > FOI")
 
     st.write(
         "### Have you requested information under the national FOI† law when you worked on intelligence-related issues over the past 5 years? `[foi1]`"
@@ -1233,11 +1313,11 @@ if selected_section == "Resources // FOI":
     )
 
 # ===========================================================================
-# Resources // Appreciation
+# Resources > Appreciation
 # ===========================================================================
 
-if selected_section == "Resources // Appreciation":
-    st.write("# Resources // Appreciation")
+if selected_section == "Resources > Appreciation":
+    st.write("# Resources > Appreciation")
 
     st.write(
         "### In the past 5 years, have stories on surveillance by intelligence agencies been nominated for a journalistic award in the country you primarily work in? `[MSapp1]`"
@@ -1292,7 +1372,7 @@ if selected_section == "Resources // Appreciation":
 
 if selected_section == "Media Reporting":
     st.caption(
-        "__NB__: All questions in this section have only been presented to media professionals."
+        "__NB__: All questions in this section have only been presented to Journalists."
     )
 
     st.write("# Scope of Coverage")
@@ -1852,7 +1932,7 @@ if selected_section == "Public Campaigning":
             else:
                 continue
 
-    if filters["field"] == "Media Professionals":
+    if filters["field"] == "Journalists":
         print_total(0)
     else:
         # If one respondent chose at least one medium it counts towards the total
@@ -1996,7 +2076,7 @@ if selected_section == "Public Campaigning":
                 CScampimpact1_not_agree_at_all.append(count)
             else:
                 continue
-    if filters["field"] == "Media Professionals":
+    if filters["field"] == "Journalists":
         print_total(0)
     else:
         # If one respondent chose at least one medium it counts towards the total
@@ -2827,7 +2907,7 @@ if selected_section == "Protection":
         ),
         use_container_width=True,
     )
-    st.caption("† The option'Secure Drop' was only available to media professionals")
+    st.caption("† The option'Secure Drop' was only available to Journalists")
 
     # =======================================================================
     st.write(
@@ -2856,7 +2936,7 @@ if selected_section == "Protection":
         """### When working on intelligence-related issues, do you feel you have reason to be concerned about... `[protectleg1]`
 
 - surveillance of your activities (CSO professionals)
-- regarding the protection of your sources (media professionals)"""
+- regarding the protection of your sources (Journalists)"""
     )
 
     protectleg1_counts = df[filter]["protectleg1"].value_counts()
@@ -3861,10 +3941,10 @@ if selected_section == "Attitudes":
 
 st.markdown(
     """
-    <div class="custom-footer">Developed with
-        <a href="https://streamlit.io" target="_blank">Streamlit</a>
-        and ❤ by the
+    <div class="custom-footer">Developed by the
         <a href="https://guardint.org" target="_blank">GUARDINT Project</a>
+    with funding by the Deutsche Forschungsgesellschaft (DFG, German Research Foundation) <a href="https://gepris.dfg.de/gepris/projekt/396819157?contrast=0&findButton=historyCall&hitsPerPage=25&index=95005&language=en&nurProjekteMitAB=false&orderBy=name&teilprojekte=true" target="_blank">
+    Project Number 396819157</a>
     </div>
 """,
     unsafe_allow_html=True,

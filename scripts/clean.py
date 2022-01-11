@@ -616,7 +616,7 @@ def construct_ms_df():
     df.columns = df.columns.str[2:]
 
     # Set field
-    df["field"] = "Media Professionals"
+    df["field"] = "Journalists"
     return df
 
 
@@ -630,7 +630,7 @@ df = pd.concat([df_cs, df_ms], ignore_index=True)
 # Helper variables needed when answers are coded differently in the
 # respective survey types or languages
 is_civsoc = df.field == "CSO Professionals"
-is_media = df.field == "Media Professionals"
+is_media = df.field == "Journalists"
 is_de = df.country == "Germany"
 is_uk = df.country == "United Kingdom"
 is_fr = df.country == "France"
