@@ -542,7 +542,6 @@ st.markdown(css, unsafe_allow_html=True)
 
 if selected_section == "Overview":
     st.write("# Civic Intelligence Oversight Survey Data Explorer")
-    st.write("## The Project")
 
     st.write(
         """
