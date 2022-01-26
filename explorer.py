@@ -548,17 +548,17 @@ if selected_section == "Overview":
         A better understanding of the democratic governance of intelligence
         requires more detailed information about an increasingly important group
         of actors outside the traditional corridors of power: Civic intelligence
-        oversight practitioners. As part of the GUARD//INT research project, we
-        conducted online surveys with representatives of civil society
-        organisations (CSOs) and journalists in France, Germany and the United
-        Kingdom.
+        oversight practitioners. As part of the
+        [GUARD//INT](https://guardint.org) research project, we conducted online
+        surveys with representatives of civil society organisations (CSOs) and
+        journalists in France, Germany and the United Kingdom.
 
         This site provides open access to the anonymized data we gathered. It visualises
-        the first empirical investigation of the perceptions of media and CSO
-        professionals specialised in intelligence and surveillance. The data enables us
-        to better understand the potential and limitations of civic intelligence
-        oversight as an increasingly important part of how democratic societies respond
-        to and oversee digital surveillance.
+        our empirical investigation of the perceptions of media and CSO
+        professionals specialised in intelligence and surveillance. The data is
+        meant to contribute to a better understanding of the potential and
+        limitations of civic intelligence oversight. We invite you to explore
+        the data using the sidebar on the left.
         """
     )
 
@@ -597,16 +597,17 @@ if selected_section == "Overview":
 
     st.write("## Understanding the data")
     st.write(
-        """The individuals we surveyed mostly engage in civic oversight
-        practices in their professional capacity and were invited to complete
-        the survey based on their experience in working on surveillance by
-        intelligence agencies. We designed two different but overlapping
-        surveys: One for journalists and one for CSO professionals. When we
-        posed a question only to journalists, the question code is prepended
-        with `MS` (media scrutiny). When we put the question only to CSO
-        professionals, the code is prepended with `CS` (civil society scrutiny).
-        If the question was put to both groups, the prefix was removed.
-    """
+        """The individuals who participated in the survey mostly engage in
+        civic oversight practices in their professional capacity. They were
+        invited to complete the survey based on their experience in working on
+        surveillance by intelligence agencies. We designed two different but
+        overlapping surveys: One for journalists and one for CSO professionals.
+        When we posed a question only to journalists, the question code is
+        prepended with `MS` (media scrutiny). When we put the question only to
+        CSO professionals, the code is prepended with `CS` (civil society
+        scrutiny). If the question was put to both groups, the prefix was
+        removed.
+        """
     )
     st.write(
         """The questions and response options are structured in different
@@ -617,7 +618,7 @@ if selected_section == "Overview":
         litigation) as well as protections, constraints and attitudes. A
         comprehensive overview of all questions and answer options can be found
         in our two codebooks:
-    """
+        """
     )
     with open("codebooks/guardint_survey_codebook_media.pdf", "rb") as file:
         st.download_button(
