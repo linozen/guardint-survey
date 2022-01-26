@@ -295,12 +295,12 @@ def gen_go_bar_stack(data, **kwargs):
 def gen_rank_plt(input_col, options, **kwargs):
     input_col_score = pd.Series(index=options)
     for i in range(1, 7):
-        input_col_counts = df[f"{input_col}[{i}]"].value_counts()
+        input_col_counts = df[filter][f"{input_col}[{i}]"].value_counts()
         scores = input_col_counts.multiply(scoring[i])
         input_col_score = input_col_score.add(scores, fill_value=0)
         input_col_score = input_col_score.sort_values(ascending=False)
         if i == 1:
-            ranked_first = df[f"{input_col}[1]"].value_counts()
+            ranked_first = df[filter][f"{input_col}[1]"].value_counts()
             ranked_first_clean = pd.DataFrame(
                 {
                     "institution": ranked_first.index,
